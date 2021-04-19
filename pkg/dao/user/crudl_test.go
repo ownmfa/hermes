@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/ownmfa/api/go/api"
+	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/stretchr/testify/require"
@@ -232,7 +233,7 @@ func TestUpdate(t *testing.T) {
 		// Update user fields.
 		createUser.Name = "dao-user-" + random.String(10)
 		createUser.Email = "dao-user-" + random.Email()
-		createUser.Role = api.Role_ADMIN
+		createUser.Role = common.Role_ADMIN
 		createUser.Status = api.Status_DISABLED
 		updateUser, _ := proto.Clone(createUser).(*api.User)
 
@@ -455,7 +456,7 @@ func TestList(t *testing.T) {
 
 	userIDs := []string{}
 	userNames := []string{}
-	userRoles := []api.Role{}
+	userRoles := []common.Role{}
 	userTSes := []time.Time{}
 	for i := 0; i < 3; i++ {
 		createUser, err := globalUserDAO.Create(ctx, random.User("dao-user",
