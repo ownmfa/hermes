@@ -1,0 +1,9 @@
+DROP INDEX IF EXISTS keys_read_and_paginate_idx;
+DROP TABLE IF EXISTS keys;
+DROP INDEX IF EXISTS users_read_and_paginate_idx;
+DROP INDEX IF EXISTS users_read_and_email_idx;
+DROP TABLE IF EXISTS users;
+DROP TYPE IF EXISTS status;
+DROP TYPE IF EXISTS role;
+DROP INDEX IF EXISTS orgs_paginate_idx;
+DROP TABLE IF EXISTS orgs;
