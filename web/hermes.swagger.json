@@ -1,0 +1,1025 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Hermes",
+    "version": "1.0",
+    "contact": {
+      "name": "OwnMFA",
+      "url": "https://www.ownmfa.com/",
+      "email": "info@ownmfa.com"
+    }
+  },
+  "tags": [
+    {
+      "name": "OrgService"
+    },
+    {
+      "name": "SessionService"
+    },
+    {
+      "name": "UserService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/organizations": {
+      "get": {
+        "summary": "List all orgs.",
+        "operationId": "OrgService_ListOrgs",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiListOrgsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "Number of organizations to retrieve in a single page. Defaults to 50 if not specified, with a maximum of 250.",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "Token of the page to retrieve. If not specified, the first page of results will be returned. To request the next page of results, use next_page_token from the previous response.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "OrgService"
+        ]
+      },
+      "post": {
+        "summary": "Create an organization.",
+        "operationId": "OrgService_CreateOrg",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiOrg"
+            }
+          },
+          "201": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiOrg"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Org message to create.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiOrg"
+            }
+          }
+        ],
+        "tags": [
+          "OrgService"
+        ]
+      }
+    },
+    "/v1/organizations/{id}": {
+      "get": {
+        "summary": "Get an organization by ID.",
+        "operationId": "OrgService_GetOrg",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiOrg"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "Organization ID (UUID) to get.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "OrgService"
+        ]
+      },
+      "delete": {
+        "summary": "Delete an organization by ID.",
+        "operationId": "OrgService_DeleteOrg",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "204": {
+            "description": "A successful response.",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "Organization ID (UUID) to delete.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "OrgService"
+        ]
+      }
+    },
+    "/v1/organizations/{org.id}": {
+      "put": {
+        "summary": "Update an organization.",
+        "operationId": "OrgService_UpdateOrg",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiOrg"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "org.id",
+            "description": "Organization ID (UUID).",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "description": "Org message to update.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiOrg"
+            }
+          },
+          {
+            "name": "updateMask",
+            "description": "Fields to update. Automatically populated by a PATCH request. If not present, a full resource update is performed.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "OrgService"
+        ]
+      },
+      "patch": {
+        "summary": "Update an organization.",
+        "operationId": "OrgService_UpdateOrg2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiOrg"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "org.id",
+            "description": "Organization ID (UUID).",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "description": "Org message to update.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiOrg"
+            }
+          },
+          {
+            "name": "updateMask",
+            "description": "Fields to update. Automatically populated by a PATCH request. If not present, a full resource update is performed.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "OrgService"
+        ]
+      }
+    },
+    "/v1/sessions/keys": {
+      "get": {
+        "summary": "List all API keys.",
+        "operationId": "SessionService_ListKeys",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiListKeysResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "Number of API keys to retrieve in a single page. Defaults to 50 if not specified, with a maximum of 250.",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "Token of the page to retrieve. If not specified, the first page of results will be returned. To request the next page of results, use next_page_token from the previous response.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "SessionService"
+        ]
+      },
+      "post": {
+        "summary": "Create an API key.",
+        "operationId": "SessionService_CreateKey",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiCreateKeyResponse"
+            }
+          },
+          "201": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiKey"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Key message to create.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiKey"
+            }
+          }
+        ],
+        "tags": [
+          "SessionService"
+        ]
+      }
+    },
+    "/v1/sessions/keys/{id}": {
+      "delete": {
+        "summary": "Delete an API key by ID.",
+        "operationId": "SessionService_DeleteKey",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "204": {
+            "description": "A successful response.",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "Key ID (UUID) to delete.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "SessionService"
+        ]
+      }
+    },
+    "/v1/sessions/login": {
+      "post": {
+        "summary": "Log in a user.",
+        "operationId": "SessionService_Login",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiLoginResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiLoginRequest"
+            }
+          }
+        ],
+        "tags": [
+          "SessionService"
+        ],
+        "security": []
+      }
+    },
+    "/v1/users": {
+      "get": {
+        "summary": "List all users.",
+        "operationId": "UserService_ListUsers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiListUsersResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "Number of users to retrieve in a single page. Defaults to 50 if not specified, with a maximum of 250.",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "Token of the page to retrieve. If not specified, the first page of results will be returned. To request the next page of results, use next_page_token from the previous response.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      },
+      "post": {
+        "summary": "Create a user.",
+        "operationId": "UserService_CreateUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiUser"
+            }
+          },
+          "201": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiUser"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "User message to create.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiUser"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/v1/users/{id}": {
+      "get": {
+        "summary": "Get a user by ID.",
+        "operationId": "UserService_GetUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiUser"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "User ID (UUID) to get.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      },
+      "delete": {
+        "summary": "Delete a user by ID.",
+        "operationId": "UserService_DeleteUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "204": {
+            "description": "A successful response.",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "User ID (UUID) to delete.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/v1/users/{id}/password": {
+      "put": {
+        "summary": "Update a user's password.",
+        "operationId": "UserService_UpdateUserPassword",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "User ID (UUID) to update password.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiUpdateUserPasswordRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/v1/users/{user.id}": {
+      "put": {
+        "summary": "Update a user.",
+        "operationId": "UserService_UpdateUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiUser"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "user.id",
+            "description": "User ID (UUID).",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "description": "User message to update.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiUser"
+            }
+          },
+          {
+            "name": "updateMask",
+            "description": "Fields to update. Automatically populated by a PATCH request. If not present, a full resource update is performed.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      },
+      "patch": {
+        "summary": "Update a user.",
+        "operationId": "UserService_UpdateUser2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiUser"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "user.id",
+            "description": "User ID (UUID).",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "description": "User message to update.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiUser"
+            }
+          },
+          {
+            "name": "updateMask",
+            "description": "Fields to update. Automatically populated by a PATCH request. If not present, a full resource update is performed.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "apiCreateKeyResponse": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "$ref": "#/definitions/apiKey",
+          "description": "Key message created."
+        },
+        "token": {
+          "type": "string",
+          "description": "Token to be used for subsequent calls. Only returned once, upon key creation."
+        }
+      },
+      "description": "CreateKeyResponse is sent in response to an API key creation."
+    },
+    "apiKey": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Key ID (UUID).",
+          "readOnly": true
+        },
+        "orgID": {
+          "type": "string",
+          "description": "Organization ID (UUID).",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string",
+          "description": "Key name.",
+          "required": [
+            "name"
+          ]
+        },
+        "role": {
+          "$ref": "#/definitions/apiRole",
+          "description": "Key role."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Key creation timestamp.",
+          "readOnly": true
+        }
+      },
+      "description": "Key represents an API key as stored in the database.",
+      "required": [
+        "name"
+      ]
+    },
+    "apiListKeysResponse": {
+      "type": "object",
+      "properties": {
+        "keys": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiKey"
+          },
+          "description": "Key array, ordered by ascending created_at timestamp."
+        },
+        "nextPageToken": {
+          "type": "string",
+          "description": "Pagination token used to retrieve the next page of results. Not returned for the last page."
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Total number of API keys available."
+        }
+      },
+      "description": "ListKeysResponse is sent in response to an API key list."
+    },
+    "apiListOrgsResponse": {
+      "type": "object",
+      "properties": {
+        "orgs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiOrg"
+          },
+          "description": "Org array, ordered by ascending created_at timestamp."
+        },
+        "nextPageToken": {
+          "type": "string",
+          "description": "Pagination token used to retrieve the next page of results. Not returned for the last page."
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Total number of orgs available."
+        }
+      },
+      "description": "ListOrgsResponse is sent in response to an organization list."
+    },
+    "apiListUsersResponse": {
+      "type": "object",
+      "properties": {
+        "users": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiUser"
+          },
+          "description": "User array, ordered by ascending created_at timestamp."
+        },
+        "nextPageToken": {
+          "type": "string",
+          "description": "Pagination token used to retrieve the next page of results. Not returned for the last page."
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Total number of users available."
+        }
+      },
+      "description": "ListUsersResponse is sent in response to a user list."
+    },
+    "apiLoginRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Email of the user to log in.",
+          "required": [
+            "email"
+          ]
+        },
+        "orgName": {
+          "type": "string",
+          "description": "Organization name of the user to log in.",
+          "required": [
+            "org_name"
+          ]
+        },
+        "password": {
+          "type": "string",
+          "description": "Password of the user to log in.",
+          "required": [
+            "password"
+          ]
+        }
+      },
+      "description": "LoginRequest is sent to log in a user.",
+      "required": [
+        "email",
+        "orgName",
+        "password"
+      ]
+    },
+    "apiLoginResponse": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "description": "Token to be used for subsequent non-login calls."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Token expiration timestamp."
+        }
+      },
+      "description": "LoginResponse is sent in response to a user login."
+    },
+    "apiOrg": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Organization ID (UUID).",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string",
+          "description": "Organization name."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Organization display name. Used anywhere the organization is shown to a user, including web sites and notification sender fields."
+        },
+        "email": {
+          "type": "string",
+          "description": "Organization email. Used as the 'From' address in email notifications."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Organization creation timestamp.",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Organization modification timestamp.",
+          "readOnly": true
+        }
+      },
+      "description": "Org represents an organization as stored in the database."
+    },
+    "apiRole": {
+      "type": "string",
+      "enum": [
+        "ROLE_UNSPECIFIED",
+        "VIEWER",
+        "AUTHENTICATOR",
+        "ADMIN",
+        "SYS_ADMIN"
+      ],
+      "default": "ROLE_UNSPECIFIED",
+      "description": "Role represents the role of a user.\n\n - ROLE_UNSPECIFIED: Role is not specified.\n - VIEWER: Viewers can only read resources in their organization, but can update their own user.\n - AUTHENTICATOR: Authenticators can read and modify resources in their organization, but can only update their own user.\n - ADMIN: Admins can read and modify anything in their organization, including creating users of an equal or lesser role.\n - SYS_ADMIN: System admins can create organizations and modify anything in their organization."
+    },
+    "apiUpdateUserPasswordRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "User ID (UUID) to update password.",
+          "readOnly": true
+        },
+        "password": {
+          "type": "string",
+          "description": "User password to update.",
+          "required": [
+            "password"
+          ]
+        }
+      },
+      "description": "UpdateUserPasswordRequest is sent to update a user's password.",
+      "required": [
+        "password"
+      ]
+    },
+    "apiUser": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "User ID (UUID).",
+          "readOnly": true
+        },
+        "orgID": {
+          "type": "string",
+          "description": "Organization ID (UUID).",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string",
+          "description": "User name."
+        },
+        "email": {
+          "type": "string",
+          "description": "User email."
+        },
+        "role": {
+          "$ref": "#/definitions/apiRole",
+          "description": "User role."
+        },
+        "status": {
+          "$ref": "#/definitions/ownmfaapiStatus",
+          "description": "User status."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "User creation timestamp.",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "User modification timestamp.",
+          "readOnly": true
+        }
+      },
+      "description": "User represents a user as stored in the database."
+    },
+    "googlerpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "ownmfaapiStatus": {
+      "type": "string",
+      "enum": [
+        "STATUS_UNSPECIFIED",
+        "ACTIVE",
+        "DISABLED"
+      ],
+      "default": "STATUS_UNSPECIFIED",
+      "description": "Status represents the status of a message.\n\n - STATUS_UNSPECIFIED: Status is not specified.\n - ACTIVE: Message subject is active.\n - DISABLED: Message subject is disabled."
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "TokenAuth": {
+      "type": "apiKey",
+      "description": "Enter your token (/v1/sessions/login) in the format **Bearer \u0026lt;token\u0026gt;**",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "security": [
+    {
+      "TokenAuth": []
+    }
+  ]
+}
