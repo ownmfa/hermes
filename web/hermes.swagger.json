@@ -728,7 +728,7 @@
           ]
         },
         "role": {
-          "$ref": "#/definitions/apiRole",
+          "$ref": "#/definitions/commonRole",
           "description": "Key role."
         },
         "createdAt": {
@@ -891,18 +891,6 @@
       },
       "description": "Org represents an organization as stored in the database."
     },
-    "apiRole": {
-      "type": "string",
-      "enum": [
-        "ROLE_UNSPECIFIED",
-        "VIEWER",
-        "AUTHENTICATOR",
-        "ADMIN",
-        "SYS_ADMIN"
-      ],
-      "default": "ROLE_UNSPECIFIED",
-      "description": "Role represents the role of a user.\n\n - ROLE_UNSPECIFIED: Role is not specified.\n - VIEWER: Viewers can only read resources in their organization, but can update their own user.\n - AUTHENTICATOR: Authenticators can read and modify resources in their organization, but can only update their own user.\n - ADMIN: Admins can read and modify anything in their organization, including creating users of an equal or lesser role.\n - SYS_ADMIN: System admins can create organizations and modify anything in their organization."
-    },
     "apiUpdateUserPasswordRequest": {
       "type": "object",
       "properties": {
@@ -946,7 +934,7 @@
           "description": "User email."
         },
         "role": {
-          "$ref": "#/definitions/apiRole",
+          "$ref": "#/definitions/commonRole",
           "description": "User role."
         },
         "status": {
@@ -967,6 +955,18 @@
         }
       },
       "description": "User represents a user as stored in the database."
+    },
+    "commonRole": {
+      "type": "string",
+      "enum": [
+        "ROLE_UNSPECIFIED",
+        "VIEWER",
+        "AUTHENTICATOR",
+        "ADMIN",
+        "SYS_ADMIN"
+      ],
+      "default": "ROLE_UNSPECIFIED",
+      "description": "Role represents the role of a user.\n\n - ROLE_UNSPECIFIED: Role is not specified.\n - VIEWER: Viewers can only read resources in their organization, but can update their own user.\n - AUTHENTICATOR: Authenticators can read and modify resources in their organization, but can only update their own user.\n - ADMIN: Admins can read and modify anything in their organization, including creating users of an equal or lesser role.\n - SYS_ADMIN: System admins can create organizations and modify anything in their organization."
     },
     "googlerpcStatus": {
       "type": "object",

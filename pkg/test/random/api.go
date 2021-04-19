@@ -3,6 +3,7 @@ package random
 import (
 	"github.com/google/uuid"
 	"github.com/ownmfa/api/go/api"
+	"github.com/ownmfa/api/go/common"
 )
 
 // Org generates a random org with prefixed identifiers.
@@ -22,11 +23,11 @@ func User(prefix, orgID string) *api.User {
 		OrgId: orgID,
 		Name:  prefix + "-" + String(10),
 		Email: prefix + "-" + Email(),
-		Role: []api.Role{
-			api.Role_VIEWER,
-			api.Role_AUTHENTICATOR,
-			api.Role_ADMIN,
-			api.Role_SYS_ADMIN,
+		Role: []common.Role{
+			common.Role_VIEWER,
+			common.Role_AUTHENTICATOR,
+			common.Role_ADMIN,
+			common.Role_SYS_ADMIN,
 		}[Intn(4)],
 		Status: []api.Status{
 			api.Status_ACTIVE,
@@ -41,11 +42,11 @@ func Key(prefix, orgID string) *api.Key {
 		Id:    uuid.NewString(),
 		OrgId: orgID,
 		Name:  prefix + "-" + String(10),
-		Role: []api.Role{
-			api.Role_VIEWER,
-			api.Role_AUTHENTICATOR,
-			api.Role_ADMIN,
-			api.Role_SYS_ADMIN,
+		Role: []common.Role{
+			common.Role_VIEWER,
+			common.Role_AUTHENTICATOR,
+			common.Role_ADMIN,
+			common.Role_SYS_ADMIN,
 		}[Intn(4)],
 	}
 }

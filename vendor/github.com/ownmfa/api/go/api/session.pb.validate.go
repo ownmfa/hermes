@@ -16,6 +16,8 @@ import (
 	"unicode/utf8"
 
 	"github.com/golang/protobuf/ptypes"
+
+	common "github.com/ownmfa/api/go/common"
 )
 
 // ensure the imports are used
@@ -31,6 +33,8 @@ var (
 	_ = (*url.URL)(nil)
 	_ = (*mail.Address)(nil)
 	_ = ptypes.DynamicAny{}
+
+	_ = common.Role(0)
 )
 
 // define the regex for a UUID once up-front
@@ -276,7 +280,7 @@ var _ interface {
 	ErrorName() string
 } = KeyValidationError{}
 
-var _Key_Role_InLookup = map[Role]struct{}{
+var _Key_Role_InLookup = map[common.Role]struct{}{
 	4:  {},
 	8:  {},
 	12: {},
