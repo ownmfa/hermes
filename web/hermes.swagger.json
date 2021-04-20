@@ -11,6 +11,9 @@
   },
   "tags": [
     {
+      "name": "AppService"
+    },
+    {
       "name": "OrgService"
     },
     {
@@ -27,9 +30,247 @@
     "application/json"
   ],
   "paths": {
+    "/v1/applications": {
+      "get": {
+        "summary": "List all applications.",
+        "operationId": "AppService_ListApps",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiListAppsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "description": "Number of applications to retrieve in a single page. Defaults to 50 if not specified, with a maximum of 250.",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "description": "Token of the page to retrieve. If not specified, the first page of results will be returned. To request the next page of results, use next_page_token from the previous response.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AppService"
+        ]
+      },
+      "post": {
+        "summary": "Create an application.",
+        "operationId": "AppService_CreateApp",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiApp"
+            }
+          },
+          "201": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiApp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "App message to create.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiApp"
+            }
+          }
+        ],
+        "tags": [
+          "AppService"
+        ]
+      }
+    },
+    "/v1/applications/{app.id}": {
+      "put": {
+        "summary": "Update an application.",
+        "operationId": "AppService_UpdateApp",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiApp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "app.id",
+            "description": "Application ID (UUID).",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "description": "App message to update.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiApp"
+            }
+          },
+          {
+            "name": "updateMask",
+            "description": "Fields to update. Automatically populated by a PATCH request. If not present, a full resource update is performed.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AppService"
+        ]
+      },
+      "patch": {
+        "summary": "Update an application.",
+        "operationId": "AppService_UpdateApp2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiApp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "app.id",
+            "description": "Application ID (UUID).",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "description": "App message to update.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiApp"
+            }
+          },
+          {
+            "name": "updateMask",
+            "description": "Fields to update. Automatically populated by a PATCH request. If not present, a full resource update is performed.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AppService"
+        ]
+      }
+    },
+    "/v1/applications/{id}": {
+      "get": {
+        "summary": "Get an application by ID.",
+        "operationId": "AppService_GetApp",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiApp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "Application ID (UUID) to get.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AppService"
+        ]
+      },
+      "delete": {
+        "summary": "Delete an application by ID.",
+        "operationId": "AppService_DeleteApp",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "204": {
+            "description": "A successful response.",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "Application ID (UUID) to delete.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AppService"
+        ]
+      }
+    },
     "/v1/organizations": {
       "get": {
-        "summary": "List all orgs.",
+        "summary": "List all organizations.",
         "operationId": "OrgService_ListOrgs",
         "responses": {
           "200": {
@@ -693,6 +934,56 @@
     }
   },
   "definitions": {
+    "apiApp": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Application ID (UUID).",
+          "readOnly": true
+        },
+        "orgID": {
+          "type": "string",
+          "description": "Organization ID (UUID).",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string",
+          "description": "Application name."
+        },
+        "digits": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Passcode digit length. 7 is recommended."
+        },
+        "subjectTemplate": {
+          "type": "string",
+          "description": "Application subject template. Templates generate HTML-safe output using the [Go template engine](https://golang.org/pkg/html/template/). Optional, for notification methods that support subjects."
+        },
+        "textBodyTemplate": {
+          "type": "string",
+          "description": "Application text body template. Templates generate HTML-safe output using the [Go template engine](https://golang.org/pkg/html/template/)."
+        },
+        "htmlBodyTemplate": {
+          "type": "string",
+          "format": "byte",
+          "description": "Application HTML body template. Templates generate HTML-safe output using the [Go template engine](https://golang.org/pkg/html/template/). Optional, for notification methods that support HTML bodies. When used in JSON, the value will be represented as a base64 string."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Application creation timestamp.",
+          "readOnly": true
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Application modification timestamp.",
+          "readOnly": true
+        }
+      },
+      "description": "App represents an application as stored in the database."
+    },
     "apiCreateKeyResponse": {
       "type": "object",
       "properties": {
@@ -743,6 +1034,28 @@
         "name"
       ]
     },
+    "apiListAppsResponse": {
+      "type": "object",
+      "properties": {
+        "apps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiApp"
+          },
+          "description": "App array, ordered by ascending created_at timestamp."
+        },
+        "nextPageToken": {
+          "type": "string",
+          "description": "Pagination token used to retrieve the next page of results. Not returned for the last page."
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Total number of applications available."
+        }
+      },
+      "description": "ListAppsResponse is sent in response to an application list."
+    },
     "apiListKeysResponse": {
       "type": "object",
       "properties": {
@@ -782,7 +1095,7 @@
         "totalSize": {
           "type": "integer",
           "format": "int32",
-          "description": "Total number of orgs available."
+          "description": "Total number of organizations available."
         }
       },
       "description": "ListOrgsResponse is sent in response to an organization list."
