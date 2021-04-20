@@ -84,3 +84,28 @@ func TestKey(t *testing.T) {
 		})
 	}
 }
+
+func TestApp(t *testing.T) {
+	t.Parallel()
+
+	for i := 0; i < 5; i++ {
+		lTest := i
+
+		t.Run(fmt.Sprintf("Can generate %v", lTest), func(t *testing.T) {
+			t.Parallel()
+
+			prefix := String(10)
+			orgID := uuid.NewString()
+
+			a1 := App(prefix, orgID)
+			a2 := App(prefix, orgID)
+			t.Logf("a1, a2: %+v, %+v", a1, a2)
+
+			require.NotEqual(t, a1, a2)
+			require.True(t, strings.HasPrefix(a1.Name, prefix))
+			require.True(t, strings.HasPrefix(a2.Name, prefix))
+			require.GreaterOrEqual(t, a1.Digits, int32(1))
+			require.GreaterOrEqual(t, a2.Digits, int32(1))
+		})
+	}
+}

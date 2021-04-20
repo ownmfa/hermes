@@ -14,7 +14,7 @@ require (
 	github.com/jackc/pgproto3/v2 v2.0.7 // indirect
 	github.com/jackc/pgx/v4 v4.11.0
 	github.com/mennanov/fmutils v0.1.0
-	github.com/ownmfa/api/go v0.0.0-20210419215253-cb3a9797b8ca
+	github.com/ownmfa/api/go v0.0.0-20210420174205-414ecb51f1db
 	github.com/rs/zerolog v1.21.0
 	github.com/smira/go-statsd v1.3.2
 	github.com/stretchr/testify v1.7.0
