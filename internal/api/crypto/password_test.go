@@ -1,0 +1,72 @@
+// +build !integration
+
+package crypto
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/ownmfa/hermes/pkg/test/random"
+	"github.com/stretchr/testify/require"
+	"golang.org/x/crypto/bcrypt"
+)
+
+func TestCheckPass(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		inp string
+		err error
+	}{
+		{random.String(20), nil},
+		{random.String(5), ErrWeakPass},
+		{"Thingsp3ct", ErrWeakPass},
+		{"1234567890", ErrWeakPass},
+	}
+
+	for _, test := range tests {
+		lTest := test
+
+		t.Run(fmt.Sprintf("Can check %+v", lTest), func(t *testing.T) {
+			t.Parallel()
+
+			err := CheckPass(lTest.inp)
+			t.Logf("err: %v", err)
+			require.Equal(t, lTest.err, err)
+		})
+	}
+}
+
+func TestHashPass(t *testing.T) {
+	t.Parallel()
+
+	pass := random.String(10)
+
+	h1, err := HashPass(pass)
+	t.Logf("h1, err: %s, %v", h1, err)
+	require.NoError(t, err)
+	require.Len(t, h1, 60)
+
+	h2, err := HashPass(pass)
+	t.Logf("h2, err: %s, %v", h2, err)
+	require.NoError(t, err)
+	require.Len(t, h2, 60)
+
+	require.NotEqual(t, h1, h2)
+}
+
+func TestCompareHashPass(t *testing.T) {
+	t.Parallel()
+
+	pass := random.String(10)
+
+	hash, err := HashPass(pass)
+	t.Logf("hash, err: %s, %v", hash, err)
+	require.NoError(t, err)
+
+	require.NoError(t, CompareHashPass(hash, pass))
+	require.Equal(t, bcrypt.ErrMismatchedHashAndPassword,
+		CompareHashPass(hash, random.String(10)))
+	require.Equal(t, bcrypt.ErrHashTooShort, CompareHashPass([]byte{}, pass))
+	require.Equal(t, bcrypt.ErrHashTooShort, CompareHashPass(nil, pass))
+}

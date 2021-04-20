@@ -50,17 +50,17 @@ jobs:
       - name: Build_and_Test
         id: Build_and_Test
         run: make test
-      # - name: Push
-      #   id: Push
-      #   # GitHub Actions do not currently support builds within a container
-      #   run: |
-      #     apk add --no-cache docker
-      #     docker version
-      #     docker login -u ownmfa -p ${{ secrets.GHCR_PAT }} ghcr.io
-      #     TAG=$(git rev-parse --short=8 HEAD)
-      #     docker build -f build/Dockerfile -t ghcr.io/ownmfa/hermes:${TAG} .
-      #     docker push ghcr.io/ownmfa/hermes:${TAG}
-      #     docker logout ghcr.io
+      - name: Push
+        id: Push
+        # GitHub Actions do not currently support builds within a container
+        run: |
+          apk add --no-cache docker
+          docker version
+          docker login -u ownmfa -p ${{ secrets.GHCR_PAT }} ghcr.io
+          TAG=$(git rev-parse --short=8 HEAD)
+          docker build -f build/Dockerfile -t ghcr.io/ownmfa/hermes:${TAG} .
+          docker push ghcr.io/ownmfa/hermes:${TAG}
+          docker logout ghcr.io
       - name: Notify
         uses: act10ns/slack@v1
         with:
