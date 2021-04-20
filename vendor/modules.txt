@@ -1,3 +1,6 @@
+# github.com/NYTimes/gziphandler v1.1.1
+## explicit
+github.com/NYTimes/gziphandler
 # github.com/ReneKroon/ttlcache/v2 v2.4.0
 ## explicit
 github.com/ReneKroon/ttlcache/v2
@@ -38,6 +41,7 @@ github.com/golang/protobuf/ptypes/wrappers
 ## explicit
 github.com/google/uuid
 # github.com/grpc-ecosystem/grpc-gateway/v2 v2.3.0
+## explicit
 github.com/grpc-ecosystem/grpc-gateway/v2/internal/httprule
 github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2/options
 github.com/grpc-ecosystem/grpc-gateway/v2/runtime
@@ -65,7 +69,10 @@ github.com/jackc/pgtype
 github.com/jackc/pgx/v4
 github.com/jackc/pgx/v4/internal/sanitize
 github.com/jackc/pgx/v4/stdlib
-# github.com/ownmfa/api/go v0.0.0-20210419212143-f370fc2187f6
+# github.com/mennanov/fmutils v0.1.0
+## explicit
+github.com/mennanov/fmutils
+# github.com/ownmfa/api/go v0.0.0-20210419215253-cb3a9797b8ca
 ## explicit
 github.com/ownmfa/api/go/api
 github.com/ownmfa/api/go/common
@@ -102,6 +109,8 @@ go.opentelemetry.io/otel/metric/registry
 go.opentelemetry.io/otel/trace
 # golang.org/x/crypto v0.0.0-20210415154028-4f45737414dc
 ## explicit
+golang.org/x/crypto/bcrypt
+golang.org/x/crypto/blowfish
 golang.org/x/crypto/pbkdf2
 # golang.org/x/net v0.0.0-20210415231046-e915ea6b2b7d
 golang.org/x/net/http/httpguts
@@ -133,6 +142,7 @@ google.golang.org/genproto/googleapis/api/httpbody
 google.golang.org/genproto/googleapis/rpc/status
 google.golang.org/genproto/protobuf/field_mask
 # google.golang.org/grpc v1.37.0
+## explicit
 google.golang.org/grpc
 google.golang.org/grpc/attributes
 google.golang.org/grpc/backoff
@@ -145,6 +155,7 @@ google.golang.org/grpc/codes
 google.golang.org/grpc/connectivity
 google.golang.org/grpc/credentials
 google.golang.org/grpc/encoding
+google.golang.org/grpc/encoding/gzip
 google.golang.org/grpc/encoding/proto
 google.golang.org/grpc/grpclog
 google.golang.org/grpc/internal

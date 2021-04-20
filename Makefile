@@ -27,11 +27,11 @@ TEST_PG_URI = postgres://postgres:postgres@127.0.0.1/hermes_test
 endif
 
 install:
-#	for x in $(shell find cmd -mindepth 1 -type d); do go build -ldflags="-w" \
-#	-o $(INSTALLPATH)/bin/$${x#cmd/} $(RFLAG) ./$${x}; done
+	for x in $(shell find cmd -mindepth 1 -type d); do go build -ldflags="-w" \
+	-o $(INSTALLPATH)/bin/$${x#cmd/} $(RFLAG) ./$${x}; done
 
-#	for x in $(shell find tool -mindepth 1 -type d); do go build -ldflags="-w" \
-#	-o $(INSTALLPATH)/bin/$${x#tool/} $(RFLAG) ./$${x}; done
+	for x in $(shell find tool -mindepth 1 -type d); do go build -ldflags="-w" \
+	-o $(INSTALLPATH)/bin/$${x#tool/} $(RFLAG) ./$${x}; done
 
 lint:
 	go install honnef.co/go/tools/cmd/staticcheck@latest
