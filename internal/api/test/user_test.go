@@ -175,7 +175,7 @@ func TestGetUser(t *testing.T) {
 			"not found")
 	})
 
-	t.Run("Get are isolated by org ID", func(t *testing.T) {
+	t.Run("Gets are isolated by org ID", func(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
@@ -210,7 +210,7 @@ func TestUpdateUser(t *testing.T) {
 		require.NoError(t, err)
 
 		// Update user fields.
-		createUser.Name = "dao-user-" + random.String(10)
+		createUser.Name = "api-user-" + random.String(10)
 		createUser.Email = "api-user-" + random.Email()
 		createUser.Role = common.Role_ADMIN
 		createUser.Status = api.Status_DISABLED
@@ -257,7 +257,7 @@ func TestUpdateUser(t *testing.T) {
 
 		// Update user fields.
 		part := &api.User{
-			Id: createUser.Id, Name: "dao-user-" + random.String(10),
+			Id: createUser.Id, Name: "api-user-" + random.String(10),
 			Email: "api-user-" + random.Email(), Role: common.Role_ADMIN,
 			Status: api.Status_DISABLED,
 		}
@@ -794,28 +794,6 @@ func TestListUsers(t *testing.T) {
 		require.GreaterOrEqual(t, len(nextUsers.Users), 1)
 		require.GreaterOrEqual(t, nextUsers.TotalSize, int32(3))
 	})
-
-	// t.Run("List users with tag filter", func(t *testing.T) {
-	// 	t.Parallel()
-
-	// 	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
-	// 	defer cancel()
-
-	// 	userCli := api.NewUserServiceClient(globalAdminGRPCConn)
-	// 	listUsers, err := userCli.ListUsers(ctx,
-	// 		&api.ListUsersRequest{Tag: userTags[2][0]})
-	// 	t.Logf("listUsers, err: %+v, %v", listUsers, err)
-	// 	require.NoError(t, err)
-	// 	require.Len(t, listUsers.Users, 1)
-	// 	require.Equal(t, int32(1), listUsers.TotalSize)
-
-	// 	require.Equal(t, userIDs[len(userIDs)-1], listUsers.Users[0].Id)
-	// 	require.Equal(t, userNames[len(userNames)-1], listUsers.Users[0].Name)
-	// 	require.Equal(t, userStatuses[len(userStatuses)-1],
-	// 		listUsers.Users[0].Status)
-	// 	require.Equal(t, userRoles[len(userRoles)-1], listUsers.Users[0].Role)
-	// 	require.Equal(t, userTags[len(userTags)-1], listUsers.Users[0].Tags)
-	// })
 
 	t.Run("List users with insufficient role", func(t *testing.T) {
 		t.Parallel()

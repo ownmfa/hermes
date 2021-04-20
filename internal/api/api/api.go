@@ -18,6 +18,7 @@ import (
 	"github.com/ownmfa/hermes/pkg/cache"
 	"github.com/ownmfa/hermes/pkg/consterr"
 	"github.com/ownmfa/hermes/pkg/dao"
+	"github.com/ownmfa/hermes/pkg/dao/app"
 	"github.com/ownmfa/hermes/pkg/dao/key"
 	"github.com/ownmfa/hermes/pkg/dao/org"
 	"github.com/ownmfa/hermes/pkg/dao/user"
@@ -69,6 +70,7 @@ func New(cfg *config.Config) (*API, error) {
 	}
 	skipValidate := map[string]struct{}{
 		// Update actions validate after merge to support partial updates.
+		"/ownmfa.api.AppService/UpdateApp":   {},
 		"/ownmfa.api.OrgService/UpdateOrg":   {},
 		"/ownmfa.api.UserService/UpdateUser": {},
 	}
@@ -78,6 +80,7 @@ func New(cfg *config.Config) (*API, error) {
 		interceptor.Auth(skipAuth, cfg.PWTKey, c),
 		interceptor.Validate(skipValidate),
 	))
+	api.RegisterAppServiceServer(srv, service.NewApp(app.NewDAO(pg)))
 	api.RegisterOrgServiceServer(srv, service.NewOrg(org.NewDAO(pg)))
 	api.RegisterSessionServiceServer(srv, service.NewSession(user.NewDAO(pg),
 		key.NewDAO(pg), c, cfg.PWTKey))
@@ -88,6 +91,14 @@ func New(cfg *config.Config) (*API, error) {
 	gwMux := runtime.NewServeMux(runtime.WithForwardResponseOption(statusCode))
 	opts := []grpc.DialOption{
 		grpc.WithInsecure(),
+	}
+
+	// App.
+	if err := api.RegisterAppServiceHandlerFromEndpoint(ctx, gwMux,
+		GRPCHost+GRPCPort, opts); err != nil {
+		cancel()
+
+		return nil, err
 	}
 
 	// Org.
