@@ -71,7 +71,7 @@ func (u *User) CreateUser(ctx context.Context,
 		return nil, errToStatus(err)
 	}
 
-	if err := grpc.SetHeader(ctx, metadata.Pairs("hermes-status-code",
+	if err := grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
 		"201")); err != nil {
 		logger.Errorf("CreateUser grpc.SetHeader: %v", err)
 	}
@@ -196,7 +196,7 @@ func (u *User) DeleteUser(ctx context.Context,
 		return nil, errToStatus(err)
 	}
 
-	if err := grpc.SetHeader(ctx, metadata.Pairs("hermes-status-code",
+	if err := grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
 		"204")); err != nil {
 		logger.Errorf("DeleteUser grpc.SetHeader: %v", err)
 	}
