@@ -24,9 +24,7 @@ func TestStatusCode(t *testing.T) {
 		t.Parallel()
 
 		mdHeader := metadata.MD{"hermes-status-code": []string{"201"}}
-		wHeader := http.Header{
-			"Grpc-Metadata-Hermes-Status-Code": []string{"201"},
-		}
+		wHeader := http.Header{grpcStatusCodeKey: []string{"201"}}
 		t.Logf("mdHeader, wHeader: %+v, %+v", mdHeader, wHeader)
 
 		respWriter := NewMockResponseWriter(gomock.NewController(t))
@@ -95,9 +93,7 @@ func TestStatusCode(t *testing.T) {
 		t.Parallel()
 
 		mdHeader := metadata.MD{"hermes-status-code": []string{"aaa"}}
-		wHeader := http.Header{
-			"Grpc-Metadata-Hermes-Status-Code": []string{"201"},
-		}
+		wHeader := http.Header{grpcStatusCodeKey: []string{"201"}}
 		t.Logf("mdHeader, wHeader: %+v, %+v", mdHeader, wHeader)
 
 		respWriter := NewMockResponseWriter(gomock.NewController(t))
@@ -114,8 +110,7 @@ func TestStatusCode(t *testing.T) {
 		t.Logf("mdHeader, wHeader: %+v, %+v", mdHeader, wHeader)
 		require.Equal(t, metadata.MD{"hermes-status-code": []string{"aaa"}},
 			mdHeader)
-		require.Equal(t, http.Header{
-			"Grpc-Metadata-Hermes-Status-Code": []string{"201"},
-		}, wHeader)
+		require.Equal(t, http.Header{grpcStatusCodeKey: []string{"201"}},
+			wHeader)
 	})
 }

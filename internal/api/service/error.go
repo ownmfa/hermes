@@ -13,6 +13,11 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const (
+	StatusCodeKey   = "hermes-status-code"
+	defaultPageSize = 50
+)
+
 // errToCode maps DAO errors to gRPC error codes.
 var errToCode = map[error]codes.Code{
 	crypto.ErrWeakPass:   codes.InvalidArgument,
