@@ -10,7 +10,7 @@ github.com/cespare/xxhash/v2
 github.com/davecgh/go-spew/spew
 # github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f
 github.com/dgryski/go-rendezvous
-# github.com/envoyproxy/protoc-gen-validate v0.5.1
+# github.com/envoyproxy/protoc-gen-validate v0.6.0
 github.com/envoyproxy/protoc-gen-validate/validate
 # github.com/go-redis/redis/v8 v8.8.2
 ## explicit
@@ -72,7 +72,7 @@ github.com/jackc/pgx/v4/stdlib
 # github.com/mennanov/fmutils v0.1.0
 ## explicit
 github.com/mennanov/fmutils
-# github.com/ownmfa/api/go v0.0.0-20210420213335-c9bea88749d4
+# github.com/ownmfa/api/go v0.0.0-20210422232316-bf51b7c6a981
 ## explicit
 github.com/ownmfa/api/go/api
 github.com/ownmfa/api/go/common
@@ -83,6 +83,11 @@ github.com/pmezard/go-difflib/difflib
 github.com/rs/zerolog
 github.com/rs/zerolog/internal/cbor
 github.com/rs/zerolog/internal/json
+# github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
+## explicit
+github.com/skip2/go-qrcode
+github.com/skip2/go-qrcode/bitset
+github.com/skip2/go-qrcode/reedsolomon
 # github.com/smira/go-statsd v1.3.2
 ## explicit
 github.com/smira/go-statsd
@@ -107,20 +112,19 @@ go.opentelemetry.io/otel/metric/number
 go.opentelemetry.io/otel/metric/registry
 # go.opentelemetry.io/otel/trace v0.19.0
 go.opentelemetry.io/otel/trace
-# golang.org/x/crypto v0.0.0-20210415154028-4f45737414dc
+# golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b
 ## explicit
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/pbkdf2
-# golang.org/x/net v0.0.0-20210420210106-798c2154c571
-## explicit
+# golang.org/x/net v0.0.0-20210421230115-4e50805a0758
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/trace
-# golang.org/x/sys v0.0.0-20210420205809-ac73e9fd8988
+# golang.org/x/sys v0.0.0-20210423082822-04245dca01da
 ## explicit
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
@@ -138,7 +142,8 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# google.golang.org/genproto v0.0.0-20210420162539-3c870d7478d2
+# google.golang.org/genproto v0.0.0-20210423144448-3a41ef94ed2b
+## explicit
 google.golang.org/genproto/googleapis/api/annotations
 google.golang.org/genproto/googleapis/api/httpbody
 google.golang.org/genproto/googleapis/rpc/status

@@ -93,7 +93,8 @@ func (d *App) UpdateApp(ctx context.Context,
 	}
 
 	if req.App == nil {
-		return nil, status.Error(codes.InvalidArgument, req.Validate().Error())
+		return nil, status.Error(codes.InvalidArgument,
+			req.Validate(false).Error())
 	}
 	req.App.OrgId = sess.OrgID
 
@@ -117,7 +118,7 @@ func (d *App) UpdateApp(ctx context.Context,
 	}
 
 	// Validate after merge to support partial updates.
-	if err := req.Validate(); err != nil {
+	if err := req.Validate(false); err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
