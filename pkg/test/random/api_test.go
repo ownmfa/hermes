@@ -104,8 +104,6 @@ func TestApp(t *testing.T) {
 			require.NotEqual(t, a1, a2)
 			require.True(t, strings.HasPrefix(a1.Name, prefix))
 			require.True(t, strings.HasPrefix(a2.Name, prefix))
-			require.GreaterOrEqual(t, a1.Digits, int32(1))
-			require.GreaterOrEqual(t, a2.Digits, int32(1))
 		})
 	}
 }

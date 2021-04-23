@@ -80,7 +80,7 @@ func New(cfg *config.Config) (*API, error) {
 		interceptor.Auth(skipAuth, cfg.PWTKey, c),
 		interceptor.Validate(skipValidate),
 	))
-	api.RegisterAppServiceServer(srv, service.NewApp(app.NewDAO(pg)))
+	api.RegisterAppIdentityServiceServer(srv, service.NewApp(app.NewDAO(pg)))
 	api.RegisterOrgServiceServer(srv, service.NewOrg(org.NewDAO(pg)))
 	api.RegisterSessionServiceServer(srv, service.NewSession(user.NewDAO(pg),
 		key.NewDAO(pg), c, cfg.PWTKey))
@@ -93,8 +93,8 @@ func New(cfg *config.Config) (*API, error) {
 		grpc.WithInsecure(),
 	}
 
-	// App.
-	if err := api.RegisterAppServiceHandlerFromEndpoint(ctx, gwMux,
+	// App and Identity.
+	if err := api.RegisterAppIdentityServiceHandlerFromEndpoint(ctx, gwMux,
 		GRPCHost+GRPCPort, opts); err != nil {
 		cancel()
 

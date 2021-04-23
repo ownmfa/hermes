@@ -26,7 +26,7 @@ func TestCreateApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		appCli := api.NewAppServiceClient(globalAdminGRPCConn)
+		appCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		createApp, err := appCli.CreateApp(ctx,
 			&api.CreateAppRequest{App: app})
 		t.Logf("createApp, err: %+v, %v", createApp, err)
@@ -44,7 +44,7 @@ func TestCreateApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		appCli := api.NewAppServiceClient(secondaryViewerGRPCConn)
+		appCli := api.NewAppIdentityServiceClient(secondaryViewerGRPCConn)
 		createApp, err := appCli.CreateApp(ctx, &api.CreateAppRequest{
 			App: random.App("api-app", uuid.NewString()),
 		})
@@ -63,7 +63,7 @@ func TestCreateApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		appCli := api.NewAppServiceClient(globalAdminGRPCConn)
+		appCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		createApp, err := appCli.CreateApp(ctx,
 			&api.CreateAppRequest{App: app})
 		t.Logf("createApp, err: %+v, %v", createApp, err)
@@ -83,7 +83,7 @@ func TestGetApp(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 	defer cancel()
 
-	appCli := api.NewAppServiceClient(globalAdminGRPCConn)
+	appCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 	createApp, err := appCli.CreateApp(ctx,
 		&api.CreateAppRequest{App: app})
 	t.Logf("createApp, err: %+v, %v", createApp, err)
@@ -95,7 +95,7 @@ func TestGetApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		appCli := api.NewAppServiceClient(globalAdminGRPCConn)
+		appCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		getApp, err := appCli.GetApp(ctx,
 			&api.GetAppRequest{Id: createApp.Id})
 		t.Logf("getApp, err: %+v, %v", getApp, err)
@@ -114,7 +114,7 @@ func TestGetApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		appCli := api.NewAppServiceClient(globalAdminGRPCConn)
+		appCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		getApp, err := appCli.GetApp(ctx,
 			&api.GetAppRequest{Id: uuid.NewString()})
 		t.Logf("getApp, err: %+v, %v", getApp, err)
@@ -129,7 +129,7 @@ func TestGetApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		secCli := api.NewAppServiceClient(secondaryAdminGRPCConn)
+		secCli := api.NewAppIdentityServiceClient(secondaryAdminGRPCConn)
 		getApp, err := secCli.GetApp(ctx,
 			&api.GetAppRequest{Id: createApp.Id})
 		t.Logf("getApp, err: %+v, %v", getApp, err)
@@ -150,7 +150,7 @@ func TestUpdateApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		appCli := api.NewAppServiceClient(globalAdminGRPCConn)
+		appCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		createApp, err := appCli.CreateApp(ctx,
 			&api.CreateAppRequest{App: app})
 		t.Logf("createApp, err: %+v, %v", createApp, err)
@@ -189,7 +189,7 @@ func TestUpdateApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		appCli := api.NewAppServiceClient(globalAdminKeyGRPCConn)
+		appCli := api.NewAppIdentityServiceClient(globalAdminKeyGRPCConn)
 		createApp, err := appCli.CreateApp(ctx,
 			&api.CreateAppRequest{App: app})
 		t.Logf("createApp, err: %+v, %v", createApp, err)
@@ -229,7 +229,7 @@ func TestUpdateApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		appCli := api.NewAppServiceClient(globalAdminGRPCConn)
+		appCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		updateApp, err := appCli.UpdateApp(ctx,
 			&api.UpdateAppRequest{App: nil})
 		t.Logf("updateApp, err: %+v, %v", updateApp, err)
@@ -244,7 +244,7 @@ func TestUpdateApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		appCli := api.NewAppServiceClient(secondaryViewerGRPCConn)
+		appCli := api.NewAppIdentityServiceClient(secondaryViewerGRPCConn)
 		updateApp, err := appCli.UpdateApp(ctx, &api.UpdateAppRequest{
 			App: random.App("api-app", uuid.NewString()),
 		})
@@ -260,7 +260,7 @@ func TestUpdateApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		appCli := api.NewAppServiceClient(secondaryViewerKeyGRPCConn)
+		appCli := api.NewAppIdentityServiceClient(secondaryViewerKeyGRPCConn)
 		updateApp, err := appCli.UpdateApp(ctx, &api.UpdateAppRequest{
 			App: random.App("api-app", uuid.NewString()),
 		})
@@ -278,7 +278,7 @@ func TestUpdateApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		appCli := api.NewAppServiceClient(globalAdminGRPCConn)
+		appCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		updateApp, err := appCli.UpdateApp(ctx, &api.UpdateAppRequest{
 			App: app, UpdateMask: &fieldmaskpb.FieldMask{
 				Paths: []string{"aaa"},
@@ -298,7 +298,7 @@ func TestUpdateApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		appCli := api.NewAppServiceClient(globalAdminGRPCConn)
+		appCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		updateApp, err := appCli.UpdateApp(ctx, &api.UpdateAppRequest{
 			App: app, UpdateMask: &fieldmaskpb.FieldMask{
 				Paths: []string{"name"},
@@ -318,7 +318,7 @@ func TestUpdateApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		appCli := api.NewAppServiceClient(globalAdminGRPCConn)
+		appCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		updateApp, err := appCli.UpdateApp(ctx,
 			&api.UpdateAppRequest{App: app})
 		t.Logf("updateApp, err: %+v, %v", updateApp, err)
@@ -335,7 +335,7 @@ func TestUpdateApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		appCli := api.NewAppServiceClient(globalAdminGRPCConn)
+		appCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		createApp, err := appCli.CreateApp(ctx,
 			&api.CreateAppRequest{App: app})
 		t.Logf("createApp, err: %+v, %v", createApp, err)
@@ -345,7 +345,7 @@ func TestUpdateApp(t *testing.T) {
 		createApp.OrgId = uuid.NewString()
 		createApp.Name = "api-app-" + random.String(10)
 
-		secCli := api.NewAppServiceClient(secondaryAdminGRPCConn)
+		secCli := api.NewAppIdentityServiceClient(secondaryAdminGRPCConn)
 		updateApp, err := secCli.UpdateApp(ctx,
 			&api.UpdateAppRequest{App: createApp})
 		t.Logf("updateApp, err: %+v, %v", updateApp, err)
@@ -362,7 +362,7 @@ func TestUpdateApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		appCli := api.NewAppServiceClient(globalAdminGRPCConn)
+		appCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		createApp, err := appCli.CreateApp(ctx,
 			&api.CreateAppRequest{App: app})
 		t.Logf("createApp, err: %+v, %v", createApp, err)
@@ -393,7 +393,7 @@ func TestDeleteApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		appCli := api.NewAppServiceClient(globalAdminGRPCConn)
+		appCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		createApp, err := appCli.CreateApp(ctx,
 			&api.CreateAppRequest{App: app})
 		t.Logf("createApp, err: %+v, %v", createApp, err)
@@ -411,7 +411,7 @@ func TestDeleteApp(t *testing.T) {
 				testTimeout)
 			defer cancel()
 
-			appCli := api.NewAppServiceClient(globalAdminKeyGRPCConn)
+			appCli := api.NewAppIdentityServiceClient(globalAdminKeyGRPCConn)
 			getApp, err := appCli.GetApp(ctx,
 				&api.GetAppRequest{Id: createApp.Id})
 			t.Logf("getApp, err: %+v, %v", getApp, err)
@@ -427,7 +427,7 @@ func TestDeleteApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		appCli := api.NewAppServiceClient(secondaryViewerGRPCConn)
+		appCli := api.NewAppIdentityServiceClient(secondaryViewerGRPCConn)
 		_, err := appCli.DeleteApp(ctx,
 			&api.DeleteAppRequest{Id: uuid.NewString()})
 		t.Logf("err: %v", err)
@@ -441,7 +441,7 @@ func TestDeleteApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		appCli := api.NewAppServiceClient(globalAdminGRPCConn)
+		appCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		_, err := appCli.DeleteApp(ctx,
 			&api.DeleteAppRequest{Id: uuid.NewString()})
 		t.Logf("err: %v", err)
@@ -457,13 +457,13 @@ func TestDeleteApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		appCli := api.NewAppServiceClient(globalAdminGRPCConn)
+		appCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		createApp, err := appCli.CreateApp(ctx,
 			&api.CreateAppRequest{App: app})
 		t.Logf("createApp, err: %+v, %v", createApp, err)
 		require.NoError(t, err)
 
-		secCli := api.NewAppServiceClient(secondaryAdminGRPCConn)
+		secCli := api.NewAppIdentityServiceClient(secondaryAdminGRPCConn)
 		_, err = secCli.DeleteApp(ctx,
 			&api.DeleteAppRequest{Id: createApp.Id})
 		t.Logf("err: %v", err)
@@ -483,7 +483,7 @@ func TestListApps(t *testing.T) {
 	for i := 0; i < 3; i++ {
 		app := random.App("api-app", uuid.NewString())
 
-		appCli := api.NewAppServiceClient(globalAdminGRPCConn)
+		appCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		createApp, err := appCli.CreateApp(ctx,
 			&api.CreateAppRequest{App: app})
 		t.Logf("createApp, err: %+v, %v", createApp, err)
@@ -499,7 +499,7 @@ func TestListApps(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		appCli := api.NewAppServiceClient(globalAdminGRPCConn)
+		appCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		listApps, err := appCli.ListApps(ctx, &api.ListAppsRequest{})
 		t.Logf("listApps, err: %+v, %v", listApps, err)
 		require.NoError(t, err)
@@ -522,7 +522,7 @@ func TestListApps(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		appCli := api.NewAppServiceClient(globalAdminKeyGRPCConn)
+		appCli := api.NewAppIdentityServiceClient(globalAdminKeyGRPCConn)
 		listApps, err := appCli.ListApps(ctx,
 			&api.ListAppsRequest{PageSize: 2})
 		t.Logf("listApps, err: %+v, %v", listApps, err)
@@ -546,7 +546,7 @@ func TestListApps(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		secCli := api.NewAppServiceClient(secondaryAdminGRPCConn)
+		secCli := api.NewAppIdentityServiceClient(secondaryAdminGRPCConn)
 		listApps, err := secCli.ListApps(ctx, &api.ListAppsRequest{})
 		t.Logf("listApps, err: %+v, %v", listApps, err)
 		require.NoError(t, err)
@@ -560,7 +560,7 @@ func TestListApps(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		appCli := api.NewAppServiceClient(globalAdminGRPCConn)
+		appCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		listApps, err := appCli.ListApps(ctx,
 			&api.ListAppsRequest{PageToken: badUUID})
 		t.Logf("listApps, err: %+v, %v", listApps, err)

@@ -14,14 +14,13 @@ require (
 	github.com/jackc/pgproto3/v2 v2.0.7 // indirect
 	github.com/jackc/pgx/v4 v4.11.0
 	github.com/mennanov/fmutils v0.1.0
-	github.com/ownmfa/api/go v0.0.0-20210422232316-bf51b7c6a981
+	github.com/ownmfa/api/go v0.0.0-20210423193834-a678e3e717f6
 	github.com/rs/zerolog v1.21.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/smira/go-statsd v1.3.2
 	github.com/stretchr/testify v1.7.0
+	go.opentelemetry.io/otel v0.20.0 // indirect
 	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b
-	golang.org/x/sys v0.0.0-20210423082822-04245dca01da // indirect
-	google.golang.org/genproto v0.0.0-20210423144448-3a41ef94ed2b // indirect
 	google.golang.org/grpc v1.37.0
 	google.golang.org/protobuf v1.26.0
 )
