@@ -31,7 +31,7 @@ type Apper interface {
 
 // App service contains functions to query and modify apps.
 type App struct {
-	api.UnimplementedAppServiceServer
+	api.UnimplementedAppIdentityServiceServer
 
 	appDAO Apper
 }

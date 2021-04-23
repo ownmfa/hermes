@@ -225,11 +225,9 @@ func TestUpdateApp(t *testing.T) {
 
 		app := random.App("api-app", uuid.NewString())
 		retApp, _ := proto.Clone(app).(*api.App)
-		part := &api.App{
-			Id: app.Id, Name: random.String(10), Digits: 6,
-		}
+		part := &api.App{Id: app.Id, Name: random.String(10)}
 		merged := &api.App{
-			Id: app.Id, OrgId: app.OrgId, Name: part.Name, Digits: part.Digits,
+			Id: app.Id, OrgId: app.OrgId, Name: part.Name,
 			SubjectTemplate:  app.SubjectTemplate,
 			TextBodyTemplate: app.TextBodyTemplate,
 			HtmlBodyTemplate: app.HtmlBodyTemplate,
@@ -251,7 +249,7 @@ func TestUpdateApp(t *testing.T) {
 		appSvc := NewApp(apper)
 		updateApp, err := appSvc.UpdateApp(ctx, &api.UpdateAppRequest{
 			App: part, UpdateMask: &fieldmaskpb.FieldMask{
-				Paths: []string{"name", "digits"},
+				Paths: []string{"name"},
 			},
 		})
 		t.Logf("merged, updateApp, err: %+v, %+v, %v", merged, updateApp, err)

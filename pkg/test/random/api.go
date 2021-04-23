@@ -57,7 +57,6 @@ func App(prefix, orgID string) *api.App {
 		Id:               uuid.NewString(),
 		OrgId:            orgID,
 		Name:             prefix + "-" + String(10),
-		Digits:           int32(Intn(3) + 6),
 		SubjectTemplate:  `{{displayName}} verification code`,
 		TextBodyTemplate: `Your {{displayName}} verification code is: 1234567`,
 		HtmlBodyTemplate: []byte(`<html><body>Your {{displayName}} ` +
