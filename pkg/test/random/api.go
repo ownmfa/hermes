@@ -9,10 +9,8 @@ import (
 // Org generates a random org with prefixed identifiers.
 func Org(prefix string) *api.Org {
 	return &api.Org{
-		Id:          uuid.NewString(),
-		Name:        prefix + "-" + String(10),
-		DisplayName: prefix + "-" + String(10),
-		Email:       prefix + "-" + Email(),
+		Id:   uuid.NewString(),
+		Name: prefix + "-" + String(10),
 	}
 }
 
@@ -57,6 +55,8 @@ func App(prefix, orgID string) *api.App {
 		Id:               uuid.NewString(),
 		OrgId:            orgID,
 		Name:             prefix + "-" + String(10),
+		DisplayName:      prefix + "-" + String(10),
+		Email:            prefix + "-" + Email(),
 		SubjectTemplate:  `{{displayName}} verification code`,
 		TextBodyTemplate: `Your {{displayName}} verification code is: 1234567`,
 		HtmlBodyTemplate: []byte(`<html><body>Your {{displayName}} ` +

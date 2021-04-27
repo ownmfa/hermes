@@ -29,7 +29,7 @@ func (d *DAO) Create(ctx context.Context,
 	identity.CreatedAt = timestamppb.New(now)
 	identity.UpdatedAt = timestamppb.New(now)
 
-	alg, otp, retSecret, err := methodToOTP(identity)
+	otp, retSecret, err := methodToOTP(identity)
 	if err != nil {
 		return nil, nil, false, dao.DBToSentinel(err)
 	}
@@ -40,9 +40,9 @@ func (d *DAO) Create(ctx context.Context,
 	}
 
 	if err := d.pg.QueryRowContext(ctx, createIdentity, identity.OrgId,
-		identity.AppId, identity.Comment, identity.Status.String(), alg,
-		hashCryptoToAPI[otp.Hash].String(), otp.Digits, secretEnc,
-		now).Scan(&identity.Id); err != nil {
+		identity.AppId, identity.Comment, identity.Status.String(),
+		otp.Algorithm, hashCryptoToAPI[otp.Hash].String(), otp.Digits,
+		secretEnc, now).Scan(&identity.Id); err != nil {
 		return nil, nil, false, dao.DBToSentinel(err)
 	}
 

@@ -15,10 +15,12 @@ import (
 )
 
 const (
-	ErrHashSupport consterr.Error = "oath: unsupported hash function"
-	ErrDigitsRange consterr.Error = "oath: digits outside supported range"
-	ErrKeyLength   consterr.Error = "oath: insufficient key length"
-	errUnknownAlg  consterr.Error = "oath: unknown OATH algorithm"
+	HOTP                string         = "hotp"
+	TOTP                string         = "totp"
+	ErrUnknownAlgorithm consterr.Error = "oath: unknown OATH algorithm"
+	ErrHashSupport      consterr.Error = "oath: unsupported hash function"
+	ErrDigitsRange      consterr.Error = "oath: digits outside supported range"
+	ErrKeyLength        consterr.Error = "oath: insufficient key length"
 	//#nosec G101 // false positive for hardcoded credentials
 	ErrInvalidPasscode consterr.Error = "oath: invalid passcode"
 	period             int            = 30
@@ -27,9 +29,11 @@ const (
 // OTP represents a one-time password generator, and is compatible with both
 // HOTP and TOTP algorithms. It uses a fixed time period of 30 seconds.
 type OTP struct {
-	Hash   crypto.Hash
-	Digits int
-	Key    []byte
+	Algorithm   string
+	Hash        crypto.Hash
+	Digits      int
+	Key         []byte
+	AccountName string
 }
 
 // Secret returns the key in base32 format without padding.
@@ -41,6 +45,13 @@ func (o *OTP) Secret() string {
 
 // validate validates OTP fields.
 func (o *OTP) validate() error {
+	switch o.Algorithm {
+	case HOTP, TOTP:
+		break
+	default:
+		return ErrUnknownAlgorithm
+	}
+
 	switch o.Hash {
 	case crypto.SHA1, crypto.SHA256, crypto.SHA512:
 		break
@@ -59,14 +70,13 @@ func (o *OTP) validate() error {
 	return nil
 }
 
-// uri generates a key URI in Google Authenticator-compatible format. The value
-// of oathAlg should be either "hotp" or "totp".
+// uri generates a key URI in Google Authenticator-compatible format.
 //
 // https://github.com/google/google-authenticator/wiki/Key-Uri-Format
 //
 // Example:
 // otpauth://totp/Example:alice@google.com?secret=JBSW...&issuer=Example
-func (o *OTP) uri(oathAlg, issuer, username string) (string, error) {
+func (o *OTP) uri(issuer string) (string, error) {
 	if err := o.validate(); err != nil {
 		return "", err
 	}
@@ -79,20 +89,19 @@ func (o *OTP) uri(oathAlg, issuer, username string) (string, error) {
 	vals.Set("algorithm", strings.ReplaceAll(o.Hash.String(), "-", ""))
 	vals.Set("digits", strconv.Itoa(o.Digits))
 
-	switch oathAlg {
-	case "hotp":
+	switch o.Algorithm {
+	case HOTP:
 		vals.Set("counter", strconv.Itoa(0))
-	case "totp":
+	case TOTP:
 		vals.Set("period", strconv.Itoa(period))
-	default:
-		return "", errUnknownAlg
 	}
 
 	uri := url.URL{
 		Scheme: "otpauth",
-		Host:   oathAlg,
+		Host:   o.Algorithm,
 		// Issuer in path will be automatically percent-encoded by uri.String().
-		Path:     fmt.Sprintf("%s:%s", issuer, username),
+		Path: strings.TrimSuffix(fmt.Sprintf("%s:%s", issuer, o.AccountName),
+			":"),
 		RawQuery: vals.Encode(),
 	}
 
@@ -101,9 +110,9 @@ func (o *OTP) uri(oathAlg, issuer, username string) (string, error) {
 }
 
 // QR generates a key QR code, in Google Authenticator-compatible format, as a
-// PNG image. The value of keyType should be either "hotp" or "totp".
-func (o *OTP) QR(keyType, issuer, username string) ([]byte, error) {
-	uri, err := o.uri(keyType, issuer, username)
+// PNG image.
+func (o *OTP) QR(issuer string) ([]byte, error) {
+	uri, err := o.uri(issuer)
 	if err != nil {
 		return nil, err
 	}

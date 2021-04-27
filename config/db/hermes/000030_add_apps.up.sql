@@ -2,6 +2,8 @@ CREATE TABLE apps (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   org_id uuid NOT NULL REFERENCES orgs (id),
   name varchar(40) NOT NULL,
+  display_name varchar(80) NOT NULL,
+  email varchar(80) NOT NULL,
   subject_template varchar(1024) NOT NULL,
   text_body_template varchar(4096) NOT NULL,
   html_body_template bytea CHECK (octet_length(html_body_template) <= 4096),

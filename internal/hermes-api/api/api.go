@@ -12,13 +12,14 @@ import (
 	"github.com/NYTimes/gziphandler"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/ownmfa/api/go/api"
-	"github.com/ownmfa/hermes/internal/api/config"
-	"github.com/ownmfa/hermes/internal/api/interceptor"
-	"github.com/ownmfa/hermes/internal/api/service"
+	"github.com/ownmfa/hermes/internal/hermes-api/config"
+	"github.com/ownmfa/hermes/internal/hermes-api/interceptor"
+	"github.com/ownmfa/hermes/internal/hermes-api/service"
 	"github.com/ownmfa/hermes/pkg/cache"
 	"github.com/ownmfa/hermes/pkg/consterr"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/dao/app"
+	"github.com/ownmfa/hermes/pkg/dao/identity"
 	"github.com/ownmfa/hermes/pkg/dao/key"
 	"github.com/ownmfa/hermes/pkg/dao/org"
 	"github.com/ownmfa/hermes/pkg/dao/user"
@@ -35,7 +36,8 @@ const (
 	GRPCPort    = ":50051"
 	httpPort    = ":8000"
 
-	errPWTLength consterr.Error = "pwt key must be 32 bytes"
+	errPWTLength      consterr.Error = "pwt key must be 32 bytes"
+	errIdentityLength consterr.Error = "identity key must be 32 bytes"
 )
 
 // API holds references to the gRPC and HTTP servers.
@@ -50,6 +52,10 @@ func New(cfg *config.Config) (*API, error) {
 	// Validate Config.
 	if len(cfg.PWTKey) != 32 {
 		return nil, errPWTLength
+	}
+
+	if len(cfg.IdentityKey) != 32 {
+		return nil, errIdentityLength
 	}
 
 	// Set up database connection.
@@ -80,7 +86,9 @@ func New(cfg *config.Config) (*API, error) {
 		interceptor.Auth(skipAuth, cfg.PWTKey, c),
 		interceptor.Validate(skipValidate),
 	))
-	api.RegisterAppIdentityServiceServer(srv, service.NewApp(app.NewDAO(pg)))
+	api.RegisterAppIdentityServiceServer(srv,
+		service.NewAppIdentity(app.NewDAO(pg), identity.NewDAO(pg,
+			cfg.IdentityKey)))
 	api.RegisterOrgServiceServer(srv, service.NewOrg(org.NewDAO(pg)))
 	api.RegisterSessionServiceServer(srv, service.NewSession(user.NewDAO(pg),
 		key.NewDAO(pg), c, cfg.PWTKey))

@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/api/go/common"
-	"github.com/ownmfa/hermes/internal/api/session"
+	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/test/matcher"
 	"github.com/ownmfa/hermes/pkg/test/random"
@@ -222,10 +222,7 @@ func TestUpdateOrg(t *testing.T) {
 		org := random.Org("api-org")
 		retOrg, _ := proto.Clone(org).(*api.Org)
 		part := &api.Org{Id: org.Id, Name: random.String(10)}
-		merged := &api.Org{
-			Id: org.Id, Name: part.Name, DisplayName: org.DisplayName,
-			Email: org.Email,
-		}
+		merged := &api.Org{Id: org.Id, Name: part.Name}
 		retMerged, _ := proto.Clone(merged).(*api.Org)
 
 		orger := NewMockOrger(gomock.NewController(t))

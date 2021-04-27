@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/ownmfa/hermes/internal/api/api"
-	"github.com/ownmfa/hermes/internal/api/config"
+	"github.com/ownmfa/hermes/internal/hermes-api/api"
+	"github.com/ownmfa/hermes/internal/hermes-api/config"
 	"github.com/ownmfa/hermes/pkg/hlog"
 	"github.com/ownmfa/hermes/pkg/metric"
 )

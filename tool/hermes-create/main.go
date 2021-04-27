@@ -82,11 +82,7 @@ func main() {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 
-		createOrg, err := orgDAO.Create(ctx, &api.Org{
-			Name:        flag.Arg(1),
-			DisplayName: strings.Title(strings.ToLower(flag.Arg(1))),
-			Email:       "noreply@" + emailParts[1],
-		})
+		createOrg, err := orgDAO.Create(ctx, &api.Org{Name: flag.Arg(1)})
 		checkErr(err)
 		orgID = createOrg.Id
 		fmt.Fprintf(os.Stdout, "Org: %+v\n", createOrg)

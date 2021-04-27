@@ -10,8 +10,6 @@ import (
 
 const (
 	defaultDigits = 7
-	algHOTP       = "hotp"
-	algTOTP       = "totp"
 )
 
 // hashAPIToCrypto maps an api.Hash to a crypto.Hash.
@@ -28,29 +26,30 @@ var hashCryptoToAPI = map[crypto.Hash]api.Hash{
 	crypto.SHA1:   api.Hash_SHA1,
 }
 
-// methodToOTP converts an Identity MethodOneof into an algorithm, OTP, and bool
+// methodToOTP converts an Identity MethodOneof into an OTP and bool
 // representing whether the OTP secret and QR should be returned.
-func methodToOTP(identity *api.Identity) (string, *oath.OTP, bool, error) {
+func methodToOTP(identity *api.Identity) (*oath.OTP, bool, error) {
 	secret := make([]byte, 32)
 	if _, err := rand.Read(secret); err != nil {
-		return "", nil, false, err
+		return nil, false, err
 	}
 
-	alg := algHOTP
-	otp := &oath.OTP{Key: secret}
+	otp := &oath.OTP{Algorithm: oath.HOTP, Key: secret}
 	retSecret := true
 
 	switch m := identity.MethodOneof.(type) {
 	case *api.Identity_SoftwareHotpMethod:
 		otp.Hash = hashAPIToCrypto[m.SoftwareHotpMethod.Hash]
+		otp.AccountName = m.SoftwareHotpMethod.AccountName
 
 		if m.SoftwareHotpMethod.Digits == 0 {
 			m.SoftwareHotpMethod.Digits = defaultDigits
 		}
 		otp.Digits = int(m.SoftwareHotpMethod.Digits)
 	case *api.Identity_SoftwareTotpMethod:
-		alg = algTOTP
+		otp.Algorithm = oath.TOTP
 		otp.Hash = hashAPIToCrypto[m.SoftwareTotpMethod.Hash]
+		otp.AccountName = m.SoftwareTotpMethod.AccountName
 
 		if m.SoftwareTotpMethod.Digits == 0 {
 			m.SoftwareTotpMethod.Digits = defaultDigits
@@ -59,14 +58,17 @@ func methodToOTP(identity *api.Identity) (string, *oath.OTP, bool, error) {
 	case *api.Identity_GoogleAuthHotpMethod:
 		otp.Hash = crypto.SHA512
 		otp.Digits = defaultDigits
+		otp.AccountName = m.GoogleAuthHotpMethod.AccountName
 	case *api.Identity_GoogleAuthTotpMethod:
-		alg = algTOTP
+		otp.Algorithm = oath.TOTP
 		otp.Hash = crypto.SHA512
 		otp.Digits = defaultDigits
+		otp.AccountName = m.GoogleAuthTotpMethod.AccountName
 	case *api.Identity_MicrosoftAuthTotpMethod:
-		alg = algTOTP
+		otp.Algorithm = oath.TOTP
 		otp.Hash = crypto.SHA1
 		otp.Digits = 6
+		otp.AccountName = m.MicrosoftAuthTotpMethod.AccountName
 	case *api.Identity_HardwareHotpMethod:
 		otp.Hash = hashAPIToCrypto[m.HardwareHotpMethod.Hash]
 		otp.Digits = int(m.HardwareHotpMethod.Digits)
@@ -76,7 +78,7 @@ func methodToOTP(identity *api.Identity) (string, *oath.OTP, bool, error) {
 
 		retSecret = false
 	case *api.Identity_HardwareTotpMethod:
-		alg = algTOTP
+		otp.Algorithm = oath.TOTP
 		otp.Hash = hashAPIToCrypto[m.HardwareTotpMethod.Hash]
 		otp.Digits = int(m.HardwareTotpMethod.Digits)
 
@@ -86,33 +88,35 @@ func methodToOTP(identity *api.Identity) (string, *oath.OTP, bool, error) {
 		retSecret = false
 	}
 
-	return alg, otp, retSecret, nil
+	return otp, retSecret, nil
 }
 
 // otpToMethod modifies an Identity MethodOneof in-place based on an algorithm,
 // api.Hash, and digits.
-func otpToMethod(identity *api.Identity, alg string, hash api.Hash,
+func otpToMethod(identity *api.Identity, algorithm string, hash api.Hash,
 	digits int32) {
 	switch {
-	case alg == algHOTP && hash == api.Hash_SHA512 && digits == defaultDigits:
+	case algorithm == oath.HOTP && hash == api.Hash_SHA512 &&
+		digits == defaultDigits:
 		identity.MethodOneof = &api.Identity_GoogleAuthHotpMethod{
 			GoogleAuthHotpMethod: &api.GoogleAuthHOTPMethod{},
 		}
-	case alg == algTOTP && hash == api.Hash_SHA512 && digits == defaultDigits:
+	case algorithm == oath.TOTP && hash == api.Hash_SHA512 &&
+		digits == defaultDigits:
 		identity.MethodOneof = &api.Identity_GoogleAuthTotpMethod{
 			GoogleAuthTotpMethod: &api.GoogleAuthTOTPMethod{},
 		}
-	case alg == algTOTP && hash == api.Hash_SHA1 && digits == 6:
+	case algorithm == oath.TOTP && hash == api.Hash_SHA1 && digits == 6:
 		identity.MethodOneof = &api.Identity_MicrosoftAuthTotpMethod{
 			MicrosoftAuthTotpMethod: &api.MicrosoftAuthTOTPMethod{},
 		}
-	case alg == algHOTP:
+	case algorithm == oath.HOTP:
 		identity.MethodOneof = &api.Identity_SoftwareHotpMethod{
 			SoftwareHotpMethod: &api.SoftwareHOTPMethod{
 				Hash: hash, Digits: digits,
 			},
 		}
-	case alg == algTOTP:
+	case algorithm == oath.TOTP:
 		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{
 			SoftwareTotpMethod: &api.SoftwareTOTPMethod{
 				Hash: hash, Digits: digits,

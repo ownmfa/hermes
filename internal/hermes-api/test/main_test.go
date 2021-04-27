@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/ownmfa/api/go/common"
-	"github.com/ownmfa/hermes/internal/api/api"
-	"github.com/ownmfa/hermes/internal/api/config"
+	"github.com/ownmfa/hermes/internal/hermes-api/api"
+	"github.com/ownmfa/hermes/internal/hermes-api/config"
 	"github.com/ownmfa/hermes/pkg/crypto"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/dao/org"
@@ -58,6 +58,7 @@ func TestMain(m *testing.M) {
 	cfg.RedisHost = testConfig.RedisHost
 
 	cfg.PWTKey = key
+	cfg.IdentityKey = key
 
 	// Set up API.
 	a, err := api.New(cfg)

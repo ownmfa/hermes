@@ -36,18 +36,20 @@ func TestValidate(t *testing.T) {
 	require.NoError(t, err)
 
 	tests := []struct {
+		inpAlg    string
 		inpHash   crypto.Hash
 		inpDigits int
 		inpKey    []byte
 		err       error
 	}{
-		{crypto.SHA1, random.Intn(5) + 6, key, nil},
-		{crypto.SHA256, random.Intn(5) + 6, key, nil},
-		{crypto.SHA512, random.Intn(5) + 6, key, nil},
-		{crypto.MD5, 7, key, ErrHashSupport},
-		{crypto.SHA1, 7, nil, ErrKeyLength},
-		{crypto.SHA256, 5, key, ErrDigitsRange},
-		{crypto.SHA512, 11, key, ErrDigitsRange},
+		{HOTP, crypto.SHA1, random.Intn(5) + 6, key, nil},
+		{TOTP, crypto.SHA256, random.Intn(5) + 6, key, nil},
+		{HOTP, crypto.SHA512, random.Intn(5) + 6, key, nil},
+		{"", crypto.SHA512, 7, key, ErrUnknownAlgorithm},
+		{TOTP, crypto.MD5, 7, key, ErrHashSupport},
+		{HOTP, crypto.SHA1, 7, nil, ErrKeyLength},
+		{TOTP, crypto.SHA256, 5, key, ErrDigitsRange},
+		{HOTP, crypto.SHA512, 11, key, ErrDigitsRange},
 	}
 
 	for _, test := range tests {
@@ -57,7 +59,8 @@ func TestValidate(t *testing.T) {
 			t.Parallel()
 
 			otp := &OTP{
-				Hash: lTest.inpHash, Key: lTest.inpKey, Digits: lTest.inpDigits,
+				Algorithm: lTest.inpAlg, Hash: lTest.inpHash, Key: lTest.inpKey,
+				Digits: lTest.inpDigits,
 			}
 
 			err := otp.validate()
@@ -77,38 +80,35 @@ func TestUri(t *testing.T) {
 	b32Key := "W5WF3IGXDNLEN3JYWSBVGLG62JRC2BZKLULVAMFWKQAWTNZYBVMA"
 
 	issuer := random.String(10)
-	username := random.Email()
+	email := random.Email()
 
 	tests := []struct {
-		inpHash     crypto.Hash
-		inpDigits   int
-		inpKey      []byte
-		inpAlg      string
-		inpIssuer   string
-		inpUsername string
-		res         string
-		err         error
+		inpAlg     string
+		inpHash    crypto.Hash
+		inpDigits  int
+		inpKey     []byte
+		inpIssuer  string
+		inpAccount string
+		res        string
+		err        error
 	}{
 		{
-			crypto.SHA1, 6, key, "hotp", issuer, username, "otpauth://hotp/" +
-				issuer + ":" + username + "?algorithm=SHA1&counter=0&digits=6" +
+			HOTP, crypto.SHA1, 6, key, issuer, email, "otpauth://hotp/" +
+				issuer + ":" + email + "?algorithm=SHA1&counter=0&digits=6" +
 				"&issuer=" + issuer + "&secret=" + b32Key, nil,
 		},
 		{
-			crypto.SHA256, 7, key, "totp", issuer, username, "otpauth://totp/" +
-				issuer + ":" + username + "?algorithm=SHA256&digits=7&issuer=" +
+			TOTP, crypto.SHA256, 7, key, issuer, email, "otpauth://totp/" +
+				issuer + ":" + email + "?algorithm=SHA256&digits=7&issuer=" +
 				issuer + "&period=30&secret=" + b32Key, nil,
 		},
 		{
-			crypto.SHA512, 8, key, "hotp", "Company ABC", username,
-			"otpauth://hotp/Company%20ABC:" + username + "?algorithm=SHA512&" +
+			HOTP, crypto.SHA512, 8, key, "Company ABC", email,
+			"otpauth://hotp/Company%20ABC:" + email + "?algorithm=SHA512&" +
 				"counter=0&digits=8&issuer=Company%20ABC&secret=" + b32Key, nil,
 		},
 		{
-			crypto.SHA512, 7, nil, "", "", "", "", ErrKeyLength,
-		},
-		{
-			crypto.SHA512, 7, key, "unknown", "", "", "", errUnknownAlg,
+			TOTP, crypto.SHA512, 7, nil, "", "", "", ErrKeyLength,
 		},
 	}
 
@@ -119,11 +119,11 @@ func TestUri(t *testing.T) {
 			t.Parallel()
 
 			otp := &OTP{
-				Hash: lTest.inpHash, Key: lTest.inpKey, Digits: lTest.inpDigits,
+				Algorithm: lTest.inpAlg, Hash: lTest.inpHash, Key: lTest.inpKey,
+				Digits: lTest.inpDigits, AccountName: lTest.inpAccount,
 			}
 
-			res, err := otp.uri(lTest.inpAlg, lTest.inpIssuer,
-				lTest.inpUsername)
+			res, err := otp.uri(lTest.inpIssuer)
 			t.Logf("res, err: %v, %v", res, err)
 			require.Equal(t, lTest.res, res)
 			require.Equal(t, lTest.err, err)
@@ -143,21 +143,22 @@ func TestQR(t *testing.T) {
 	require.NoError(t, err)
 
 	issuer := random.String(10)
-	username := random.Email()
+	email := random.Email()
 
 	tests := []struct {
-		inpHash     crypto.Hash
-		inpDigits   int
-		inpKey      []byte
-		inpType     string
-		inpIssuer   string
-		inpUsername string
-		err         error
+		inpAlg     string
+		inpHash    crypto.Hash
+		inpDigits  int
+		inpKey     []byte
+		inpIssuer  string
+		inpAccount string
+		err        error
 	}{
-		{crypto.SHA1, 6, key, "hotp", issuer, username, nil},
-		{crypto.SHA256, 7, key, "totp", issuer, username, nil},
-		{crypto.SHA512, 8, key, "hotp", "Company ABC", username, nil},
-		{crypto.SHA512, 7, nil, "", "", "", ErrKeyLength},
+		{HOTP, crypto.SHA1, 6, key, issuer, email, nil},
+		{TOTP, crypto.SHA256, 7, key, issuer, email, nil},
+		{HOTP, crypto.SHA512, 8, key, "Company ABC", email, nil},
+		{HOTP, crypto.SHA512, 8, key, "Company ABC", "", nil},
+		{TOTP, crypto.SHA512, 7, nil, "", "", ErrKeyLength},
 	}
 
 	for _, test := range tests {
@@ -167,10 +168,11 @@ func TestQR(t *testing.T) {
 			t.Parallel()
 
 			otp := &OTP{
-				Hash: lTest.inpHash, Key: lTest.inpKey, Digits: lTest.inpDigits,
+				Algorithm: lTest.inpAlg, Hash: lTest.inpHash, Key: lTest.inpKey,
+				Digits: lTest.inpDigits, AccountName: lTest.inpAccount,
 			}
 
-			res, err := otp.QR(lTest.inpType, lTest.inpIssuer, lTest.inpUsername)
+			res, err := otp.QR(lTest.inpIssuer)
 			t.Logf("res, err: %x, %v", res, err)
 			if lTest.err == nil {
 				require.Greater(t, len(res), 800)

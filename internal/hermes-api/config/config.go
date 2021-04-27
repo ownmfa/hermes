@@ -14,7 +14,8 @@ type Config struct {
 	PgURI     string
 	RedisHost string
 
-	PWTKey []byte
+	PWTKey      []byte
+	IdentityKey []byte
 
 	NSQPubAddr  string
 	NSQPubTopic string
@@ -30,7 +31,8 @@ func New() *Config {
 			"postgres://postgres:postgres@127.0.0.1/hermes_test"),
 		RedisHost: config.String(pref+"REDIS_HOST", "127.0.0.1"),
 
-		PWTKey: config.ByteSlice(pref + "PWT_KEY"),
+		PWTKey:      config.ByteSlice(pref + "PWT_KEY"),
+		IdentityKey: config.ByteSlice(pref + "IDENTITY_KEY"),
 
 		NSQPubAddr:  config.String(pref+"NSQ_PUB_ADDR", "127.0.0.1:4150"),
 		NSQPubTopic: config.String(pref+"NSQ_PUB_TOPIC", "ValidatorIn"),
