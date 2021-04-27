@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ownmfa/hermes/internal/api/session"
+	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/crypto"
 )
 

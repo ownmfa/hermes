@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/api/go/common"
-	iapi "github.com/ownmfa/hermes/internal/api/api"
+	iapi "github.com/ownmfa/hermes/internal/hermes-api/api"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"google.golang.org/grpc"
 )

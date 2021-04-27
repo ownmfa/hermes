@@ -1,8 +1,6 @@
 CREATE TABLE orgs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name varchar(40) UNIQUE NOT NULL CHECK (name = lower(name)),
-  display_name varchar(80) NOT NULL,
-  email varchar(80) NOT NULL,
   created_at timestamptz NOT NULL,
   updated_at timestamptz NOT NULL
 );

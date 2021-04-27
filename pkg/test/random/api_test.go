@@ -29,10 +29,6 @@ func TestOrg(t *testing.T) {
 			require.NotEqual(t, o1, o2)
 			require.True(t, strings.HasPrefix(o1.Name, prefix))
 			require.True(t, strings.HasPrefix(o2.Name, prefix))
-			require.True(t, strings.HasPrefix(o1.DisplayName, prefix))
-			require.True(t, strings.HasPrefix(o2.DisplayName, prefix))
-			require.True(t, strings.HasPrefix(o1.Email, prefix))
-			require.True(t, strings.HasPrefix(o2.Email, prefix))
 		})
 	}
 }
@@ -104,6 +100,10 @@ func TestApp(t *testing.T) {
 			require.NotEqual(t, a1, a2)
 			require.True(t, strings.HasPrefix(a1.Name, prefix))
 			require.True(t, strings.HasPrefix(a2.Name, prefix))
+			require.True(t, strings.HasPrefix(a1.DisplayName, prefix))
+			require.True(t, strings.HasPrefix(a2.DisplayName, prefix))
+			require.True(t, strings.HasPrefix(a1.Email, prefix))
+			require.True(t, strings.HasPrefix(a2.Email, prefix))
 		})
 	}
 }

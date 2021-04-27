@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/ownmfa/hermes/internal/api/key"
-	"github.com/ownmfa/hermes/internal/api/session"
+	"github.com/ownmfa/hermes/internal/hermes-api/key"
+	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/cache"
 	"github.com/ownmfa/hermes/pkg/hlog"
 	"google.golang.org/grpc"

@@ -152,6 +152,8 @@ func TestUpdate(t *testing.T) {
 
 		// Update app fields.
 		createApp.Name = "dao-app-" + random.String(10)
+		createApp.DisplayName = "dao-app-" + random.String(10)
+		createApp.Email = "dao-app-" + random.Email()
 		updateApp, _ := proto.Clone(createApp).(*api.App)
 
 		updateApp, err = globalAppDAO.Update(ctx, updateApp)
@@ -159,6 +161,8 @@ func TestUpdate(t *testing.T) {
 			err)
 		require.NoError(t, err)
 		require.Equal(t, createApp.Name, updateApp.Name)
+		require.Equal(t, createApp.DisplayName, updateApp.DisplayName)
+		require.Equal(t, createApp.Email, updateApp.Email)
 		require.True(t, updateApp.UpdatedAt.AsTime().After(
 			updateApp.CreatedAt.AsTime()))
 		require.WithinDuration(t, createApp.CreatedAt.AsTime(),
@@ -307,6 +311,7 @@ func TestList(t *testing.T) {
 
 	appIDs := []string{}
 	appNames := []string{}
+	appEmails := []string{}
 	appTSes := []time.Time{}
 	for i := 0; i < 3; i++ {
 		createApp, err := globalAppDAO.Create(ctx, random.App("dao-app",
@@ -316,6 +321,7 @@ func TestList(t *testing.T) {
 
 		appIDs = append(appIDs, createApp.Id)
 		appNames = append(appNames, createApp.Name)
+		appEmails = append(appEmails, createApp.Email)
 		appTSes = append(appTSes, createApp.CreatedAt.AsTime())
 	}
 
@@ -336,7 +342,8 @@ func TestList(t *testing.T) {
 		var found bool
 		for _, app := range listApps {
 			if app.Id == appIDs[len(appIDs)-1] &&
-				app.Name == appNames[len(appNames)-1] {
+				app.Name == appNames[len(appNames)-1] &&
+				app.Email == appEmails[len(appEmails)-1] {
 				found = true
 			}
 		}
@@ -360,7 +367,8 @@ func TestList(t *testing.T) {
 		var found bool
 		for _, app := range listApps {
 			if app.Id == appIDs[len(appIDs)-1] &&
-				app.Name == appNames[len(appNames)-1] {
+				app.Name == appNames[len(appNames)-1] &&
+				app.Email == appEmails[len(appEmails)-1] {
 				found = true
 			}
 		}

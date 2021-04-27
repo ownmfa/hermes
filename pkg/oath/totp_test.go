@@ -50,7 +50,8 @@ func TestTOTP(t *testing.T) {
 			t.Parallel()
 
 			otp := &OTP{
-				Hash: lTest.inpHash, Key: lTest.inpKey, Digits: lTest.inpDigits,
+				Algorithm: TOTP, Hash: lTest.inpHash, Key: lTest.inpKey,
+				Digits: lTest.inpDigits,
 			}
 
 			res, err := otp.totp(lTest.inpTime)
@@ -100,7 +101,8 @@ func TestVerifyTOTP(t *testing.T) {
 			t.Parallel()
 
 			otp := &OTP{
-				Hash: lTest.inpHash, Key: lTest.inpKey, Digits: lTest.inpDigits,
+				Algorithm: TOTP, Hash: lTest.inpHash, Key: lTest.inpKey,
+				Digits: lTest.inpDigits,
 			}
 
 			err := otp.verifyTOTP(lTest.inpTime, lTest.inpCode)

@@ -12,9 +12,9 @@ import (
 )
 
 const createApp = `
-INSERT INTO apps (org_id, name, subject_template, text_body_template,
-html_body_template, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $6)
+INSERT INTO apps (org_id, name, display_name, email, subject_template,
+text_body_template, html_body_template, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8)
 RETURNING id
 `
 
@@ -25,8 +25,8 @@ func (d *DAO) Create(ctx context.Context, app *api.App) (*api.App, error) {
 	app.UpdatedAt = timestamppb.New(now)
 
 	if err := d.pg.QueryRowContext(ctx, createApp, app.OrgId, app.Name,
-		app.SubjectTemplate, app.TextBodyTemplate, app.HtmlBodyTemplate,
-		now).Scan(&app.Id); err != nil {
+		app.DisplayName, app.Email, app.SubjectTemplate, app.TextBodyTemplate,
+		app.HtmlBodyTemplate, now).Scan(&app.Id); err != nil {
 		return nil, dao.DBToSentinel(err)
 	}
 
@@ -34,8 +34,8 @@ func (d *DAO) Create(ctx context.Context, app *api.App) (*api.App, error) {
 }
 
 const readApp = `
-SELECT id, org_id, name, subject_template, text_body_template,
-html_body_template, created_at, updated_at
+SELECT id, org_id, name, display_name, email, subject_template,
+text_body_template, html_body_template, created_at, updated_at
 FROM apps
 WHERE (id, org_id) = ($1, $2)
 `
@@ -46,8 +46,9 @@ func (d *DAO) Read(ctx context.Context, appID, orgID string) (*api.App, error) {
 	var createdAt, updatedAt time.Time
 
 	if err := d.pg.QueryRowContext(ctx, readApp, appID, orgID).Scan(&app.Id,
-		&app.OrgId, &app.Name, &app.SubjectTemplate, &app.TextBodyTemplate,
-		&app.HtmlBodyTemplate, &createdAt, &updatedAt); err != nil {
+		&app.OrgId, &app.Name, &app.DisplayName, &app.Email,
+		&app.SubjectTemplate, &app.TextBodyTemplate, &app.HtmlBodyTemplate,
+		&createdAt, &updatedAt); err != nil {
 		return nil, dao.DBToSentinel(err)
 	}
 
@@ -59,9 +60,9 @@ func (d *DAO) Read(ctx context.Context, appID, orgID string) (*api.App, error) {
 
 const updateApp = `
 UPDATE apps
-SET name = $1, subject_template = $2, text_body_template = $3,
-html_body_template = $4, updated_at = $5
-WHERE (id, org_id) = ($6, $7)
+SET name = $1, display_name = $2, email = $3, subject_template = $4,
+text_body_template = $5, html_body_template = $6, updated_at = $7
+WHERE (id, org_id) = ($8, $9)
 RETURNING created_at
 `
 
@@ -73,9 +74,10 @@ func (d *DAO) Update(ctx context.Context, app *api.App) (*api.App,
 	updatedAt := time.Now().UTC().Truncate(time.Microsecond)
 	app.UpdatedAt = timestamppb.New(updatedAt)
 
-	if err := d.pg.QueryRowContext(ctx, updateApp, app.Name,
-		app.SubjectTemplate, app.TextBodyTemplate, app.HtmlBodyTemplate,
-		updatedAt, app.Id, app.OrgId).Scan(&createdAt); err != nil {
+	if err := d.pg.QueryRowContext(ctx, updateApp, app.Name, app.DisplayName,
+		app.Email, app.SubjectTemplate, app.TextBodyTemplate,
+		app.HtmlBodyTemplate, updatedAt, app.Id, app.OrgId).Scan(
+		&createdAt); err != nil {
 		return nil, dao.DBToSentinel(err)
 	}
 
@@ -109,8 +111,8 @@ WHERE org_id = $1
 `
 
 const listApps = `
-SELECT id, org_id, name, subject_template, text_body_template,
-html_body_template, created_at, updated_at
+SELECT id, org_id, name, display_name, email, subject_template,
+text_body_template, html_body_template, created_at, updated_at
 FROM apps
 WHERE org_id = $1
 `
@@ -172,9 +174,9 @@ func (d *DAO) List(ctx context.Context, orgID string, lBoundTS time.Time,
 		app := &api.App{}
 		var createdAt, updatedAt time.Time
 
-		if err = rows.Scan(&app.Id, &app.OrgId, &app.Name, &app.SubjectTemplate,
-			&app.TextBodyTemplate, &app.HtmlBodyTemplate, &createdAt,
-			&updatedAt); err != nil {
+		if err = rows.Scan(&app.Id, &app.OrgId, &app.Name, &app.DisplayName,
+			&app.Email, &app.SubjectTemplate, &app.TextBodyTemplate,
+			&app.HtmlBodyTemplate, &createdAt, &updatedAt); err != nil {
 			return nil, 0, dao.DBToSentinel(err)
 		}
 

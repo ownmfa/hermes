@@ -72,7 +72,7 @@ github.com/jackc/pgx/v4/stdlib
 # github.com/mennanov/fmutils v0.1.0
 ## explicit
 github.com/mennanov/fmutils
-# github.com/ownmfa/api/go v0.0.0-20210427020615-e0eba96bf2bf
+# github.com/ownmfa/api/go v0.0.0-20210427213951-4e154c575354
 ## explicit
 github.com/ownmfa/api/go/api
 github.com/ownmfa/api/go/common

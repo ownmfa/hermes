@@ -48,7 +48,8 @@ func TestHOTP(t *testing.T) {
 			t.Parallel()
 
 			otp := &OTP{
-				Hash: lTest.inpHash, Key: lTest.inpKey, Digits: lTest.inpDigits,
+				Algorithm: HOTP, Hash: lTest.inpHash, Key: lTest.inpKey,
+				Digits: lTest.inpDigits,
 			}
 
 			res, err := otp.HOTP(lTest.inpCounter)
@@ -91,7 +92,8 @@ func TestVerifyHOTP(t *testing.T) {
 			t.Parallel()
 
 			otp := &OTP{
-				Hash: lTest.inpHash, Key: lTest.inpKey, Digits: lTest.inpDigits,
+				Algorithm: HOTP, Hash: lTest.inpHash, Key: lTest.inpKey,
+				Digits: lTest.inpDigits,
 			}
 
 			res, err := otp.VerifyHOTP(0, lTest.inpCode)

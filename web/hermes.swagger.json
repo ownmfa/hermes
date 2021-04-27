@@ -1172,6 +1172,14 @@
           "type": "string",
           "description": "Application name."
         },
+        "displayName": {
+          "type": "string",
+          "description": "Application display name. Used anywhere the application is shown to a user, including templates and notification sender fields."
+        },
+        "email": {
+          "type": "string",
+          "description": "Application email. Optional, used as the 'From' address in email notifications."
+        },
         "subjectTemplate": {
           "type": "string",
           "description": "Application subject template. Templates generate HTML-safe output using the [Go template engine](https://golang.org/pkg/html/template/). Optional, for notification methods that support subjects."
@@ -1235,10 +1243,22 @@
     },
     "apiGoogleAuthHOTPMethod": {
       "type": "object",
+      "properties": {
+        "accountName": {
+          "type": "string",
+          "description": "Account name, such as username or email, for inclusion in QR codes. This field is never saved. If not specified, only the application display name is included in the returned QR code."
+        }
+      },
       "description": "GoogleAuthHOTPMethod configures a Google Authenticator HOTP one-time password method."
     },
     "apiGoogleAuthTOTPMethod": {
       "type": "object",
+      "properties": {
+        "accountName": {
+          "type": "string",
+          "description": "Account name, such as username or email, for inclusion in QR codes. This field is never saved. If not specified, only the application display name is included in the returned QR code."
+        }
+      },
       "description": "GoogleAuthTOTPMethod configures a Google Authenticator TOTP one-time password method."
     },
     "apiHardwareHOTPMethod": {
@@ -1246,15 +1266,12 @@
       "properties": {
         "hash": {
           "$ref": "#/definitions/apiHash",
-          "description": "Hardware HOTP hash function."
+          "description": "Hardware HOTP hash function. Defaults to SHA512 if not specified."
         },
         "digits": {
           "type": "integer",
           "format": "int32",
-          "description": "Passcode digit length.",
-          "required": [
-            "digits"
-          ]
+          "description": "Passcode digit length."
         },
         "counter": {
           "type": "integer",
@@ -1264,47 +1281,30 @@
         "secret": {
           "type": "string",
           "format": "byte",
-          "description": "Hardware HOTP secret. Only included during identity creation. When used in JSON, the value will be represented as a base64 string.",
-          "required": [
-            "secret"
-          ]
+          "description": "Hardware HOTP secret. Only included during identity creation. When used in JSON, the value will be represented as a base64 string."
         }
       },
-      "description": "HardwareHOTPMethod configures a hardware OATH HOTP one-time password method.",
-      "required": [
-        "digits",
-        "secret"
-      ]
+      "description": "HardwareHOTPMethod configures a hardware OATH HOTP one-time password method."
     },
     "apiHardwareTOTPMethod": {
       "type": "object",
       "properties": {
         "hash": {
           "$ref": "#/definitions/apiHash",
-          "description": "Hardware TOTP hash function."
+          "description": "Hardware TOTP hash function. Defaults to SHA512 if not specified."
         },
         "digits": {
           "type": "integer",
           "format": "int32",
-          "description": "Passcode digit length.",
-          "required": [
-            "digits"
-          ]
+          "description": "Passcode digit length."
         },
         "secret": {
           "type": "string",
           "format": "byte",
-          "description": "Hardware TOTP secret. Only included during identity creation. When used in JSON, the value will be represented as a base64 string.",
-          "required": [
-            "secret"
-          ]
+          "description": "Hardware TOTP secret. Only included during identity creation. When used in JSON, the value will be represented as a base64 string."
         }
       },
-      "description": "HardwareTOTPMethod configures a hardware OATH TOTP one-time password method.",
-      "required": [
-        "digits",
-        "secret"
-      ]
+      "description": "HardwareTOTPMethod configures a hardware OATH TOTP one-time password method."
     },
     "apiHash": {
       "type": "string",
@@ -1595,6 +1595,12 @@
     },
     "apiMicrosoftAuthTOTPMethod": {
       "type": "object",
+      "properties": {
+        "accountName": {
+          "type": "string",
+          "description": "Account name, such as username or email, for inclusion in QR codes. This field is never saved. If not specified, only the application display name is included in the returned QR code."
+        }
+      },
       "description": "MicrosoftAuthTOTPMethod configures a Microsoft Authenticator TOTP one-time password method. Due to limited hash function and digit support, this method is not recommended unless it is already in wide use."
     },
     "apiOrg": {
@@ -1608,14 +1614,6 @@
         "name": {
           "type": "string",
           "description": "Organization name."
-        },
-        "displayName": {
-          "type": "string",
-          "description": "Organization display name. Used anywhere the organization is shown to a user, including web sites and notification sender fields."
-        },
-        "email": {
-          "type": "string",
-          "description": "Organization email. Used as the 'From' address in email notifications."
         },
         "createdAt": {
           "type": "string",
@@ -1648,6 +1646,10 @@
           "type": "integer",
           "format": "int32",
           "description": "Software HOTP starting counter. Only included during identity creation. Defaults to 0 if not specified."
+        },
+        "accountName": {
+          "type": "string",
+          "description": "Account name, such as username or email, for inclusion in QR codes. This field is never saved. If not specified, only the application display name is included in the returned QR code."
         }
       },
       "description": "SoftwareHOTPMethod configures a software OATH HOTP one-time password method."
@@ -1663,6 +1665,10 @@
           "type": "integer",
           "format": "int32",
           "description": "Passcode digit length. Defaults to 7 if not specified."
+        },
+        "accountName": {
+          "type": "string",
+          "description": "Account name, such as username or email, for inclusion in QR codes. This field is never saved. If not specified, only the application display name is included in the returned QR code."
         }
       },
       "description": "SoftwareTOTPMethod configures a software OATH TOTP one-time password method."

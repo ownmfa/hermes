@@ -19,10 +19,9 @@ First complete the above steps. Then:
 
 ```
 hermes-create org testorg testadmin@ownmfa.com testpass
-API_PWT_KEY=$(dd if=/dev/random bs=1 count=32|base64) api
+API_PWT_KEY=$(dd if=/dev/random bs=1 count=32|base64) API_IDENTITY_KEY=${API_PWT_KEY} hermes-api
 
-curl -v -X POST -d '{"email":"testadmin@ownmfa.com", "orgName":"testorg", \
-"password":"testpass"}' http://127.0.0.1:8000/v1/sessions/login
+curl -v -X POST -d '{"email":"testadmin@ownmfa.com", "orgName":"testorg", "password":"testpass"}' http://127.0.0.1:8000/v1/sessions/login
 ```
 
 OpenAPI live docs are available at

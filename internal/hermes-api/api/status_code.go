@@ -8,7 +8,7 @@ import (
 	"strconv"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/ownmfa/hermes/internal/api/service"
+	"github.com/ownmfa/hermes/internal/hermes-api/service"
 	"google.golang.org/protobuf/proto"
 )
 
