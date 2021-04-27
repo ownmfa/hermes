@@ -14,7 +14,7 @@ func (o *OTP) TOTP() (string, error) {
 
 // totp generates a passcode based on the provided time.
 func (o *OTP) totp(t time.Time) (string, error) {
-	return o.HOTP(t.UnixNano() / int64(period))
+	return o.HOTP(t.UnixNano() / int64(time.Duration(period)*time.Second))
 }
 
 // VerifyTOTP verifies a passcode using look-ahead and look-behind windows based
@@ -26,8 +26,8 @@ func (o *OTP) VerifyTOTP(passcode string) error {
 // verifyTOTP verifies a passcode using look-ahead and look-behind windows based
 // on the provided time.
 func (o *OTP) verifyTOTP(t time.Time, passcode string) error {
-	for _, d := range []time.Duration{0, -1, 1} {
-		pass, err := o.totp(t.Add(d * period))
+	for _, d := range []int{0, -1, 1} {
+		pass, err := o.totp(t.Add(time.Duration(d*period) * time.Second))
 		if err != nil {
 			return err
 		}

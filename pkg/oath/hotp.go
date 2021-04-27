@@ -13,12 +13,8 @@ const lookAhead = 100
 
 // HOTP generates a passcode using a counter.
 func (o *OTP) HOTP(counter int64) (string, error) {
-	if len(o.Key) < 16 {
-		return "", ErrKeyLength
-	}
-
-	if o.Digits < 6 || o.Digits > 8 {
-		o.Digits = 7
+	if err := o.validate(); err != nil {
+		return "", err
 	}
 
 	hash := hmac.New(o.Hash.New, o.Key)

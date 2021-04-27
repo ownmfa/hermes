@@ -28,20 +28,19 @@ func TestTOTP(t *testing.T) {
 
 	tests := []struct {
 		inpHash   crypto.Hash
-		inpKey    []byte
 		inpDigits int
+		inpKey    []byte
 		inpTime   time.Time
 		resDigits int
 		resCode   string
 		err       error
 	}{
-		{crypto.SHA1, knownKey, 6, knownTime, 6, "660634", nil},
-		{crypto.SHA256, knownKey, 7, knownTime, 7, "2596747", nil},
-		{crypto.SHA1, randKey, 6, time.Now(), 6, "", nil},
-		{crypto.SHA256, randKey, 7, time.Now(), 7, "", nil},
-		{crypto.SHA512, randKey, 8, time.Now(), 8, "", nil},
-		{crypto.SHA512, randKey, 9, time.Now(), 7, "", nil},
-		{crypto.SHA1, nil, 7, time.Now(), 0, "", ErrKeyLength},
+		{crypto.SHA1, 6, knownKey, knownTime, 6, "660634", nil},
+		{crypto.SHA256, 7, knownKey, knownTime, 7, "2596747", nil},
+		{crypto.SHA1, 6, randKey, time.Now(), 6, "", nil},
+		{crypto.SHA256, 7, randKey, time.Now(), 7, "", nil},
+		{crypto.SHA512, 8, randKey, time.Now(), 8, "", nil},
+		{crypto.SHA512, 7, nil, time.Now(), 0, "", ErrKeyLength},
 	}
 
 	for _, test := range tests {
@@ -81,17 +80,17 @@ func TestVerifyTOTP(t *testing.T) {
 
 	tests := []struct {
 		inpHash   crypto.Hash
-		inpKey    []byte
 		inpDigits int
+		inpKey    []byte
 		inpTime   time.Time
 		inpCode   string
 		err       error
 	}{
-		{crypto.SHA1, key, 6, knownTime, "660634", nil},
-		{crypto.SHA256, key, 7, knownTime, "2596747", nil},
-		{crypto.SHA512, key, 8, knownTime, "76879241", nil},
-		{crypto.SHA1, nil, 6, time.Now(), "000000", ErrKeyLength},
-		{crypto.SHA1, key, 6, time.Now(), "000000", ErrInvalidPasscode},
+		{crypto.SHA1, 6, key, knownTime, "660634", nil},
+		{crypto.SHA256, 7, key, knownTime, "2596747", nil},
+		{crypto.SHA512, 8, key, knownTime, "76879241", nil},
+		{crypto.SHA512, 6, nil, time.Now(), "000000", ErrKeyLength},
+		{crypto.SHA1, 6, key, time.Now(), "000000", ErrInvalidPasscode},
 	}
 
 	for _, test := range tests {

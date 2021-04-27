@@ -9,25 +9,27 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/ownmfa/hermes/pkg/consterr"
 	"github.com/skip2/go-qrcode"
 )
 
 const (
-	ErrKeyLength consterr.Error = "oath: insufficient key length"
+	ErrHashSupport consterr.Error = "oath: unsupported hash function"
+	ErrDigitsRange consterr.Error = "oath: digits outside supported range"
+	ErrKeyLength   consterr.Error = "oath: insufficient key length"
+	errUnknownAlg  consterr.Error = "oath: unknown OATH algorithm"
 	//#nosec G101 // false positive for hardcoded credentials
 	ErrInvalidPasscode consterr.Error = "oath: invalid passcode"
-	period                            = 30 * time.Second
+	period             int            = 30
 )
 
 // OTP represents a one-time password generator, and is compatible with both
 // HOTP and TOTP algorithms. It uses a fixed time period of 30 seconds.
 type OTP struct {
 	Hash   crypto.Hash
-	Key    []byte
 	Digits int
+	Key    []byte
 }
 
 // Secret returns the key in base32 format without padding.
@@ -37,20 +39,36 @@ func (o *OTP) Secret() string {
 	return base32NoPad.EncodeToString(o.Key)
 }
 
+// validate validates OTP fields.
+func (o *OTP) validate() error {
+	switch o.Hash {
+	case crypto.SHA1, crypto.SHA256, crypto.SHA512:
+		break
+	default:
+		return ErrHashSupport
+	}
+
+	if o.Digits < 6 || o.Digits > 10 {
+		return ErrDigitsRange
+	}
+
+	if len(o.Key) < 16 {
+		return ErrKeyLength
+	}
+
+	return nil
+}
+
 // uri generates a key URI in Google Authenticator-compatible format. The value
-// of keyType should be either "hotp" or "totp".
+// of oathAlg should be either "hotp" or "totp".
 //
 // https://github.com/google/google-authenticator/wiki/Key-Uri-Format
 //
 // Example:
 // otpauth://totp/Example:alice@google.com?secret=JBSW...&issuer=Example
-func (o *OTP) uri(keyType, issuer, username string) (string, error) {
-	if len(o.Key) < 16 {
-		return "", ErrKeyLength
-	}
-
-	if o.Digits < 6 || o.Digits > 8 {
-		o.Digits = 7
+func (o *OTP) uri(oathAlg, issuer, username string) (string, error) {
+	if err := o.validate(); err != nil {
+		return "", err
 	}
 
 	vals := url.Values{}
@@ -61,16 +79,18 @@ func (o *OTP) uri(keyType, issuer, username string) (string, error) {
 	vals.Set("algorithm", strings.ReplaceAll(o.Hash.String(), "-", ""))
 	vals.Set("digits", strconv.Itoa(o.Digits))
 
-	switch keyType {
-	case "totp":
-		vals.Set("period", strconv.FormatInt(int64(period/time.Second), 10))
-	default:
+	switch oathAlg {
+	case "hotp":
 		vals.Set("counter", strconv.Itoa(0))
+	case "totp":
+		vals.Set("period", strconv.Itoa(period))
+	default:
+		return "", errUnknownAlg
 	}
 
 	uri := url.URL{
 		Scheme: "otpauth",
-		Host:   keyType,
+		Host:   oathAlg,
 		// Issuer in path will be automatically percent-encoded by uri.String().
 		Path:     fmt.Sprintf("%s:%s", issuer, username),
 		RawQuery: vals.Encode(),

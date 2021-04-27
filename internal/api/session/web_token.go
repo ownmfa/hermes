@@ -8,8 +8,8 @@ import (
 	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/api/go/token"
-	"github.com/ownmfa/hermes/internal/api/crypto"
 	"github.com/ownmfa/hermes/pkg/consterr"
+	"github.com/ownmfa/hermes/pkg/crypto"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )

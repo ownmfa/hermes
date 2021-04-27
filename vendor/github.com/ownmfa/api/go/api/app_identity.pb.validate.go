@@ -37,115 +37,66 @@ var (
 var _app_identity_uuidPattern = regexp.MustCompile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
 
 // Validate checks the field values on App with the rules defined in the proto
-// definition for this message. If any rules are violated, an error is
-// returned. When asked to return all errors, validation continues after first
-// violation, and the result is a list of violation errors wrapped in
-// AppMultiError, or nil if none found. Otherwise, only the first error is
-// returned, if any.
-func (m *App) Validate(all bool) error {
+// definition for this message. If any rules are violated, an error is returned.
+func (m *App) Validate() error {
 	if m == nil {
 		return nil
 	}
-
-	var errors []error
 
 	// no validation rules for Id
 
 	// no validation rules for OrgId
 
 	if l := utf8.RuneCountInString(m.GetName()); l < 5 || l > 40 {
-		err := AppValidationError{
+		return AppValidationError{
 			field:  "Name",
 			reason: "value length must be between 5 and 40 runes, inclusive",
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
 	}
 
 	if utf8.RuneCountInString(m.GetSubjectTemplate()) > 1024 {
-		err := AppValidationError{
+		return AppValidationError{
 			field:  "SubjectTemplate",
 			reason: "value length must be at most 1024 runes",
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
 	}
 
 	if utf8.RuneCountInString(m.GetTextBodyTemplate()) > 4096 {
-		err := AppValidationError{
+		return AppValidationError{
 			field:  "TextBodyTemplate",
 			reason: "value length must be at most 4096 runes",
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
 	}
 
 	if len(m.GetHtmlBodyTemplate()) > 4096 {
-		err := AppValidationError{
+		return AppValidationError{
 			field:  "HtmlBodyTemplate",
 			reason: "value length must be at most 4096 bytes",
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
 	}
 
-	if v, ok := interface{}(m.GetCreatedAt()).(interface{ Validate(bool) error }); ok {
-		if err := v.Validate(all); err != nil {
-			err = AppValidationError{
+	if v, ok := interface{}(m.GetCreatedAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return AppValidationError{
 				field:  "CreatedAt",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
 		}
 	}
 
-	if v, ok := interface{}(m.GetUpdatedAt()).(interface{ Validate(bool) error }); ok {
-		if err := v.Validate(all); err != nil {
-			err = AppValidationError{
+	if v, ok := interface{}(m.GetUpdatedAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return AppValidationError{
 				field:  "UpdatedAt",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
 		}
 	}
 
-	if len(errors) > 0 {
-		return AppMultiError(errors)
-	}
 	return nil
 }
-
-// AppMultiError is an error wrapping multiple validation errors returned by
-// App.Validate(true) if the designated constraints aren't met.
-type AppMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m AppMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m AppMultiError) AllErrors() []error { return m }
 
 // AppValidationError is the validation error returned by App.Validate if the
 // designated constraints aren't met.
@@ -203,64 +154,31 @@ var _ interface {
 
 // Validate checks the field values on CreateAppRequest with the rules defined
 // in the proto definition for this message. If any rules are violated, an
-// error is returned. When asked to return all errors, validation continues
-// after first violation, and the result is a list of violation errors wrapped
-// in CreateAppRequestMultiError, or nil if none found. Otherwise, only the
-// first error is returned, if any.
-func (m *CreateAppRequest) Validate(all bool) error {
+// error is returned.
+func (m *CreateAppRequest) Validate() error {
 	if m == nil {
 		return nil
 	}
 
-	var errors []error
-
 	if m.GetApp() == nil {
-		err := CreateAppRequestValidationError{
+		return CreateAppRequestValidationError{
 			field:  "App",
 			reason: "value is required",
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
 	}
 
-	if v, ok := interface{}(m.GetApp()).(interface{ Validate(bool) error }); ok {
-		if err := v.Validate(all); err != nil {
-			err = CreateAppRequestValidationError{
+	if v, ok := interface{}(m.GetApp()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreateAppRequestValidationError{
 				field:  "App",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
 		}
 	}
 
-	if len(errors) > 0 {
-		return CreateAppRequestMultiError(errors)
-	}
 	return nil
 }
-
-// CreateAppRequestMultiError is an error wrapping multiple validation errors
-// returned by CreateAppRequest.Validate(true) if the designated constraints
-// aren't met.
-type CreateAppRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m CreateAppRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m CreateAppRequestMultiError) AllErrors() []error { return m }
 
 // CreateAppRequestValidationError is the validation error returned by
 // CreateAppRequest.Validate if the designated constraints aren't met.
@@ -318,32 +236,20 @@ var _ interface {
 
 // Validate checks the field values on GetAppRequest with the rules defined in
 // the proto definition for this message. If any rules are violated, an error
-// is returned. When asked to return all errors, validation continues after
-// first violation, and the result is a list of violation errors wrapped in
-// GetAppRequestMultiError, or nil if none found. Otherwise, only the first
-// error is returned, if any.
-func (m *GetAppRequest) Validate(all bool) error {
+// is returned.
+func (m *GetAppRequest) Validate() error {
 	if m == nil {
 		return nil
 	}
 
-	var errors []error
-
 	if err := m._validateUuid(m.GetId()); err != nil {
-		err = GetAppRequestValidationError{
+		return GetAppRequestValidationError{
 			field:  "Id",
 			reason: "value must be a valid UUID",
 			cause:  err,
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
 	}
 
-	if len(errors) > 0 {
-		return GetAppRequestMultiError(errors)
-	}
 	return nil
 }
 
@@ -354,23 +260,6 @@ func (m *GetAppRequest) _validateUuid(uuid string) error {
 
 	return nil
 }
-
-// GetAppRequestMultiError is an error wrapping multiple validation errors
-// returned by GetAppRequest.Validate(true) if the designated constraints
-// aren't met.
-type GetAppRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m GetAppRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m GetAppRequestMultiError) AllErrors() []error { return m }
 
 // GetAppRequestValidationError is the validation error returned by
 // GetAppRequest.Validate if the designated constraints aren't met.
@@ -428,78 +317,41 @@ var _ interface {
 
 // Validate checks the field values on UpdateAppRequest with the rules defined
 // in the proto definition for this message. If any rules are violated, an
-// error is returned. When asked to return all errors, validation continues
-// after first violation, and the result is a list of violation errors wrapped
-// in UpdateAppRequestMultiError, or nil if none found. Otherwise, only the
-// first error is returned, if any.
-func (m *UpdateAppRequest) Validate(all bool) error {
+// error is returned.
+func (m *UpdateAppRequest) Validate() error {
 	if m == nil {
 		return nil
 	}
 
-	var errors []error
-
 	if m.GetApp() == nil {
-		err := UpdateAppRequestValidationError{
+		return UpdateAppRequestValidationError{
 			field:  "App",
 			reason: "value is required",
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
 	}
 
-	if v, ok := interface{}(m.GetApp()).(interface{ Validate(bool) error }); ok {
-		if err := v.Validate(all); err != nil {
-			err = UpdateAppRequestValidationError{
+	if v, ok := interface{}(m.GetApp()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpdateAppRequestValidationError{
 				field:  "App",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
 		}
 	}
 
-	if v, ok := interface{}(m.GetUpdateMask()).(interface{ Validate(bool) error }); ok {
-		if err := v.Validate(all); err != nil {
-			err = UpdateAppRequestValidationError{
+	if v, ok := interface{}(m.GetUpdateMask()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpdateAppRequestValidationError{
 				field:  "UpdateMask",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
 		}
 	}
 
-	if len(errors) > 0 {
-		return UpdateAppRequestMultiError(errors)
-	}
 	return nil
 }
-
-// UpdateAppRequestMultiError is an error wrapping multiple validation errors
-// returned by UpdateAppRequest.Validate(true) if the designated constraints
-// aren't met.
-type UpdateAppRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m UpdateAppRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m UpdateAppRequestMultiError) AllErrors() []error { return m }
 
 // UpdateAppRequestValidationError is the validation error returned by
 // UpdateAppRequest.Validate if the designated constraints aren't met.
@@ -557,32 +409,20 @@ var _ interface {
 
 // Validate checks the field values on DeleteAppRequest with the rules defined
 // in the proto definition for this message. If any rules are violated, an
-// error is returned. When asked to return all errors, validation continues
-// after first violation, and the result is a list of violation errors wrapped
-// in DeleteAppRequestMultiError, or nil if none found. Otherwise, only the
-// first error is returned, if any.
-func (m *DeleteAppRequest) Validate(all bool) error {
+// error is returned.
+func (m *DeleteAppRequest) Validate() error {
 	if m == nil {
 		return nil
 	}
 
-	var errors []error
-
 	if err := m._validateUuid(m.GetId()); err != nil {
-		err = DeleteAppRequestValidationError{
+		return DeleteAppRequestValidationError{
 			field:  "Id",
 			reason: "value must be a valid UUID",
 			cause:  err,
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
 	}
 
-	if len(errors) > 0 {
-		return DeleteAppRequestMultiError(errors)
-	}
 	return nil
 }
 
@@ -593,23 +433,6 @@ func (m *DeleteAppRequest) _validateUuid(uuid string) error {
 
 	return nil
 }
-
-// DeleteAppRequestMultiError is an error wrapping multiple validation errors
-// returned by DeleteAppRequest.Validate(true) if the designated constraints
-// aren't met.
-type DeleteAppRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m DeleteAppRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m DeleteAppRequestMultiError) AllErrors() []error { return m }
 
 // DeleteAppRequestValidationError is the validation error returned by
 // DeleteAppRequest.Validate if the designated constraints aren't met.
@@ -667,52 +490,23 @@ var _ interface {
 
 // Validate checks the field values on ListAppsRequest with the rules defined
 // in the proto definition for this message. If any rules are violated, an
-// error is returned. When asked to return all errors, validation continues
-// after first violation, and the result is a list of violation errors wrapped
-// in ListAppsRequestMultiError, or nil if none found. Otherwise, only the
-// first error is returned, if any.
-func (m *ListAppsRequest) Validate(all bool) error {
+// error is returned.
+func (m *ListAppsRequest) Validate() error {
 	if m == nil {
 		return nil
 	}
 
-	var errors []error
-
 	if m.GetPageSize() > 250 {
-		err := ListAppsRequestValidationError{
+		return ListAppsRequestValidationError{
 			field:  "PageSize",
 			reason: "value must be less than or equal to 250",
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
 	}
 
 	// no validation rules for PageToken
 
-	if len(errors) > 0 {
-		return ListAppsRequestMultiError(errors)
-	}
 	return nil
 }
-
-// ListAppsRequestMultiError is an error wrapping multiple validation errors
-// returned by ListAppsRequest.Validate(true) if the designated constraints
-// aren't met.
-type ListAppsRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m ListAppsRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m ListAppsRequestMultiError) AllErrors() []error { return m }
 
 // ListAppsRequestValidationError is the validation error returned by
 // ListAppsRequest.Validate if the designated constraints aren't met.
@@ -770,31 +564,22 @@ var _ interface {
 
 // Validate checks the field values on ListAppsResponse with the rules defined
 // in the proto definition for this message. If any rules are violated, an
-// error is returned. When asked to return all errors, validation continues
-// after first violation, and the result is a list of violation errors wrapped
-// in ListAppsResponseMultiError, or nil if none found. Otherwise, only the
-// first error is returned, if any.
-func (m *ListAppsResponse) Validate(all bool) error {
+// error is returned.
+func (m *ListAppsResponse) Validate() error {
 	if m == nil {
 		return nil
 	}
 
-	var errors []error
-
 	for idx, item := range m.GetApps() {
 		_, _ = idx, item
 
-		if v, ok := interface{}(item).(interface{ Validate(bool) error }); ok {
-			if err := v.Validate(all); err != nil {
-				err = ListAppsResponseValidationError{
+		if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListAppsResponseValidationError{
 					field:  fmt.Sprintf("Apps[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
-				if !all {
-					return err
-				}
-				errors = append(errors, err)
 			}
 		}
 
@@ -804,28 +589,8 @@ func (m *ListAppsResponse) Validate(all bool) error {
 
 	// no validation rules for TotalSize
 
-	if len(errors) > 0 {
-		return ListAppsResponseMultiError(errors)
-	}
 	return nil
 }
-
-// ListAppsResponseMultiError is an error wrapping multiple validation errors
-// returned by ListAppsResponse.Validate(true) if the designated constraints
-// aren't met.
-type ListAppsResponseMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m ListAppsResponseMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m ListAppsResponseMultiError) AllErrors() []error { return m }
 
 // ListAppsResponseValidationError is the validation error returned by
 // ListAppsResponse.Validate if the designated constraints aren't met.
@@ -883,58 +648,29 @@ var _ interface {
 
 // Validate checks the field values on SoftwareHOTPMethod with the rules
 // defined in the proto definition for this message. If any rules are
-// violated, an error is returned. When asked to return all errors, validation
-// continues after first violation, and the result is a list of violation
-// errors wrapped in SoftwareHOTPMethodMultiError, or nil if none found.
-// Otherwise, only the first error is returned, if any.
-func (m *SoftwareHOTPMethod) Validate(all bool) error {
+// violated, an error is returned.
+func (m *SoftwareHOTPMethod) Validate() error {
 	if m == nil {
 		return nil
 	}
-
-	var errors []error
 
 	// no validation rules for Hash
 
 	if m.GetDigits() != 0 {
 
 		if val := m.GetDigits(); val < 6 || val > 10 {
-			err := SoftwareHOTPMethodValidationError{
+			return SoftwareHOTPMethodValidationError{
 				field:  "Digits",
 				reason: "value must be inside range [6, 10]",
 			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
 		}
 
 	}
 
 	// no validation rules for Counter
 
-	if len(errors) > 0 {
-		return SoftwareHOTPMethodMultiError(errors)
-	}
 	return nil
 }
-
-// SoftwareHOTPMethodMultiError is an error wrapping multiple validation errors
-// returned by SoftwareHOTPMethod.Validate(true) if the designated constraints
-// aren't met.
-type SoftwareHOTPMethodMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m SoftwareHOTPMethodMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m SoftwareHOTPMethodMultiError) AllErrors() []error { return m }
 
 // SoftwareHOTPMethodValidationError is the validation error returned by
 // SoftwareHOTPMethod.Validate if the designated constraints aren't met.
@@ -994,56 +730,27 @@ var _ interface {
 
 // Validate checks the field values on SoftwareTOTPMethod with the rules
 // defined in the proto definition for this message. If any rules are
-// violated, an error is returned. When asked to return all errors, validation
-// continues after first violation, and the result is a list of violation
-// errors wrapped in SoftwareTOTPMethodMultiError, or nil if none found.
-// Otherwise, only the first error is returned, if any.
-func (m *SoftwareTOTPMethod) Validate(all bool) error {
+// violated, an error is returned.
+func (m *SoftwareTOTPMethod) Validate() error {
 	if m == nil {
 		return nil
 	}
-
-	var errors []error
 
 	// no validation rules for Hash
 
 	if m.GetDigits() != 0 {
 
 		if val := m.GetDigits(); val < 6 || val > 10 {
-			err := SoftwareTOTPMethodValidationError{
+			return SoftwareTOTPMethodValidationError{
 				field:  "Digits",
 				reason: "value must be inside range [6, 10]",
 			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
 		}
 
 	}
 
-	if len(errors) > 0 {
-		return SoftwareTOTPMethodMultiError(errors)
-	}
 	return nil
 }
-
-// SoftwareTOTPMethodMultiError is an error wrapping multiple validation errors
-// returned by SoftwareTOTPMethod.Validate(true) if the designated constraints
-// aren't met.
-type SoftwareTOTPMethodMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m SoftwareTOTPMethodMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m SoftwareTOTPMethodMultiError) AllErrors() []error { return m }
 
 // SoftwareTOTPMethodValidationError is the validation error returned by
 // SoftwareTOTPMethod.Validate if the designated constraints aren't met.
@@ -1103,39 +810,14 @@ var _ interface {
 
 // Validate checks the field values on GoogleAuthHOTPMethod with the rules
 // defined in the proto definition for this message. If any rules are
-// violated, an error is returned. When asked to return all errors, validation
-// continues after first violation, and the result is a list of violation
-// errors wrapped in GoogleAuthHOTPMethodMultiError, or nil if none found.
-// Otherwise, only the first error is returned, if any.
-func (m *GoogleAuthHOTPMethod) Validate(all bool) error {
+// violated, an error is returned.
+func (m *GoogleAuthHOTPMethod) Validate() error {
 	if m == nil {
 		return nil
 	}
 
-	var errors []error
-
-	if len(errors) > 0 {
-		return GoogleAuthHOTPMethodMultiError(errors)
-	}
 	return nil
 }
-
-// GoogleAuthHOTPMethodMultiError is an error wrapping multiple validation
-// errors returned by GoogleAuthHOTPMethod.Validate(true) if the designated
-// constraints aren't met.
-type GoogleAuthHOTPMethodMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m GoogleAuthHOTPMethodMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m GoogleAuthHOTPMethodMultiError) AllErrors() []error { return m }
 
 // GoogleAuthHOTPMethodValidationError is the validation error returned by
 // GoogleAuthHOTPMethod.Validate if the designated constraints aren't met.
@@ -1195,39 +877,14 @@ var _ interface {
 
 // Validate checks the field values on GoogleAuthTOTPMethod with the rules
 // defined in the proto definition for this message. If any rules are
-// violated, an error is returned. When asked to return all errors, validation
-// continues after first violation, and the result is a list of violation
-// errors wrapped in GoogleAuthTOTPMethodMultiError, or nil if none found.
-// Otherwise, only the first error is returned, if any.
-func (m *GoogleAuthTOTPMethod) Validate(all bool) error {
+// violated, an error is returned.
+func (m *GoogleAuthTOTPMethod) Validate() error {
 	if m == nil {
 		return nil
 	}
 
-	var errors []error
-
-	if len(errors) > 0 {
-		return GoogleAuthTOTPMethodMultiError(errors)
-	}
 	return nil
 }
-
-// GoogleAuthTOTPMethodMultiError is an error wrapping multiple validation
-// errors returned by GoogleAuthTOTPMethod.Validate(true) if the designated
-// constraints aren't met.
-type GoogleAuthTOTPMethodMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m GoogleAuthTOTPMethodMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m GoogleAuthTOTPMethodMultiError) AllErrors() []error { return m }
 
 // GoogleAuthTOTPMethodValidationError is the validation error returned by
 // GoogleAuthTOTPMethod.Validate if the designated constraints aren't met.
@@ -1287,39 +944,14 @@ var _ interface {
 
 // Validate checks the field values on MicrosoftAuthTOTPMethod with the rules
 // defined in the proto definition for this message. If any rules are
-// violated, an error is returned. When asked to return all errors, validation
-// continues after first violation, and the result is a list of violation
-// errors wrapped in MicrosoftAuthTOTPMethodMultiError, or nil if none found.
-// Otherwise, only the first error is returned, if any.
-func (m *MicrosoftAuthTOTPMethod) Validate(all bool) error {
+// violated, an error is returned.
+func (m *MicrosoftAuthTOTPMethod) Validate() error {
 	if m == nil {
 		return nil
 	}
 
-	var errors []error
-
-	if len(errors) > 0 {
-		return MicrosoftAuthTOTPMethodMultiError(errors)
-	}
 	return nil
 }
-
-// MicrosoftAuthTOTPMethodMultiError is an error wrapping multiple validation
-// errors returned by MicrosoftAuthTOTPMethod.Validate(true) if the designated
-// constraints aren't met.
-type MicrosoftAuthTOTPMethodMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m MicrosoftAuthTOTPMethodMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m MicrosoftAuthTOTPMethodMultiError) AllErrors() []error { return m }
 
 // MicrosoftAuthTOTPMethodValidationError is the validation error returned by
 // MicrosoftAuthTOTPMethod.Validate if the designated constraints aren't met.
@@ -1379,60 +1011,32 @@ var _ interface {
 
 // Validate checks the field values on HardwareHOTPMethod with the rules
 // defined in the proto definition for this message. If any rules are
-// violated, an error is returned. When asked to return all errors, validation
-// continues after first violation, and the result is a list of violation
-// errors wrapped in HardwareHOTPMethodMultiError, or nil if none found.
-// Otherwise, only the first error is returned, if any.
-func (m *HardwareHOTPMethod) Validate(all bool) error {
+// violated, an error is returned.
+func (m *HardwareHOTPMethod) Validate() error {
 	if m == nil {
 		return nil
 	}
 
-	var errors []error
-
 	// no validation rules for Hash
 
-	if m.GetDigits() != 0 {
-
-		if val := m.GetDigits(); val < 6 || val > 10 {
-			err := HardwareHOTPMethodValidationError{
-				field:  "Digits",
-				reason: "value must be inside range [6, 10]",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
+	if val := m.GetDigits(); val < 6 || val > 10 {
+		return HardwareHOTPMethodValidationError{
+			field:  "Digits",
+			reason: "value must be inside range [6, 10]",
 		}
-
 	}
 
 	// no validation rules for Counter
 
-	// no validation rules for Secret
-
-	if len(errors) > 0 {
-		return HardwareHOTPMethodMultiError(errors)
+	if len(m.GetSecret()) < 16 {
+		return HardwareHOTPMethodValidationError{
+			field:  "Secret",
+			reason: "value length must be at least 16 bytes",
+		}
 	}
+
 	return nil
 }
-
-// HardwareHOTPMethodMultiError is an error wrapping multiple validation errors
-// returned by HardwareHOTPMethod.Validate(true) if the designated constraints
-// aren't met.
-type HardwareHOTPMethodMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m HardwareHOTPMethodMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m HardwareHOTPMethodMultiError) AllErrors() []error { return m }
 
 // HardwareHOTPMethodValidationError is the validation error returned by
 // HardwareHOTPMethod.Validate if the designated constraints aren't met.
@@ -1492,58 +1096,30 @@ var _ interface {
 
 // Validate checks the field values on HardwareTOTPMethod with the rules
 // defined in the proto definition for this message. If any rules are
-// violated, an error is returned. When asked to return all errors, validation
-// continues after first violation, and the result is a list of violation
-// errors wrapped in HardwareTOTPMethodMultiError, or nil if none found.
-// Otherwise, only the first error is returned, if any.
-func (m *HardwareTOTPMethod) Validate(all bool) error {
+// violated, an error is returned.
+func (m *HardwareTOTPMethod) Validate() error {
 	if m == nil {
 		return nil
 	}
 
-	var errors []error
-
 	// no validation rules for Hash
 
-	if m.GetDigits() != 0 {
-
-		if val := m.GetDigits(); val < 6 || val > 10 {
-			err := HardwareTOTPMethodValidationError{
-				field:  "Digits",
-				reason: "value must be inside range [6, 10]",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
+	if val := m.GetDigits(); val < 6 || val > 10 {
+		return HardwareTOTPMethodValidationError{
+			field:  "Digits",
+			reason: "value must be inside range [6, 10]",
 		}
-
 	}
 
-	// no validation rules for Secret
-
-	if len(errors) > 0 {
-		return HardwareTOTPMethodMultiError(errors)
+	if len(m.GetSecret()) < 16 {
+		return HardwareTOTPMethodValidationError{
+			field:  "Secret",
+			reason: "value length must be at least 16 bytes",
+		}
 	}
+
 	return nil
 }
-
-// HardwareTOTPMethodMultiError is an error wrapping multiple validation errors
-// returned by HardwareTOTPMethod.Validate(true) if the designated constraints
-// aren't met.
-type HardwareTOTPMethodMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m HardwareTOTPMethodMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m HardwareTOTPMethodMultiError) AllErrors() []error { return m }
 
 // HardwareTOTPMethodValidationError is the validation error returned by
 // HardwareTOTPMethod.Validate if the designated constraints aren't met.
@@ -1602,17 +1178,11 @@ var _ interface {
 } = HardwareTOTPMethodValidationError{}
 
 // Validate checks the field values on Identity with the rules defined in the
-// proto definition for this message. If any rules are violated, an error is
-// returned. When asked to return all errors, validation continues after first
-// violation, and the result is a list of violation errors wrapped in
-// IdentityMultiError, or nil if none found. Otherwise, only the first error
-// is returned, if any.
-func (m *Identity) Validate(all bool) error {
+// proto definition for this message. If any rules are violated, an error is returned.
+func (m *Identity) Validate() error {
 	if m == nil {
 		return nil
 	}
-
-	var errors []error
 
 	// no validation rules for Id
 
@@ -1621,43 +1191,31 @@ func (m *Identity) Validate(all bool) error {
 	// no validation rules for AppId
 
 	if l := utf8.RuneCountInString(m.GetComment()); l < 5 || l > 80 {
-		err := IdentityValidationError{
+		return IdentityValidationError{
 			field:  "Comment",
 			reason: "value length must be between 5 and 80 runes, inclusive",
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
 	}
 
 	// no validation rules for Status
 
-	if v, ok := interface{}(m.GetCreatedAt()).(interface{ Validate(bool) error }); ok {
-		if err := v.Validate(all); err != nil {
-			err = IdentityValidationError{
+	if v, ok := interface{}(m.GetCreatedAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return IdentityValidationError{
 				field:  "CreatedAt",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
 		}
 	}
 
-	if v, ok := interface{}(m.GetUpdatedAt()).(interface{ Validate(bool) error }); ok {
-		if err := v.Validate(all); err != nil {
-			err = IdentityValidationError{
+	if v, ok := interface{}(m.GetUpdatedAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return IdentityValidationError{
 				field:  "UpdatedAt",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
 		}
 	}
 
@@ -1665,149 +1223,98 @@ func (m *Identity) Validate(all bool) error {
 
 	case *Identity_SoftwareHotpMethod:
 
-		if v, ok := interface{}(m.GetSoftwareHotpMethod()).(interface{ Validate(bool) error }); ok {
-			if err := v.Validate(all); err != nil {
-				err = IdentityValidationError{
+		if v, ok := interface{}(m.GetSoftwareHotpMethod()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return IdentityValidationError{
 					field:  "SoftwareHotpMethod",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
-				if !all {
-					return err
-				}
-				errors = append(errors, err)
 			}
 		}
 
 	case *Identity_SoftwareTotpMethod:
 
-		if v, ok := interface{}(m.GetSoftwareTotpMethod()).(interface{ Validate(bool) error }); ok {
-			if err := v.Validate(all); err != nil {
-				err = IdentityValidationError{
+		if v, ok := interface{}(m.GetSoftwareTotpMethod()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return IdentityValidationError{
 					field:  "SoftwareTotpMethod",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
-				if !all {
-					return err
-				}
-				errors = append(errors, err)
 			}
 		}
 
 	case *Identity_GoogleAuthHotpMethod:
 
-		if v, ok := interface{}(m.GetGoogleAuthHotpMethod()).(interface{ Validate(bool) error }); ok {
-			if err := v.Validate(all); err != nil {
-				err = IdentityValidationError{
+		if v, ok := interface{}(m.GetGoogleAuthHotpMethod()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return IdentityValidationError{
 					field:  "GoogleAuthHotpMethod",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
-				if !all {
-					return err
-				}
-				errors = append(errors, err)
 			}
 		}
 
 	case *Identity_GoogleAuthTotpMethod:
 
-		if v, ok := interface{}(m.GetGoogleAuthTotpMethod()).(interface{ Validate(bool) error }); ok {
-			if err := v.Validate(all); err != nil {
-				err = IdentityValidationError{
+		if v, ok := interface{}(m.GetGoogleAuthTotpMethod()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return IdentityValidationError{
 					field:  "GoogleAuthTotpMethod",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
-				if !all {
-					return err
-				}
-				errors = append(errors, err)
 			}
 		}
 
 	case *Identity_MicrosoftAuthTotpMethod:
 
-		if v, ok := interface{}(m.GetMicrosoftAuthTotpMethod()).(interface{ Validate(bool) error }); ok {
-			if err := v.Validate(all); err != nil {
-				err = IdentityValidationError{
+		if v, ok := interface{}(m.GetMicrosoftAuthTotpMethod()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return IdentityValidationError{
 					field:  "MicrosoftAuthTotpMethod",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
-				if !all {
-					return err
-				}
-				errors = append(errors, err)
 			}
 		}
 
 	case *Identity_HardwareHotpMethod:
 
-		if v, ok := interface{}(m.GetHardwareHotpMethod()).(interface{ Validate(bool) error }); ok {
-			if err := v.Validate(all); err != nil {
-				err = IdentityValidationError{
+		if v, ok := interface{}(m.GetHardwareHotpMethod()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return IdentityValidationError{
 					field:  "HardwareHotpMethod",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
-				if !all {
-					return err
-				}
-				errors = append(errors, err)
 			}
 		}
 
 	case *Identity_HardwareTotpMethod:
 
-		if v, ok := interface{}(m.GetHardwareTotpMethod()).(interface{ Validate(bool) error }); ok {
-			if err := v.Validate(all); err != nil {
-				err = IdentityValidationError{
+		if v, ok := interface{}(m.GetHardwareTotpMethod()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return IdentityValidationError{
 					field:  "HardwareTotpMethod",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
-				if !all {
-					return err
-				}
-				errors = append(errors, err)
 			}
 		}
 
 	default:
-		err := IdentityValidationError{
+		return IdentityValidationError{
 			field:  "MethodOneof",
 			reason: "value is required",
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
 
 	}
 
-	if len(errors) > 0 {
-		return IdentityMultiError(errors)
-	}
 	return nil
 }
-
-// IdentityMultiError is an error wrapping multiple validation errors returned
-// by Identity.Validate(true) if the designated constraints aren't met.
-type IdentityMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m IdentityMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m IdentityMultiError) AllErrors() []error { return m }
 
 // IdentityValidationError is the validation error returned by
 // Identity.Validate if the designated constraints aren't met.
@@ -1865,64 +1372,31 @@ var _ interface {
 
 // Validate checks the field values on CreateIdentityRequest with the rules
 // defined in the proto definition for this message. If any rules are
-// violated, an error is returned. When asked to return all errors, validation
-// continues after first violation, and the result is a list of violation
-// errors wrapped in CreateIdentityRequestMultiError, or nil if none found.
-// Otherwise, only the first error is returned, if any.
-func (m *CreateIdentityRequest) Validate(all bool) error {
+// violated, an error is returned.
+func (m *CreateIdentityRequest) Validate() error {
 	if m == nil {
 		return nil
 	}
 
-	var errors []error
-
 	if m.GetIdentity() == nil {
-		err := CreateIdentityRequestValidationError{
+		return CreateIdentityRequestValidationError{
 			field:  "Identity",
 			reason: "value is required",
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
 	}
 
-	if v, ok := interface{}(m.GetIdentity()).(interface{ Validate(bool) error }); ok {
-		if err := v.Validate(all); err != nil {
-			err = CreateIdentityRequestValidationError{
+	if v, ok := interface{}(m.GetIdentity()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreateIdentityRequestValidationError{
 				field:  "Identity",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
 		}
 	}
 
-	if len(errors) > 0 {
-		return CreateIdentityRequestMultiError(errors)
-	}
 	return nil
 }
-
-// CreateIdentityRequestMultiError is an error wrapping multiple validation
-// errors returned by CreateIdentityRequest.Validate(true) if the designated
-// constraints aren't met.
-type CreateIdentityRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m CreateIdentityRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m CreateIdentityRequestMultiError) AllErrors() []error { return m }
 
 // CreateIdentityRequestValidationError is the validation error returned by
 // CreateIdentityRequest.Validate if the designated constraints aren't met.
@@ -1982,28 +1456,19 @@ var _ interface {
 
 // Validate checks the field values on CreateIdentityResponse with the rules
 // defined in the proto definition for this message. If any rules are
-// violated, an error is returned. When asked to return all errors, validation
-// continues after first violation, and the result is a list of violation
-// errors wrapped in CreateIdentityResponseMultiError, or nil if none found.
-// Otherwise, only the first error is returned, if any.
-func (m *CreateIdentityResponse) Validate(all bool) error {
+// violated, an error is returned.
+func (m *CreateIdentityResponse) Validate() error {
 	if m == nil {
 		return nil
 	}
 
-	var errors []error
-
-	if v, ok := interface{}(m.GetIdentity()).(interface{ Validate(bool) error }); ok {
-		if err := v.Validate(all); err != nil {
-			err = CreateIdentityResponseValidationError{
+	if v, ok := interface{}(m.GetIdentity()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreateIdentityResponseValidationError{
 				field:  "Identity",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
 		}
 	}
 
@@ -2011,28 +1476,8 @@ func (m *CreateIdentityResponse) Validate(all bool) error {
 
 	// no validation rules for Qr
 
-	if len(errors) > 0 {
-		return CreateIdentityResponseMultiError(errors)
-	}
 	return nil
 }
-
-// CreateIdentityResponseMultiError is an error wrapping multiple validation
-// errors returned by CreateIdentityResponse.Validate(true) if the designated
-// constraints aren't met.
-type CreateIdentityResponseMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m CreateIdentityResponseMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m CreateIdentityResponseMultiError) AllErrors() []error { return m }
 
 // CreateIdentityResponseValidationError is the validation error returned by
 // CreateIdentityResponse.Validate if the designated constraints aren't met.
@@ -2092,44 +1537,28 @@ var _ interface {
 
 // Validate checks the field values on GetIdentityRequest with the rules
 // defined in the proto definition for this message. If any rules are
-// violated, an error is returned. When asked to return all errors, validation
-// continues after first violation, and the result is a list of violation
-// errors wrapped in GetIdentityRequestMultiError, or nil if none found.
-// Otherwise, only the first error is returned, if any.
-func (m *GetIdentityRequest) Validate(all bool) error {
+// violated, an error is returned.
+func (m *GetIdentityRequest) Validate() error {
 	if m == nil {
 		return nil
 	}
 
-	var errors []error
-
 	if err := m._validateUuid(m.GetId()); err != nil {
-		err = GetIdentityRequestValidationError{
+		return GetIdentityRequestValidationError{
 			field:  "Id",
 			reason: "value must be a valid UUID",
 			cause:  err,
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
 	}
 
 	if err := m._validateUuid(m.GetAppId()); err != nil {
-		err = GetIdentityRequestValidationError{
+		return GetIdentityRequestValidationError{
 			field:  "AppId",
 			reason: "value must be a valid UUID",
 			cause:  err,
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
 	}
 
-	if len(errors) > 0 {
-		return GetIdentityRequestMultiError(errors)
-	}
 	return nil
 }
 
@@ -2140,23 +1569,6 @@ func (m *GetIdentityRequest) _validateUuid(uuid string) error {
 
 	return nil
 }
-
-// GetIdentityRequestMultiError is an error wrapping multiple validation errors
-// returned by GetIdentityRequest.Validate(true) if the designated constraints
-// aren't met.
-type GetIdentityRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m GetIdentityRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m GetIdentityRequestMultiError) AllErrors() []error { return m }
 
 // GetIdentityRequestValidationError is the validation error returned by
 // GetIdentityRequest.Validate if the designated constraints aren't met.
@@ -2216,44 +1628,28 @@ var _ interface {
 
 // Validate checks the field values on DeleteIdentityRequest with the rules
 // defined in the proto definition for this message. If any rules are
-// violated, an error is returned. When asked to return all errors, validation
-// continues after first violation, and the result is a list of violation
-// errors wrapped in DeleteIdentityRequestMultiError, or nil if none found.
-// Otherwise, only the first error is returned, if any.
-func (m *DeleteIdentityRequest) Validate(all bool) error {
+// violated, an error is returned.
+func (m *DeleteIdentityRequest) Validate() error {
 	if m == nil {
 		return nil
 	}
 
-	var errors []error
-
 	if err := m._validateUuid(m.GetId()); err != nil {
-		err = DeleteIdentityRequestValidationError{
+		return DeleteIdentityRequestValidationError{
 			field:  "Id",
 			reason: "value must be a valid UUID",
 			cause:  err,
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
 	}
 
 	if err := m._validateUuid(m.GetAppId()); err != nil {
-		err = DeleteIdentityRequestValidationError{
+		return DeleteIdentityRequestValidationError{
 			field:  "AppId",
 			reason: "value must be a valid UUID",
 			cause:  err,
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
 	}
 
-	if len(errors) > 0 {
-		return DeleteIdentityRequestMultiError(errors)
-	}
 	return nil
 }
 
@@ -2264,23 +1660,6 @@ func (m *DeleteIdentityRequest) _validateUuid(uuid string) error {
 
 	return nil
 }
-
-// DeleteIdentityRequestMultiError is an error wrapping multiple validation
-// errors returned by DeleteIdentityRequest.Validate(true) if the designated
-// constraints aren't met.
-type DeleteIdentityRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m DeleteIdentityRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m DeleteIdentityRequestMultiError) AllErrors() []error { return m }
 
 // DeleteIdentityRequestValidationError is the validation error returned by
 // DeleteIdentityRequest.Validate if the designated constraints aren't met.
@@ -2340,26 +1719,17 @@ var _ interface {
 
 // Validate checks the field values on ListIdentitiesRequest with the rules
 // defined in the proto definition for this message. If any rules are
-// violated, an error is returned. When asked to return all errors, validation
-// continues after first violation, and the result is a list of violation
-// errors wrapped in ListIdentitiesRequestMultiError, or nil if none found.
-// Otherwise, only the first error is returned, if any.
-func (m *ListIdentitiesRequest) Validate(all bool) error {
+// violated, an error is returned.
+func (m *ListIdentitiesRequest) Validate() error {
 	if m == nil {
 		return nil
 	}
 
-	var errors []error
-
 	if m.GetPageSize() > 250 {
-		err := ListIdentitiesRequestValidationError{
+		return ListIdentitiesRequestValidationError{
 			field:  "PageSize",
 			reason: "value must be less than or equal to 250",
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
 	}
 
 	// no validation rules for PageToken
@@ -2367,22 +1737,15 @@ func (m *ListIdentitiesRequest) Validate(all bool) error {
 	if m.GetAppId() != "" {
 
 		if err := m._validateUuid(m.GetAppId()); err != nil {
-			err = ListIdentitiesRequestValidationError{
+			return ListIdentitiesRequestValidationError{
 				field:  "AppId",
 				reason: "value must be a valid UUID",
 				cause:  err,
 			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
 		}
 
 	}
 
-	if len(errors) > 0 {
-		return ListIdentitiesRequestMultiError(errors)
-	}
 	return nil
 }
 
@@ -2393,23 +1756,6 @@ func (m *ListIdentitiesRequest) _validateUuid(uuid string) error {
 
 	return nil
 }
-
-// ListIdentitiesRequestMultiError is an error wrapping multiple validation
-// errors returned by ListIdentitiesRequest.Validate(true) if the designated
-// constraints aren't met.
-type ListIdentitiesRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m ListIdentitiesRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m ListIdentitiesRequestMultiError) AllErrors() []error { return m }
 
 // ListIdentitiesRequestValidationError is the validation error returned by
 // ListIdentitiesRequest.Validate if the designated constraints aren't met.
@@ -2469,31 +1815,22 @@ var _ interface {
 
 // Validate checks the field values on ListIdentitiesResponse with the rules
 // defined in the proto definition for this message. If any rules are
-// violated, an error is returned. When asked to return all errors, validation
-// continues after first violation, and the result is a list of violation
-// errors wrapped in ListIdentitiesResponseMultiError, or nil if none found.
-// Otherwise, only the first error is returned, if any.
-func (m *ListIdentitiesResponse) Validate(all bool) error {
+// violated, an error is returned.
+func (m *ListIdentitiesResponse) Validate() error {
 	if m == nil {
 		return nil
 	}
 
-	var errors []error
-
 	for idx, item := range m.GetIdentities() {
 		_, _ = idx, item
 
-		if v, ok := interface{}(item).(interface{ Validate(bool) error }); ok {
-			if err := v.Validate(all); err != nil {
-				err = ListIdentitiesResponseValidationError{
+		if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListIdentitiesResponseValidationError{
 					field:  fmt.Sprintf("Identities[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
-				if !all {
-					return err
-				}
-				errors = append(errors, err)
 			}
 		}
 
@@ -2503,28 +1840,8 @@ func (m *ListIdentitiesResponse) Validate(all bool) error {
 
 	// no validation rules for TotalSize
 
-	if len(errors) > 0 {
-		return ListIdentitiesResponseMultiError(errors)
-	}
 	return nil
 }
-
-// ListIdentitiesResponseMultiError is an error wrapping multiple validation
-// errors returned by ListIdentitiesResponse.Validate(true) if the designated
-// constraints aren't met.
-type ListIdentitiesResponseMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m ListIdentitiesResponseMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m ListIdentitiesResponseMultiError) AllErrors() []error { return m }
 
 // ListIdentitiesResponseValidationError is the validation error returned by
 // ListIdentitiesResponse.Validate if the designated constraints aren't met.
