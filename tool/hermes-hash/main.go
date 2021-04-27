@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ownmfa/hermes/internal/api/crypto"
 	"github.com/ownmfa/hermes/internal/api/session"
+	"github.com/ownmfa/hermes/pkg/crypto"
 )
 
 const usage = `Usage:

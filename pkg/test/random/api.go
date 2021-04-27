@@ -63,3 +63,20 @@ func App(prefix, orgID string) *api.App {
 			`verification code is: 1234567</body></html>`),
 	}
 }
+
+// Identity generates a random identity with prefixed identifiers.
+func Identity(prefix, orgID, appID string) *api.Identity {
+	return &api.Identity{
+		Id:      uuid.NewString(),
+		OrgId:   orgID,
+		AppId:   appID,
+		Comment: prefix + "-" + String(10),
+		Status: []api.IdentityStatus{
+			api.IdentityStatus_UNVERIFIED,
+			api.IdentityStatus_ACTIVATED,
+		}[Intn(2)],
+		MethodOneof: &api.Identity_SoftwareHotpMethod{
+			SoftwareHotpMethod: &api.SoftwareHOTPMethod{Digits: 6},
+		},
+	}
+}

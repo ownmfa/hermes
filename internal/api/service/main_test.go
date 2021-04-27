@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ownmfa/hermes/internal/api/crypto"
+	"github.com/ownmfa/hermes/pkg/crypto"
 	"github.com/ownmfa/hermes/pkg/test/random"
 )
 

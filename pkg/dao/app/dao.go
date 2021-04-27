@@ -1,4 +1,4 @@
-// Package app provides functions to create and query API applications in the
+// Package app provides functions to query and modify applications in the
 // database.
 package app
 
@@ -6,7 +6,7 @@ import (
 	"database/sql"
 )
 
-// DAO contains functions to create and query API applications in the database.
+// DAO contains functions to query and modify applications in the database.
 type DAO struct {
 	pg *sql.DB
 }

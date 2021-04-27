@@ -324,7 +324,7 @@
           },
           {
             "name": "id",
-            "description": "Identity ID (UUID) to get.",
+            "description": "Identity ID (UUID) to get. Identity method_oneof may be returned in simplified form.",
             "in": "path",
             "required": true,
             "type": "string"
@@ -1209,12 +1209,12 @@
         },
         "secret": {
           "type": "string",
-          "description": "Secret in base32 format, for identity methods that provide secrets to users. Only returned once, upon identity creation."
+          "description": "Secret in base32 format, for identity methods that provide secrets. Only returned once, upon identity creation."
         },
         "qr": {
           "type": "string",
           "format": "byte",
-          "description": "Identity QR code, in Google Authenticator-compatible format, as a PNG image. For identity methods that provide secrets to users. Only returned once, upon identity creation. When used in JSON, the value will be represented as a base64 string."
+          "description": "Identity QR code, in Google Authenticator-compatible format, as a PNG image. For identity methods that provide secrets. Only returned once, upon identity creation. When used in JSON, the value will be represented as a base64 string."
         }
       },
       "description": "CreateIdentityResponse is sent in response to an identity creation."
@@ -1245,48 +1245,68 @@
       "type": "object",
       "properties": {
         "hash": {
-          "$ref": "#/definitions/apiHashFunc",
-          "description": "Hardware HOTP hash function. Defaults to SHA512 if not specified."
+          "$ref": "#/definitions/apiHash",
+          "description": "Hardware HOTP hash function."
         },
         "digits": {
           "type": "integer",
           "format": "int32",
-          "description": "Passcode digit length. Defaults to 7 if not specified."
+          "description": "Passcode digit length.",
+          "required": [
+            "digits"
+          ]
         },
         "counter": {
           "type": "integer",
           "format": "int32",
-          "description": "Hardware HOTP starting counter. Defaults to 0 if not specified."
+          "description": "Hardware HOTP starting counter. Only included during identity creation. Defaults to 0 if not specified."
         },
         "secret": {
           "type": "string",
           "format": "byte",
-          "description": "Hardware HOTP secret. When used in JSON, the value will be represented as a base64 string."
+          "description": "Hardware HOTP secret. Only included during identity creation. When used in JSON, the value will be represented as a base64 string.",
+          "required": [
+            "secret"
+          ]
         }
       },
-      "description": "HardwareHOTPMethod configures a hardware OATH HOTP one-time password method."
+      "description": "HardwareHOTPMethod configures a hardware OATH HOTP one-time password method.",
+      "required": [
+        "digits",
+        "secret"
+      ]
     },
     "apiHardwareTOTPMethod": {
       "type": "object",
       "properties": {
         "hash": {
-          "$ref": "#/definitions/apiHashFunc",
-          "description": "Hardware TOTP hash function. Defaults to SHA512 if not specified."
+          "$ref": "#/definitions/apiHash",
+          "description": "Hardware TOTP hash function."
         },
         "digits": {
           "type": "integer",
           "format": "int32",
-          "description": "Passcode digit length. Defaults to 7 if not specified."
+          "description": "Passcode digit length.",
+          "required": [
+            "digits"
+          ]
         },
         "secret": {
           "type": "string",
           "format": "byte",
-          "description": "Hardware TOTP secret. When used in JSON, the value will be represented as a base64 string."
+          "description": "Hardware TOTP secret. Only included during identity creation. When used in JSON, the value will be represented as a base64 string.",
+          "required": [
+            "secret"
+          ]
         }
       },
-      "description": "HardwareTOTPMethod configures a hardware OATH TOTP one-time password method."
+      "description": "HardwareTOTPMethod configures a hardware OATH TOTP one-time password method.",
+      "required": [
+        "digits",
+        "secret"
+      ]
     },
-    "apiHashFunc": {
+    "apiHash": {
       "type": "string",
       "enum": [
         "SHA512",
@@ -1294,7 +1314,7 @@
         "SHA1"
       ],
       "default": "SHA512",
-      "description": "HashFunc represents a hash function.\n\n - SHA512: SHA-2 512 bits.\n - SHA256: SHA-2 256 bits.\n - SHA1: SHA-1."
+      "description": "Hash represents a hash function.\n\n - SHA512: SHA-2 512 bits.\n - SHA256: SHA-2 256 bits.\n - SHA1: SHA-1."
     },
     "apiIdentity": {
       "type": "object",
@@ -1616,7 +1636,7 @@
       "type": "object",
       "properties": {
         "hash": {
-          "$ref": "#/definitions/apiHashFunc",
+          "$ref": "#/definitions/apiHash",
           "description": "Software HOTP hash function. Defaults to SHA512 if not specified."
         },
         "digits": {
@@ -1627,7 +1647,7 @@
         "counter": {
           "type": "integer",
           "format": "int32",
-          "description": "Software HOTP starting counter. Defaults to 0 if not specified."
+          "description": "Software HOTP starting counter. Only included during identity creation. Defaults to 0 if not specified."
         }
       },
       "description": "SoftwareHOTPMethod configures a software OATH HOTP one-time password method."
@@ -1636,7 +1656,7 @@
       "type": "object",
       "properties": {
         "hash": {
-          "$ref": "#/definitions/apiHashFunc",
+          "$ref": "#/definitions/apiHash",
           "description": "Software TOTP hash function. Defaults to SHA512 if not specified."
         },
         "digits": {

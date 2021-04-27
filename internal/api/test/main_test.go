@@ -12,7 +12,7 @@ import (
 	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/internal/api/api"
 	"github.com/ownmfa/hermes/internal/api/config"
-	"github.com/ownmfa/hermes/internal/api/crypto"
+	"github.com/ownmfa/hermes/pkg/crypto"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/dao/org"
 	"github.com/ownmfa/hermes/pkg/dao/user"
@@ -47,8 +47,7 @@ var (
 
 func TestMain(m *testing.M) {
 	key := make([]byte, 32)
-	_, err := rand.Read(key)
-	if err != nil {
+	if _, err := rand.Read(key); err != nil {
 		log.Fatalf("TestMain rand.Read: %v", err)
 	}
 

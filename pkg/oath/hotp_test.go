@@ -26,20 +26,19 @@ func TestHOTP(t *testing.T) {
 
 	tests := []struct {
 		inpHash    crypto.Hash
-		inpKey     []byte
 		inpDigits  int
+		inpKey     []byte
 		inpCounter int64
 		resDigits  int
 		resCode    string
 		err        error
 	}{
-		{crypto.SHA1, knownKey, 6, int64(5), 6, "861821", nil},
-		{crypto.SHA256, knownKey, 7, int64(1), 7, "1915540", nil},
-		{crypto.SHA1, randKey, 6, int64(random.Intn(99)), 6, "", nil},
-		{crypto.SHA256, randKey, 7, int64(random.Intn(99)), 7, "", nil},
-		{crypto.SHA512, randKey, 8, int64(random.Intn(99)), 8, "", nil},
-		{crypto.SHA512, randKey, 9, int64(random.Intn(99)), 7, "", nil},
-		{crypto.SHA1, nil, 7, 0, 0, "", ErrKeyLength},
+		{crypto.SHA1, 6, knownKey, int64(5), 6, "861821", nil},
+		{crypto.SHA256, 7, knownKey, int64(1), 7, "1915540", nil},
+		{crypto.SHA1, 6, randKey, int64(random.Intn(99)), 6, "", nil},
+		{crypto.SHA256, 7, randKey, int64(random.Intn(99)), 7, "", nil},
+		{crypto.SHA512, 8, randKey, int64(random.Intn(99)), 8, "", nil},
+		{crypto.SHA512, 7, nil, 0, 0, "", ErrKeyLength},
 	}
 
 	for _, test := range tests {
@@ -72,17 +71,17 @@ func TestVerifyHOTP(t *testing.T) {
 
 	tests := []struct {
 		inpHash   crypto.Hash
-		inpKey    []byte
 		inpDigits int
+		inpKey    []byte
 		inpCode   string
 		res       int64
 		err       error
 	}{
-		{crypto.SHA1, key, 6, "861821", 6, nil},
-		{crypto.SHA256, key, 7, "1915540", 2, nil},
-		{crypto.SHA1, key, 6, "478081", 100, nil},
-		{crypto.SHA1, nil, 6, "000000", 0, ErrKeyLength},
-		{crypto.SHA1, key, 6, "000000", 0, ErrInvalidPasscode},
+		{crypto.SHA1, 6, key, "861821", 6, nil},
+		{crypto.SHA256, 7, key, "1915540", 2, nil},
+		{crypto.SHA1, 6, key, "478081", 100, nil},
+		{crypto.SHA512, 6, nil, "000000", 0, ErrKeyLength},
+		{crypto.SHA1, 6, key, "000000", 0, ErrInvalidPasscode},
 	}
 
 	for _, test := range tests {

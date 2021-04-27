@@ -8,10 +8,10 @@ import (
 
 	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/api/go/common"
-	"github.com/ownmfa/hermes/internal/api/crypto"
 	"github.com/ownmfa/hermes/internal/api/key"
 	"github.com/ownmfa/hermes/internal/api/session"
 	"github.com/ownmfa/hermes/pkg/cache"
+	"github.com/ownmfa/hermes/pkg/crypto"
 	"github.com/ownmfa/hermes/pkg/hlog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
