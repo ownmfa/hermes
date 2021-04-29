@@ -85,13 +85,14 @@ func TestVerifyTOTP(t *testing.T) {
 		inpKey    []byte
 		inpTime   time.Time
 		inpCode   string
+		res       int
 		err       error
 	}{
-		{crypto.SHA1, 6, key, knownTime, "660634", nil},
-		{crypto.SHA256, 7, key, knownTime, "2596747", nil},
-		{crypto.SHA512, 8, key, knownTime, "76879241", nil},
-		{crypto.SHA512, 6, nil, time.Now(), "000000", ErrKeyLength},
-		{crypto.SHA1, 6, key, time.Now(), "000000", ErrInvalidPasscode},
+		{crypto.SHA1, 6, key, knownTime, "660634", 0, nil},
+		{crypto.SHA256, 7, key, knownTime, "2596747", 0, nil},
+		{crypto.SHA512, 8, key, knownTime, "76879241", 1, nil},
+		{crypto.SHA512, 6, nil, time.Now(), "000000", 0, ErrKeyLength},
+		{crypto.SHA1, 6, key, time.Now(), "000000", 0, ErrInvalidPasscode},
 	}
 
 	for _, test := range tests {
@@ -105,16 +106,21 @@ func TestVerifyTOTP(t *testing.T) {
 				Digits: lTest.inpDigits,
 			}
 
-			err := otp.verifyTOTP(lTest.inpTime, lTest.inpCode)
-			t.Logf("err: %v", err)
+			res, err := otp.verifyTOTP(DefaultLookAheadTOTP, lTest.inpTime,
+				lTest.inpCode)
+			t.Logf("res, err: %v, %v", res, err)
+			require.Equal(t, lTest.res, res)
 			require.Equal(t, lTest.err, err)
 
 			if lTest.err == nil {
-				res, err := otp.TOTP()
+				code, err := otp.TOTP()
 				t.Logf("res, err: %v, %v", res, err)
 				require.NoError(t, err)
 
-				require.NoError(t, otp.VerifyTOTP(res))
+				res, err = otp.VerifyTOTP(DefaultLookAheadTOTP, code)
+				t.Logf("res, err: %v, %v", res, err)
+				require.Equal(t, 0, res)
+				require.NoError(t, err)
 			}
 		})
 	}

@@ -96,7 +96,7 @@ func TestVerifyHOTP(t *testing.T) {
 				Digits: lTest.inpDigits,
 			}
 
-			res, err := otp.VerifyHOTP(0, lTest.inpCode)
+			res, err := otp.VerifyHOTP(DefaultLookAheadHOTP, 0, lTest.inpCode)
 			t.Logf("res, err: %v, %v", res, err)
 			require.Equal(t, lTest.res, res)
 			require.Equal(t, lTest.err, err)
