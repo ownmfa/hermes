@@ -9,7 +9,7 @@ import (
 	"math"
 )
 
-const lookAhead = 100
+const DefaultLookAheadHOTP = 100
 
 // HOTP generates a passcode using a counter.
 func (o *OTP) HOTP(counter int64) (string, error) {
@@ -30,18 +30,19 @@ func (o *OTP) HOTP(counter int64) (string, error) {
 	return fmt.Sprintf("%0*d", o.Digits, mod), nil
 }
 
-// VerifyHOTP verifies a passcode using the current counter and a look-ahead
-// window. On success, the next valid counter is returned.
-func (o *OTP) VerifyHOTP(counter int64, passcode string) (int64, error) {
-	var i int64
-	for i = 0; i < lookAhead; i++ {
-		pass, err := o.HOTP(counter + i)
+// VerifyHOTP verifies a passcode using a look-ahead count and the current
+// counter. lookAhead should usually be set to DefaultLookAheadHOTP for
+// non-activation use cases. On success, the next valid counter is returned.
+func (o *OTP) VerifyHOTP(lookAhead int, counter int64, passcode string) (int64,
+	error) {
+	for i := 0; i < lookAhead; i++ {
+		pass, err := o.HOTP(counter + int64(i))
 		if err != nil {
 			return 0, err
 		}
 
 		if hmac.Equal([]byte(pass), []byte(passcode)) {
-			return counter + i + 1, nil
+			return counter + int64(i) + 1, nil
 		}
 	}
 

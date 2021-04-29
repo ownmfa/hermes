@@ -65,7 +65,7 @@ func New(cfg *config.Config) (*API, error) {
 	}
 
 	// Set up cache connection.
-	c, err := cache.NewRedis(cfg.RedisHost + ":6379")
+	redis, err := cache.NewRedis(cfg.RedisHost + ":6379")
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func New(cfg *config.Config) (*API, error) {
 
 	srv := grpc.NewServer(grpc.ChainUnaryInterceptor(
 		interceptor.Log(nil),
-		interceptor.Auth(skipAuth, cfg.PWTKey, c),
+		interceptor.Auth(skipAuth, cfg.PWTKey, redis),
 		interceptor.Validate(skipValidate),
 	))
 	api.RegisterAppIdentityServiceServer(srv,
@@ -91,7 +91,7 @@ func New(cfg *config.Config) (*API, error) {
 			cfg.IdentityKey)))
 	api.RegisterOrgServiceServer(srv, service.NewOrg(org.NewDAO(pg)))
 	api.RegisterSessionServiceServer(srv, service.NewSession(user.NewDAO(pg),
-		key.NewDAO(pg), c, cfg.PWTKey))
+		key.NewDAO(pg), redis, cfg.PWTKey))
 	api.RegisterUserServiceServer(srv, service.NewUser(user.NewDAO(pg)))
 
 	// Register gRPC-Gateway handlers.
