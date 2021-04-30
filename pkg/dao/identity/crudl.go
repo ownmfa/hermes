@@ -83,10 +83,38 @@ func (d *DAO) Read(ctx context.Context, identityID, orgID,
 	}
 
 	return identity, &oath.OTP{
-		Hash:   hashAPIToCrypto[api.Hash(api.Hash_value[hash])],
-		Digits: int(digits),
-		Key:    secret,
+		Algorithm: alg,
+		Hash:      hashAPIToCrypto[api.Hash(api.Hash_value[hash])],
+		Digits:    int(digits),
+		Key:       secret,
 	}, nil
+}
+
+const updateIdentityStatus = `
+UPDATE identities
+SET status = $1, updated_at = $2
+WHERE (id, org_id, app_id) = ($3, $4, $5)
+`
+
+// UpdateStatus updates an identity's status by ID, org ID, and app ID.
+func (d *DAO) UpdateStatus(ctx context.Context, identityID, orgID,
+	appID string, status api.IdentityStatus) (*api.Identity, error) {
+	// Read the identity before attempting to update it. Do not remap the error.
+	identity, _, err := d.Read(ctx, identityID, orgID, appID)
+	if err != nil {
+		return nil, err
+	}
+
+	identity.Status = status
+	updatedAt := time.Now().UTC().Truncate(time.Microsecond)
+	identity.UpdatedAt = timestamppb.New(updatedAt)
+
+	if _, err = d.pg.ExecContext(ctx, updateIdentityStatus, status.String(),
+		updatedAt, identityID, orgID, appID); err != nil {
+		return nil, dao.DBToSentinel(err)
+	}
+
+	return identity, nil
 }
 
 const deleteIdentity = `

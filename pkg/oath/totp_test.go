@@ -54,7 +54,7 @@ func TestTOTP(t *testing.T) {
 				Digits: lTest.inpDigits,
 			}
 
-			res, err := otp.totp(lTest.inpTime)
+			res, err := otp.TOTP(lTest.inpTime)
 			t.Logf("res, err: %v, %v", res, err)
 			require.Len(t, res, lTest.resDigits)
 			if lTest.resCode != "" {
@@ -62,7 +62,7 @@ func TestTOTP(t *testing.T) {
 			}
 			require.Equal(t, lTest.err, err)
 
-			res, err = otp.TOTP()
+			res, err = otp.TOTP(time.Now())
 			t.Logf("res, err: %v, %v", res, err)
 			require.Len(t, res, lTest.resDigits)
 			require.Equal(t, lTest.err, err)
@@ -113,7 +113,7 @@ func TestVerifyTOTP(t *testing.T) {
 			require.Equal(t, lTest.err, err)
 
 			if lTest.err == nil {
-				code, err := otp.TOTP()
+				code, err := otp.TOTP(time.Now())
 				t.Logf("res, err: %v, %v", res, err)
 				require.NoError(t, err)
 

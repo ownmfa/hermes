@@ -9,13 +9,8 @@ import (
 
 const DefaultLookAheadTOTP = 1
 
-// TOTP generates a passcode based on the current time.
-func (o *OTP) TOTP() (string, error) {
-	return o.totp(time.Now())
-}
-
-// totp generates a passcode based on the provided time.
-func (o *OTP) totp(t time.Time) (string, error) {
+// TOTP generates a passcode based on the provided time.
+func (o *OTP) TOTP(t time.Time) (string, error) {
 	return o.HOTP(t.UnixNano() / int64(time.Duration(period)*time.Second))
 }
 
@@ -34,7 +29,7 @@ func (o *OTP) VerifyTOTP(lookAhead int, passcode string) (int, error) {
 func (o *OTP) verifyTOTP(lookAhead int, t time.Time, passcode string) (int,
 	error) {
 	for i := -lookAhead + o.TOTPOffset; i <= lookAhead+o.TOTPOffset; i++ {
-		pass, err := o.totp(t.Add(time.Duration(i*period) * time.Second))
+		pass, err := o.TOTP(t.Add(time.Duration(i*period) * time.Second))
 		if err != nil {
 			return 0, err
 		}

@@ -9,7 +9,9 @@ import (
 	"github.com/mennanov/fmutils"
 	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/api/go/common"
+	"github.com/ownmfa/hermes/internal/hermes-api/key"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
+	"github.com/ownmfa/hermes/pkg/cache"
 	"github.com/ownmfa/hermes/pkg/hlog"
 	"github.com/ownmfa/hermes/pkg/oath"
 	"google.golang.org/grpc"
@@ -36,6 +38,8 @@ type Identityer interface {
 		*oath.OTP, bool, error)
 	Read(ctx context.Context, identityID, orgID, appID string) (*api.Identity,
 		*oath.OTP, error)
+	UpdateStatus(ctx context.Context, identityID, orgID, appID string,
+		status api.IdentityStatus) (*api.Identity, error)
 	Delete(ctx context.Context, identityID, orgID, appID string) error
 	List(ctx context.Context, orgID string, lBoundTS time.Time, prevID string,
 		limit int32, appID string) ([]*api.Identity, int32, error)
@@ -48,13 +52,16 @@ type AppIdentity struct {
 
 	appDAO      Apper
 	identityDAO Identityer
+	cache       cache.Cacher
 }
 
 // NewAppIdentity instantiates and returns a new AppIdentity service.
-func NewAppIdentity(appDAO Apper, identityDAO Identityer) *AppIdentity {
+func NewAppIdentity(appDAO Apper, identityDAO Identityer,
+	cache cache.Cacher) *AppIdentity {
 	return &AppIdentity{
 		appDAO:      appDAO,
 		identityDAO: identityDAO,
+		cache:       cache,
 	}
 }
 
@@ -119,6 +126,72 @@ func (ai *AppIdentity) CreateIdentity(ctx context.Context,
 	}
 
 	return resp, nil
+}
+
+// ActivateIdentity activates an identity by ID.
+func (ai *AppIdentity) ActivateIdentity(ctx context.Context,
+	req *api.ActivateIdentityRequest) (*api.Identity, error) {
+	sess, ok := session.FromContext(ctx)
+	if !ok || sess.Role < common.Role_AUTHENTICATOR {
+		return nil, errPerm(common.Role_AUTHENTICATOR)
+	}
+
+	identity, otp, err := ai.identityDAO.Read(ctx, req.Id, sess.OrgID,
+		req.AppId)
+	if err != nil {
+		return nil, errToStatus(err)
+	}
+
+	if identity.Status != api.IdentityStatus_UNVERIFIED {
+		return nil, status.Error(codes.FailedPrecondition,
+			"identity is already activated")
+	}
+
+	// Verify initial passcode and calculate HOTP counter or TOTP window offset.
+	var counter int64
+	var offset int
+
+	switch identity.MethodOneof.(type) {
+	case *api.Identity_SoftwareHotpMethod, *api.Identity_GoogleAuthHotpMethod,
+		*api.Identity_HardwareHotpMethod:
+		counter, err = otp.VerifyHOTP(1000, 0, req.Passcode)
+	case *api.Identity_SoftwareTotpMethod, *api.Identity_GoogleAuthTotpMethod,
+		*api.Identity_MicrosoftAuthTotpMethod:
+		offset, err = otp.VerifyTOTP(6, req.Passcode)
+	case *api.Identity_HardwareTotpMethod:
+		offset, err = otp.VerifyTOTP(20, req.Passcode)
+	}
+	if err != nil {
+		return nil, errToStatus(err)
+	}
+
+	// Add logging fields.
+	logger := hlog.FromContext(ctx)
+	logger.Logger = logger.WithStr("appID", identity.AppId)
+	logger.Logger = logger.WithStr("identityID", identity.Id)
+	logger.Infof("ActivateIdentity counter, offset: %v, %v", counter, offset)
+
+	// Save HOTP counter or TOTP window offset for future verifications.
+	switch {
+	case counter != 0:
+		if err = ai.cache.Set(ctx, key.HOTPCounter(identity.OrgId,
+			identity.AppId, identity.Id), counter); err != nil {
+			return nil, errToStatus(err)
+		}
+	case offset != 0:
+		if err = ai.cache.Set(ctx, key.TOTPOffset(identity.OrgId,
+			identity.AppId, identity.Id), offset); err != nil {
+			return nil, errToStatus(err)
+		}
+	}
+
+	identity, err = ai.identityDAO.UpdateStatus(ctx, identity.Id,
+		identity.OrgId, identity.AppId, api.IdentityStatus_ACTIVATED)
+	if err != nil {
+		return nil, errToStatus(err)
+	}
+
+	return identity, nil
 }
 
 // GetApp retrieves an application by ID.
