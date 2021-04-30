@@ -337,12 +337,12 @@ func TestDeleteKey(t *testing.T) {
 	t.Run("Delete key by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		cacher := cache.NewMockCacher(gomock.NewController(t))
-		cacher.EXPECT().Set(gomock.Any(), gomock.Any(), "").Return(nil).Times(1)
-
-		keyer := NewMockKeyer(gomock.NewController(t))
+		ctrl := gomock.NewController(t)
+		keyer := NewMockKeyer(ctrl)
 		keyer.EXPECT().Delete(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(nil).Times(1)
+		cacher := cache.NewMockCacher(ctrl)
+		cacher.EXPECT().Set(gomock.Any(), gomock.Any(), "").Return(nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
@@ -408,12 +408,12 @@ func TestDeleteKey(t *testing.T) {
 	t.Run("Delete key by unknown ID", func(t *testing.T) {
 		t.Parallel()
 
-		cacher := cache.NewMockCacher(gomock.NewController(t))
-		cacher.EXPECT().Set(gomock.Any(), gomock.Any(), "").Return(nil).Times(1)
-
-		keyer := NewMockKeyer(gomock.NewController(t))
+		ctrl := gomock.NewController(t)
+		keyer := NewMockKeyer(ctrl)
 		keyer.EXPECT().Delete(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(dao.ErrNotFound).Times(1)
+		cacher := cache.NewMockCacher(ctrl)
+		cacher.EXPECT().Set(gomock.Any(), gomock.Any(), "").Return(nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{

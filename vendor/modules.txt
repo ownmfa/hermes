@@ -36,11 +36,10 @@ github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/empty
 github.com/golang/protobuf/ptypes/struct
 github.com/golang/protobuf/ptypes/timestamp
-github.com/golang/protobuf/ptypes/wrappers
 # github.com/google/uuid v1.2.0
 ## explicit
 github.com/google/uuid
-# github.com/grpc-ecosystem/grpc-gateway/v2 v2.3.0
+# github.com/grpc-ecosystem/grpc-gateway/v2 v2.4.0
 ## explicit
 github.com/grpc-ecosystem/grpc-gateway/v2/internal/httprule
 github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2/options
@@ -72,7 +71,7 @@ github.com/jackc/pgx/v4/stdlib
 # github.com/mennanov/fmutils v0.1.0
 ## explicit
 github.com/mennanov/fmutils
-# github.com/ownmfa/api/go v0.0.0-20210427213951-4e154c575354
+# github.com/ownmfa/api/go v0.0.0-20210430154431-cd39dab7ecbe
 ## explicit
 github.com/ownmfa/api/go/api
 github.com/ownmfa/api/go/common
@@ -118,7 +117,7 @@ go.opentelemetry.io/otel/trace
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/pbkdf2
-# golang.org/x/net v0.0.0-20210423184538-5f58ad60dda6
+# golang.org/x/net v0.0.0-20210428140749-89ef3d95e781
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
 golang.org/x/net/http2/hpack
@@ -142,7 +141,7 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# google.golang.org/genproto v0.0.0-20210426193834-eac7f76ac494
+# google.golang.org/genproto v0.0.0-20210429181445-86c259c2b4ab
 google.golang.org/genproto/googleapis/api/annotations
 google.golang.org/genproto/googleapis/api/httpbody
 google.golang.org/genproto/googleapis/rpc/status

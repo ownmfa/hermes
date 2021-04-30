@@ -9,6 +9,7 @@ import (
 	"github.com/ownmfa/hermes/pkg/crypto"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/hlog"
+	"github.com/ownmfa/hermes/pkg/oath"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -24,6 +25,7 @@ var errToCode = map[error]codes.Code{
 	dao.ErrAlreadyExists: codes.AlreadyExists,
 	dao.ErrInvalidFormat: codes.InvalidArgument,
 	dao.ErrNotFound:      codes.NotFound,
+	oath.ErrKeyLength:    codes.FailedPrecondition,
 }
 
 // errToStatus maps DAO errors to gRPC status errors. This function is

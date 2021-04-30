@@ -12,6 +12,7 @@ import (
 	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/internal/hermes-api/api"
 	"github.com/ownmfa/hermes/internal/hermes-api/config"
+	"github.com/ownmfa/hermes/pkg/cache"
 	"github.com/ownmfa/hermes/pkg/crypto"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/dao/org"
@@ -30,6 +31,7 @@ const (
 var (
 	globalOrgDAO  *org.DAO
 	globalUserDAO *user.DAO
+	globalCache   cache.Cacher
 
 	globalPass string
 	// globalHash is stored globally for test performance under -race.
@@ -78,6 +80,12 @@ func TestMain(m *testing.M) {
 	}
 	globalOrgDAO = org.NewDAO(pg)
 	globalUserDAO = user.NewDAO(pg)
+
+	// Set up cache connection.
+	globalCache, err = cache.NewRedis(cfg.RedisHost + ":6379")
+	if err != nil {
+		log.Fatalf("TestMain cache.NewRedis: %v", err)
+	}
 
 	globalPass = random.String(10)
 	globalHash, err = crypto.HashPass(globalPass)

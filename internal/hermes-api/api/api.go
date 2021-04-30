@@ -88,7 +88,7 @@ func New(cfg *config.Config) (*API, error) {
 	))
 	api.RegisterAppIdentityServiceServer(srv,
 		service.NewAppIdentity(app.NewDAO(pg), identity.NewDAO(pg,
-			cfg.IdentityKey)))
+			cfg.IdentityKey), redis))
 	api.RegisterOrgServiceServer(srv, service.NewOrg(org.NewDAO(pg)))
 	api.RegisterSessionServiceServer(srv, service.NewSession(user.NewDAO(pg),
 		key.NewDAO(pg), redis, cfg.PWTKey))

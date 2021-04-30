@@ -23,6 +23,8 @@ type AppIdentityServiceClient interface {
 	CreateApp(ctx context.Context, in *CreateAppRequest, opts ...grpc.CallOption) (*App, error)
 	// Create an identity.
 	CreateIdentity(ctx context.Context, in *CreateIdentityRequest, opts ...grpc.CallOption) (*CreateIdentityResponse, error)
+	// Activate an identity.
+	ActivateIdentity(ctx context.Context, in *ActivateIdentityRequest, opts ...grpc.CallOption) (*Identity, error)
 	// Get an application by ID.
 	GetApp(ctx context.Context, in *GetAppRequest, opts ...grpc.CallOption) (*App, error)
 	// Get an identity by ID.
@@ -59,6 +61,15 @@ func (c *appIdentityServiceClient) CreateApp(ctx context.Context, in *CreateAppR
 func (c *appIdentityServiceClient) CreateIdentity(ctx context.Context, in *CreateIdentityRequest, opts ...grpc.CallOption) (*CreateIdentityResponse, error) {
 	out := new(CreateIdentityResponse)
 	err := c.cc.Invoke(ctx, "/ownmfa.api.AppIdentityService/CreateIdentity", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appIdentityServiceClient) ActivateIdentity(ctx context.Context, in *ActivateIdentityRequest, opts ...grpc.CallOption) (*Identity, error) {
+	out := new(Identity)
+	err := c.cc.Invoke(ctx, "/ownmfa.api.AppIdentityService/ActivateIdentity", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -136,6 +147,8 @@ type AppIdentityServiceServer interface {
 	CreateApp(context.Context, *CreateAppRequest) (*App, error)
 	// Create an identity.
 	CreateIdentity(context.Context, *CreateIdentityRequest) (*CreateIdentityResponse, error)
+	// Activate an identity.
+	ActivateIdentity(context.Context, *ActivateIdentityRequest) (*Identity, error)
 	// Get an application by ID.
 	GetApp(context.Context, *GetAppRequest) (*App, error)
 	// Get an identity by ID.
@@ -162,6 +175,9 @@ func (UnimplementedAppIdentityServiceServer) CreateApp(context.Context, *CreateA
 }
 func (UnimplementedAppIdentityServiceServer) CreateIdentity(context.Context, *CreateIdentityRequest) (*CreateIdentityResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateIdentity not implemented")
+}
+func (UnimplementedAppIdentityServiceServer) ActivateIdentity(context.Context, *ActivateIdentityRequest) (*Identity, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ActivateIdentity not implemented")
 }
 func (UnimplementedAppIdentityServiceServer) GetApp(context.Context, *GetAppRequest) (*App, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetApp not implemented")
@@ -229,6 +245,24 @@ func _AppIdentityService_CreateIdentity_Handler(srv interface{}, ctx context.Con
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AppIdentityServiceServer).CreateIdentity(ctx, req.(*CreateIdentityRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppIdentityService_ActivateIdentity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ActivateIdentityRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppIdentityServiceServer).ActivateIdentity(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ownmfa.api.AppIdentityService/ActivateIdentity",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppIdentityServiceServer).ActivateIdentity(ctx, req.(*ActivateIdentityRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -373,6 +407,10 @@ var AppIdentityService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateIdentity",
 			Handler:    _AppIdentityService_CreateIdentity_Handler,
+		},
+		{
+			MethodName: "ActivateIdentity",
+			Handler:    _AppIdentityService_ActivateIdentity_Handler,
 		},
 		{
 			MethodName: "GetApp",

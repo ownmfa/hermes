@@ -197,3 +197,18 @@ func (mr *MockIdentityerMockRecorder) Read(ctx, identityID, orgID, appID interfa
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*MockIdentityer)(nil).Read), ctx, identityID, orgID, appID)
 }
+
+// UpdateStatus mocks base method.
+func (m *MockIdentityer) UpdateStatus(ctx context.Context, identityID, orgID, appID string, status api.IdentityStatus) (*api.Identity, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateStatus", ctx, identityID, orgID, appID, status)
+	ret0, _ := ret[0].(*api.Identity)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateStatus indicates an expected call of UpdateStatus.
+func (mr *MockIdentityerMockRecorder) UpdateStatus(ctx, identityID, orgID, appID, status interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockIdentityer)(nil).UpdateStatus), ctx, identityID, orgID, appID, status)
+}

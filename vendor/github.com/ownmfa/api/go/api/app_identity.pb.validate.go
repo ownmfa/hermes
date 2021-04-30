@@ -1639,6 +1639,104 @@ var _ interface {
 	ErrorName() string
 } = CreateIdentityResponseValidationError{}
 
+// Validate checks the field values on ActivateIdentityRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, an error is returned.
+func (m *ActivateIdentityRequest) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	if err := m._validateUuid(m.GetId()); err != nil {
+		return ActivateIdentityRequestValidationError{
+			field:  "Id",
+			reason: "value must be a valid UUID",
+			cause:  err,
+		}
+	}
+
+	if err := m._validateUuid(m.GetAppId()); err != nil {
+		return ActivateIdentityRequestValidationError{
+			field:  "AppId",
+			reason: "value must be a valid UUID",
+			cause:  err,
+		}
+	}
+
+	if l := utf8.RuneCountInString(m.GetPasscode()); l < 6 || l > 10 {
+		return ActivateIdentityRequestValidationError{
+			field:  "Passcode",
+			reason: "value length must be between 6 and 10 runes, inclusive",
+		}
+	}
+
+	return nil
+}
+
+func (m *ActivateIdentityRequest) _validateUuid(uuid string) error {
+	if matched := _app_identity_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
+	}
+
+	return nil
+}
+
+// ActivateIdentityRequestValidationError is the validation error returned by
+// ActivateIdentityRequest.Validate if the designated constraints aren't met.
+type ActivateIdentityRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ActivateIdentityRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ActivateIdentityRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ActivateIdentityRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ActivateIdentityRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ActivateIdentityRequestValidationError) ErrorName() string {
+	return "ActivateIdentityRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ActivateIdentityRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sActivateIdentityRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ActivateIdentityRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ActivateIdentityRequestValidationError{}
+
 // Validate checks the field values on GetIdentityRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, an error is returned.

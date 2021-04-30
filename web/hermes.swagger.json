@@ -376,6 +376,66 @@
         ]
       }
     },
+    "/v1/applications/{appID}/identities/{id}/activate": {
+      "put": {
+        "summary": "Activate an identity.",
+        "operationId": "AppIdentityService_ActivateIdentity",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiIdentity"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "appID",
+            "description": "Application ID (UUID).",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "id",
+            "description": "Identity ID (UUID) to activate.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "passcode": {
+                  "type": "string",
+                  "description": "Passcode for verification.",
+                  "required": [
+                    "passcode"
+                  ]
+                }
+              },
+              "description": "ActivateIdentityRequest is sent to activate an identity.",
+              "required": [
+                "passcode"
+              ]
+            }
+          }
+        ],
+        "tags": [
+          "AppIdentityService"
+        ]
+      }
+    },
     "/v1/applications/{identity.appID}/identities": {
       "post": {
         "summary": "Create an identity.",
@@ -390,7 +450,7 @@
           "201": {
             "description": "A successful response.",
             "schema": {
-              "$ref": ".thingspect.api.Identity"
+              "$ref": "#/definitions/apiIdentity"
             }
           },
           "default": {
@@ -1050,7 +1110,20 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/apiUpdateUserPasswordRequest"
+              "type": "object",
+              "properties": {
+                "password": {
+                  "type": "string",
+                  "description": "User password to update.",
+                  "required": [
+                    "password"
+                  ]
+                }
+              },
+              "description": "UpdateUserPasswordRequest is sent to update a user's password.",
+              "required": [
+                "password"
+              ]
             }
           }
         ],
@@ -1271,7 +1344,7 @@
         "digits": {
           "type": "integer",
           "format": "int32",
-          "description": "Passcode digit length."
+          "description": "Passcode digits length."
         },
         "counter": {
           "type": "integer",
@@ -1296,7 +1369,7 @@
         "digits": {
           "type": "integer",
           "format": "int32",
-          "description": "Passcode digit length."
+          "description": "Passcode digits length."
         },
         "secret": {
           "type": "string",
@@ -1640,7 +1713,7 @@
         "digits": {
           "type": "integer",
           "format": "int32",
-          "description": "Passcode digit length. Defaults to 7 if not specified."
+          "description": "Passcode digits length. Defaults to 7 if not specified."
         },
         "counter": {
           "type": "integer",
@@ -1664,7 +1737,7 @@
         "digits": {
           "type": "integer",
           "format": "int32",
-          "description": "Passcode digit length. Defaults to 7 if not specified."
+          "description": "Passcode digits length. Defaults to 7 if not specified."
         },
         "accountName": {
           "type": "string",
@@ -1672,27 +1745,6 @@
         }
       },
       "description": "SoftwareTOTPMethod configures a software OATH TOTP one-time password method."
-    },
-    "apiUpdateUserPasswordRequest": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "User ID (UUID) to update password.",
-          "readOnly": true
-        },
-        "password": {
-          "type": "string",
-          "description": "User password to update.",
-          "required": [
-            "password"
-          ]
-        }
-      },
-      "description": "UpdateUserPasswordRequest is sent to update a user's password.",
-      "required": [
-        "password"
-      ]
     },
     "apiUser": {
       "type": "object",

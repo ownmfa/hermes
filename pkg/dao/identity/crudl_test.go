@@ -203,6 +203,78 @@ func TestRead(t *testing.T) {
 	})
 }
 
+func TestUpdateStatus(t *testing.T) {
+	t.Parallel()
+
+	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	defer cancel()
+
+	createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-identity"))
+	t.Logf("createOrg, err: %+v, %v", createOrg, err)
+	require.NoError(t, err)
+
+	createApp, err := globalAppDAO.Create(ctx, random.App("dao-identity",
+		createOrg.Id))
+	t.Logf("createApp, err: %+v, %v", createApp, err)
+	require.NoError(t, err)
+
+	t.Run("Update identity status by valid ID", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createIdentity, createOTP, retSecret, err := globalIdentityDAO.Create(
+			ctx, random.Identity("dao-identity", createOrg.Id, createApp.Id))
+		t.Logf("createIdentity, createOTP, retSecret, err: %+v, %#v, %v, %v",
+			createIdentity, createOTP, retSecret, err)
+		require.NoError(t, err)
+
+		updateIdentity, err := globalIdentityDAO.UpdateStatus(ctx,
+			createIdentity.Id, createOrg.Id, createApp.Id,
+			api.IdentityStatus_ACTIVATED)
+		t.Logf("updateIdentity, err: %+v, %v", updateIdentity, err)
+		require.NoError(t, err)
+		require.Equal(t, api.IdentityStatus_ACTIVATED, updateIdentity.Status)
+		require.WithinDuration(t, time.Now(), createIdentity.UpdatedAt.AsTime(),
+			2*time.Second)
+	})
+
+	t.Run("Update identity status by unknown ID", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		updateIdentity, err := globalIdentityDAO.UpdateStatus(ctx,
+			uuid.NewString(), createOrg.Id, createApp.Id,
+			api.IdentityStatus_ACTIVATED)
+		t.Logf("updateIdentity, err: %+v, %v", updateIdentity, err)
+		require.Nil(t, updateIdentity)
+		require.Equal(t, dao.ErrNotFound, err)
+	})
+
+	t.Run("Status updates are isolated by org ID", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createIdentity, createOTP, retSecret, err := globalIdentityDAO.Create(
+			ctx, random.Identity("dao-identity", createOrg.Id, createApp.Id))
+		t.Logf("createIdentity, createOTP, retSecret, err: %+v, %#v, %v, %v",
+			createIdentity, createOTP, retSecret, err)
+		require.NoError(t, err)
+
+		updateIdentity, err := globalIdentityDAO.UpdateStatus(ctx,
+			createIdentity.Id, uuid.NewString(), createApp.Id,
+			api.IdentityStatus_ACTIVATED)
+		t.Logf("updateIdentity, err: %+v, %v", updateIdentity, err)
+		require.Nil(t, updateIdentity)
+		require.Equal(t, dao.ErrNotFound, err)
+	})
+}
+
 func TestDelete(t *testing.T) {
 	t.Parallel()
 
