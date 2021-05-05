@@ -80,7 +80,7 @@ func TestVerifyHOTP(t *testing.T) {
 	}{
 		{crypto.SHA1, 6, key, "861821", 6, nil},
 		{crypto.SHA256, 7, key, "1915540", 2, nil},
-		{crypto.SHA1, 6, key, "478081", 100, nil},
+		{crypto.SHA1, 6, key, "244449", 50, nil},
 		{crypto.SHA512, 6, nil, "000000", 0, ErrKeyLength},
 		{crypto.SHA1, 6, key, "000000", 0, ErrInvalidPasscode},
 	}
@@ -96,7 +96,7 @@ func TestVerifyHOTP(t *testing.T) {
 				Digits: lTest.inpDigits,
 			}
 
-			res, err := otp.VerifyHOTP(DefaultLookAheadHOTP, 0, lTest.inpCode)
+			res, err := otp.VerifyHOTP(DefaultHOTPLookAhead, 0, lTest.inpCode)
 			t.Logf("res, err: %v, %v", res, err)
 			require.Equal(t, lTest.res, res)
 			require.Equal(t, lTest.err, err)

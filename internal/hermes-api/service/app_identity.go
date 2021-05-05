@@ -4,6 +4,8 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/mennanov/fmutils"
@@ -128,6 +130,96 @@ func (ai *AppIdentity) CreateIdentity(ctx context.Context,
 	return resp, nil
 }
 
+// verify verifies a passcode and stores the HOTP counter or TOTP window offset.
+func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
+	appID string, expStatus api.IdentityStatus, passcode string, hotpLookAhead,
+	softTOTPLookAhead, hardTOTPLookAhead int) error {
+	identity, otp, err := ai.identityDAO.Read(ctx, identityID, orgID, appID)
+	if err != nil {
+		return err
+	}
+
+	if identity.Status != expStatus {
+		return status.Error(codes.FailedPrecondition,
+			fmt.Sprintf("identity is not %s",
+				strings.ToLower(expStatus.String())))
+	}
+
+	// Disallow passcode reuse, even when counter tracking would prevent it.
+	ok, err := ai.cache.SetIfNotExistTTL(ctx, key.Reuse(identity.OrgId,
+		identity.AppId, identity.Id, passcode), 1, 24*time.Hour)
+	if err != nil {
+		return err
+	}
+	for !ok {
+		return oath.ErrInvalidPasscode
+	}
+
+	// Verify passcode and calculate HOTP counter or TOTP window offset.
+	var counter int64
+	var offset int
+
+	switch identity.MethodOneof.(type) {
+	case *api.Identity_SoftwareHotpMethod, *api.Identity_GoogleAuthHotpMethod,
+		*api.Identity_HardwareHotpMethod:
+		// Retrieve current HOTP counter. If not found, use the zero value.
+		var curr int64
+		_, curr, err = ai.cache.GetI(ctx, key.HOTPCounter(identity.OrgId,
+			identity.AppId, identity.Id))
+		if err != nil {
+			return err
+		}
+
+		counter, err = otp.VerifyHOTP(hotpLookAhead, curr, passcode)
+	case *api.Identity_SoftwareTotpMethod, *api.Identity_GoogleAuthTotpMethod,
+		*api.Identity_MicrosoftAuthTotpMethod:
+		// Retrieve TOTP window offset. If not found, use the zero value.
+		var off int64
+		_, off, err = ai.cache.GetI(ctx, key.TOTPOffset(identity.OrgId,
+			identity.AppId, identity.Id))
+		if err != nil {
+			return err
+		}
+
+		offset, err = otp.VerifyTOTP(softTOTPLookAhead, int(off), passcode)
+	case *api.Identity_HardwareTotpMethod:
+		// Retrieve TOTP window offset. If not found, use the zero value.
+		var off int64
+		_, off, err = ai.cache.GetI(ctx, key.TOTPOffset(identity.OrgId,
+			identity.AppId, identity.Id))
+		if err != nil {
+			return err
+		}
+
+		offset, err = otp.VerifyTOTP(hardTOTPLookAhead, int(off), passcode)
+	}
+	if err != nil {
+		return err
+	}
+
+	// Add logging fields.
+	logger := hlog.FromContext(ctx)
+	logger.Logger = logger.WithStr("appID", identity.AppId)
+	logger.Logger = logger.WithStr("identityID", identity.Id)
+	logger.Infof("verify counter, offset: %v, %v", counter, offset)
+
+	// Store HOTP counter or TOTP window offset for future verifications.
+	switch {
+	case counter != 0:
+		if err = ai.cache.Set(ctx, key.HOTPCounter(identity.OrgId,
+			identity.AppId, identity.Id), counter); err != nil {
+			return err
+		}
+	case offset != 0:
+		if err = ai.cache.Set(ctx, key.TOTPOffset(identity.OrgId,
+			identity.AppId, identity.Id), offset); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ActivateIdentity activates an identity by ID.
 func (ai *AppIdentity) ActivateIdentity(ctx context.Context,
 	req *api.ActivateIdentityRequest) (*api.Identity, error) {
@@ -136,62 +228,57 @@ func (ai *AppIdentity) ActivateIdentity(ctx context.Context,
 		return nil, errPerm(common.Role_AUTHENTICATOR)
 	}
 
-	identity, otp, err := ai.identityDAO.Read(ctx, req.Id, sess.OrgID,
-		req.AppId)
-	if err != nil {
+	if err := ai.verify(ctx, req.Id, sess.OrgID, req.AppId,
+		api.IdentityStatus_UNVERIFIED, req.Passcode, 1000, 6, 20); err != nil {
 		return nil, errToStatus(err)
 	}
 
-	if identity.Status != api.IdentityStatus_UNVERIFIED {
-		return nil, status.Error(codes.FailedPrecondition,
-			"identity is already activated")
-	}
-
-	// Verify initial passcode and calculate HOTP counter or TOTP window offset.
-	var counter int64
-	var offset int
-
-	switch identity.MethodOneof.(type) {
-	case *api.Identity_SoftwareHotpMethod, *api.Identity_GoogleAuthHotpMethod,
-		*api.Identity_HardwareHotpMethod:
-		counter, err = otp.VerifyHOTP(1000, 0, req.Passcode)
-	case *api.Identity_SoftwareTotpMethod, *api.Identity_GoogleAuthTotpMethod,
-		*api.Identity_MicrosoftAuthTotpMethod:
-		offset, err = otp.VerifyTOTP(6, req.Passcode)
-	case *api.Identity_HardwareTotpMethod:
-		offset, err = otp.VerifyTOTP(20, req.Passcode)
-	}
-	if err != nil {
-		return nil, errToStatus(err)
-	}
-
-	// Add logging fields.
-	logger := hlog.FromContext(ctx)
-	logger.Logger = logger.WithStr("appID", identity.AppId)
-	logger.Logger = logger.WithStr("identityID", identity.Id)
-	logger.Infof("ActivateIdentity counter, offset: %v, %v", counter, offset)
-
-	// Save HOTP counter or TOTP window offset for future verifications.
-	switch {
-	case counter != 0:
-		if err = ai.cache.Set(ctx, key.HOTPCounter(identity.OrgId,
-			identity.AppId, identity.Id), counter); err != nil {
-			return nil, errToStatus(err)
-		}
-	case offset != 0:
-		if err = ai.cache.Set(ctx, key.TOTPOffset(identity.OrgId,
-			identity.AppId, identity.Id), offset); err != nil {
-			return nil, errToStatus(err)
-		}
-	}
-
-	identity, err = ai.identityDAO.UpdateStatus(ctx, identity.Id,
-		identity.OrgId, identity.AppId, api.IdentityStatus_ACTIVATED)
+	identity, err := ai.identityDAO.UpdateStatus(ctx, req.Id, sess.OrgID,
+		req.AppId, api.IdentityStatus_ACTIVATED)
 	if err != nil {
 		return nil, errToStatus(err)
 	}
 
 	return identity, nil
+}
+
+// ChallengeIdentity issues a challenge to an identity by ID.
+func (ai *AppIdentity) ChallengeIdentity(ctx context.Context,
+	req *api.ChallengeIdentityRequest) (*emptypb.Empty, error) {
+	logger := hlog.FromContext(ctx)
+	sess, ok := session.FromContext(ctx)
+	if !ok || sess.Role < common.Role_AUTHENTICATOR {
+		return nil, errPerm(common.Role_AUTHENTICATOR)
+	}
+
+	if _, _, err := ai.identityDAO.Read(ctx, req.Id, sess.OrgID,
+		req.AppId); err != nil {
+		return nil, errToStatus(err)
+	}
+
+	if err := grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
+		"204")); err != nil {
+		logger.Errorf("ChallengeIdentity grpc.SetHeader: %v", err)
+	}
+
+	return &emptypb.Empty{}, nil
+}
+
+// VerifyIdentity verifies an identity by ID.
+func (ai *AppIdentity) VerifyIdentity(ctx context.Context,
+	req *api.VerifyIdentityRequest) (*emptypb.Empty, error) {
+	sess, ok := session.FromContext(ctx)
+	if !ok || sess.Role < common.Role_AUTHENTICATOR {
+		return nil, errPerm(common.Role_AUTHENTICATOR)
+	}
+
+	if err := ai.verify(ctx, req.Id, sess.OrgID, req.AppId,
+		api.IdentityStatus_ACTIVATED, req.Passcode, oath.DefaultHOTPLookAhead,
+		oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead); err != nil {
+		return nil, errToStatus(err)
+	}
+
+	return &emptypb.Empty{}, nil
 }
 
 // GetApp retrieves an application by ID.

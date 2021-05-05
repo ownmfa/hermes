@@ -1737,6 +1737,195 @@ var _ interface {
 	ErrorName() string
 } = ActivateIdentityRequestValidationError{}
 
+// Validate checks the field values on ChallengeIdentityRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, an error is returned.
+func (m *ChallengeIdentityRequest) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	if err := m._validateUuid(m.GetId()); err != nil {
+		return ChallengeIdentityRequestValidationError{
+			field:  "Id",
+			reason: "value must be a valid UUID",
+			cause:  err,
+		}
+	}
+
+	if err := m._validateUuid(m.GetAppId()); err != nil {
+		return ChallengeIdentityRequestValidationError{
+			field:  "AppId",
+			reason: "value must be a valid UUID",
+			cause:  err,
+		}
+	}
+
+	return nil
+}
+
+func (m *ChallengeIdentityRequest) _validateUuid(uuid string) error {
+	if matched := _app_identity_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
+	}
+
+	return nil
+}
+
+// ChallengeIdentityRequestValidationError is the validation error returned by
+// ChallengeIdentityRequest.Validate if the designated constraints aren't met.
+type ChallengeIdentityRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ChallengeIdentityRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ChallengeIdentityRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ChallengeIdentityRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ChallengeIdentityRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ChallengeIdentityRequestValidationError) ErrorName() string {
+	return "ChallengeIdentityRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ChallengeIdentityRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sChallengeIdentityRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ChallengeIdentityRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ChallengeIdentityRequestValidationError{}
+
+// Validate checks the field values on VerifyIdentityRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, an error is returned.
+func (m *VerifyIdentityRequest) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	if err := m._validateUuid(m.GetId()); err != nil {
+		return VerifyIdentityRequestValidationError{
+			field:  "Id",
+			reason: "value must be a valid UUID",
+			cause:  err,
+		}
+	}
+
+	if err := m._validateUuid(m.GetAppId()); err != nil {
+		return VerifyIdentityRequestValidationError{
+			field:  "AppId",
+			reason: "value must be a valid UUID",
+			cause:  err,
+		}
+	}
+
+	if l := utf8.RuneCountInString(m.GetPasscode()); l < 6 || l > 10 {
+		return VerifyIdentityRequestValidationError{
+			field:  "Passcode",
+			reason: "value length must be between 6 and 10 runes, inclusive",
+		}
+	}
+
+	return nil
+}
+
+func (m *VerifyIdentityRequest) _validateUuid(uuid string) error {
+	if matched := _app_identity_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
+	}
+
+	return nil
+}
+
+// VerifyIdentityRequestValidationError is the validation error returned by
+// VerifyIdentityRequest.Validate if the designated constraints aren't met.
+type VerifyIdentityRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e VerifyIdentityRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e VerifyIdentityRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e VerifyIdentityRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e VerifyIdentityRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e VerifyIdentityRequestValidationError) ErrorName() string {
+	return "VerifyIdentityRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e VerifyIdentityRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sVerifyIdentityRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = VerifyIdentityRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = VerifyIdentityRequestValidationError{}
+
 // Validate checks the field values on GetIdentityRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, an error is returned.

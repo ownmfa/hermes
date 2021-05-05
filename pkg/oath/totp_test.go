@@ -83,16 +83,18 @@ func TestVerifyTOTP(t *testing.T) {
 		inpHash   crypto.Hash
 		inpDigits int
 		inpKey    []byte
+		inpOffset int
 		inpTime   time.Time
 		inpCode   string
 		res       int
 		err       error
 	}{
-		{crypto.SHA1, 6, key, knownTime, "660634", 0, nil},
-		{crypto.SHA256, 7, key, knownTime, "2596747", 0, nil},
-		{crypto.SHA512, 8, key, knownTime, "76879241", 1, nil},
-		{crypto.SHA512, 6, nil, time.Now(), "000000", 0, ErrKeyLength},
-		{crypto.SHA1, 6, key, time.Now(), "000000", 0, ErrInvalidPasscode},
+		{crypto.SHA1, 6, key, 0, knownTime, "660634", 0, nil},
+		{crypto.SHA256, 7, key, 0, knownTime, "2596747", 0, nil},
+		{crypto.SHA512, 8, key, 0, knownTime, "76879241", 1, nil},
+		{crypto.SHA512, 8, key, 2, knownTime, "76879241", 1, nil},
+		{crypto.SHA512, 6, nil, 0, time.Now(), "000000", 0, ErrKeyLength},
+		{crypto.SHA1, 6, key, 0, time.Now(), "000000", 0, ErrInvalidPasscode},
 	}
 
 	for _, test := range tests {
@@ -106,20 +108,22 @@ func TestVerifyTOTP(t *testing.T) {
 				Digits: lTest.inpDigits,
 			}
 
-			res, err := otp.verifyTOTP(DefaultLookAheadTOTP, lTest.inpTime,
-				lTest.inpCode)
+			res, err := otp.verifyTOTP(DefaultTOTPLookAhead, lTest.inpOffset,
+				lTest.inpTime, lTest.inpCode)
 			t.Logf("res, err: %v, %v", res, err)
 			require.Equal(t, lTest.res, res)
 			require.Equal(t, lTest.err, err)
 
 			if lTest.err == nil {
-				code, err := otp.TOTP(time.Now())
-				t.Logf("res, err: %v, %v", res, err)
+				code, err := otp.TOTP(time.Now().Add(time.Duration(
+					lTest.res*period) * time.Second))
+				t.Logf("code, err: %v, %v", code, err)
 				require.NoError(t, err)
 
-				res, err = otp.VerifyTOTP(DefaultLookAheadTOTP, code)
+				res, err = otp.VerifyTOTP(DefaultTOTPLookAhead, lTest.inpOffset,
+					code)
 				t.Logf("res, err: %v, %v", res, err)
-				require.Equal(t, 0, res)
+				require.Equal(t, lTest.res, res)
 				require.NoError(t, err)
 			}
 		})

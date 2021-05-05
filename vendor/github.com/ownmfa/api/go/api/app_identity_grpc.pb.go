@@ -25,6 +25,10 @@ type AppIdentityServiceClient interface {
 	CreateIdentity(ctx context.Context, in *CreateIdentityRequest, opts ...grpc.CallOption) (*CreateIdentityResponse, error)
 	// Activate an identity.
 	ActivateIdentity(ctx context.Context, in *ActivateIdentityRequest, opts ...grpc.CallOption) (*Identity, error)
+	// Issue a challenge to an identity.
+	ChallengeIdentity(ctx context.Context, in *ChallengeIdentityRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	// Verify an identity.
+	VerifyIdentity(ctx context.Context, in *VerifyIdentityRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	// Get an application by ID.
 	GetApp(ctx context.Context, in *GetAppRequest, opts ...grpc.CallOption) (*App, error)
 	// Get an identity by ID.
@@ -70,6 +74,24 @@ func (c *appIdentityServiceClient) CreateIdentity(ctx context.Context, in *Creat
 func (c *appIdentityServiceClient) ActivateIdentity(ctx context.Context, in *ActivateIdentityRequest, opts ...grpc.CallOption) (*Identity, error) {
 	out := new(Identity)
 	err := c.cc.Invoke(ctx, "/ownmfa.api.AppIdentityService/ActivateIdentity", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appIdentityServiceClient) ChallengeIdentity(ctx context.Context, in *ChallengeIdentityRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/ownmfa.api.AppIdentityService/ChallengeIdentity", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appIdentityServiceClient) VerifyIdentity(ctx context.Context, in *VerifyIdentityRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/ownmfa.api.AppIdentityService/VerifyIdentity", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -149,6 +171,10 @@ type AppIdentityServiceServer interface {
 	CreateIdentity(context.Context, *CreateIdentityRequest) (*CreateIdentityResponse, error)
 	// Activate an identity.
 	ActivateIdentity(context.Context, *ActivateIdentityRequest) (*Identity, error)
+	// Issue a challenge to an identity.
+	ChallengeIdentity(context.Context, *ChallengeIdentityRequest) (*empty.Empty, error)
+	// Verify an identity.
+	VerifyIdentity(context.Context, *VerifyIdentityRequest) (*empty.Empty, error)
 	// Get an application by ID.
 	GetApp(context.Context, *GetAppRequest) (*App, error)
 	// Get an identity by ID.
@@ -178,6 +204,12 @@ func (UnimplementedAppIdentityServiceServer) CreateIdentity(context.Context, *Cr
 }
 func (UnimplementedAppIdentityServiceServer) ActivateIdentity(context.Context, *ActivateIdentityRequest) (*Identity, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ActivateIdentity not implemented")
+}
+func (UnimplementedAppIdentityServiceServer) ChallengeIdentity(context.Context, *ChallengeIdentityRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChallengeIdentity not implemented")
+}
+func (UnimplementedAppIdentityServiceServer) VerifyIdentity(context.Context, *VerifyIdentityRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VerifyIdentity not implemented")
 }
 func (UnimplementedAppIdentityServiceServer) GetApp(context.Context, *GetAppRequest) (*App, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetApp not implemented")
@@ -263,6 +295,42 @@ func _AppIdentityService_ActivateIdentity_Handler(srv interface{}, ctx context.C
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AppIdentityServiceServer).ActivateIdentity(ctx, req.(*ActivateIdentityRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppIdentityService_ChallengeIdentity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChallengeIdentityRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppIdentityServiceServer).ChallengeIdentity(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ownmfa.api.AppIdentityService/ChallengeIdentity",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppIdentityServiceServer).ChallengeIdentity(ctx, req.(*ChallengeIdentityRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppIdentityService_VerifyIdentity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyIdentityRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppIdentityServiceServer).VerifyIdentity(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ownmfa.api.AppIdentityService/VerifyIdentity",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppIdentityServiceServer).VerifyIdentity(ctx, req.(*VerifyIdentityRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -411,6 +479,14 @@ var AppIdentityService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ActivateIdentity",
 			Handler:    _AppIdentityService_ActivateIdentity_Handler,
+		},
+		{
+			MethodName: "ChallengeIdentity",
+			Handler:    _AppIdentityService_ChallengeIdentity_Handler,
+		},
+		{
+			MethodName: "VerifyIdentity",
+			Handler:    _AppIdentityService_VerifyIdentity_Handler,
 		},
 		{
 			MethodName: "GetApp",

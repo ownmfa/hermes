@@ -34,7 +34,6 @@ type OTP struct {
 	Digits      int
 	Key         []byte
 	AccountName string
-	TOTPOffset  int
 }
 
 // Secret returns the key in base32 format without padding.

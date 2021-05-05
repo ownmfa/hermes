@@ -436,6 +436,113 @@
         ]
       }
     },
+    "/v1/applications/{appID}/identities/{id}/challenge": {
+      "post": {
+        "summary": "Issue a challenge to an identity.",
+        "operationId": "AppIdentityService_ChallengeIdentity",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "202": {
+            "description": "A successful response.",
+            "schema": {}
+          },
+          "204": {
+            "description": "A successful response.",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "appID",
+            "description": "Application ID (UUID).",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "id",
+            "description": "Identity ID (UUID) to issue challenge.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AppIdentityService"
+        ]
+      }
+    },
+    "/v1/applications/{appID}/identities/{id}/verify": {
+      "put": {
+        "summary": "Verify an identity.",
+        "operationId": "AppIdentityService_VerifyIdentity",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "appID",
+            "description": "Application ID (UUID).",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "id",
+            "description": "Identity ID (UUID) to verify.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "passcode": {
+                  "type": "string",
+                  "description": "Passcode for verification.",
+                  "required": [
+                    "passcode"
+                  ]
+                }
+              },
+              "description": "VerifyIdentityRequest is sent to verify an identity.",
+              "required": [
+                "passcode"
+              ]
+            }
+          }
+        ],
+        "tags": [
+          "AppIdentityService"
+        ]
+      }
+    },
     "/v1/applications/{identity.appID}/identities": {
       "post": {
         "summary": "Create an identity.",
