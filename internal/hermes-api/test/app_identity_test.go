@@ -409,7 +409,472 @@ func TestActivateIdentity(t *testing.T) {
 			})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
 		require.Nil(t, activateIdentity)
-		require.EqualError(t, err, "rpc error: code = FailedPrecondition desc = identity is already activated")
+		require.EqualError(t, err, "rpc error: code = FailedPrecondition desc "+
+			"= identity is not unverified")
+	})
+
+	t.Run("Activate identity by invalid passcode", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{
+				Identity: random.Identity("api-identity", uuid.NewString(),
+					createApp.Id),
+			})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+
+		activateIdentity, err := aiCli.ActivateIdentity(ctx,
+			&api.ActivateIdentityRequest{
+				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Passcode: "0000000",
+			})
+		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
+		require.Nil(t, activateIdentity)
+		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+
+			"oath: invalid passcode")
+	})
+}
+
+func TestChallengeIdentity(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Challenge identity by valid ID", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
+		createApp, err := aiCli.CreateApp(ctx, &api.CreateAppRequest{
+			App: random.App("api-app", uuid.NewString()),
+		})
+		t.Logf("createApp, err: %+v, %v", createApp, err)
+		require.NoError(t, err)
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{
+				Identity: random.Identity("api-identity", uuid.NewString(),
+					createApp.Id),
+			})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+
+		_, err = aiCli.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{
+			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+		})
+		t.Logf("err: %v", err)
+		require.NoError(t, err)
+	})
+
+	t.Run("Challenge identity with insufficient role", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		aiCli := api.NewAppIdentityServiceClient(secondaryViewerGRPCConn)
+		_, err := aiCli.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{
+			Id: uuid.NewString(), AppId: uuid.NewString(),
+		})
+		t.Logf("err: %v", err)
+		require.EqualError(t, err, "rpc error: code = PermissionDenied desc = "+
+			"permission denied, AUTHENTICATOR role required")
+	})
+
+	t.Run("Challenge identity by unknown ID", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
+		_, err := aiCli.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{
+			Id: uuid.NewString(), AppId: uuid.NewString(),
+		})
+		t.Logf("err: %v", err)
+		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
+			"not found")
+	})
+
+	t.Run("Challenges are isolated by org ID", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
+		createApp, err := aiCli.CreateApp(ctx, &api.CreateAppRequest{
+			App: random.App("api-app", uuid.NewString()),
+		})
+		t.Logf("createApp, err: %+v, %v", createApp, err)
+		require.NoError(t, err)
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{
+				Identity: random.Identity("api-identity", uuid.NewString(),
+					createApp.Id),
+			})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+
+		secCli := api.NewAppIdentityServiceClient(secondaryAdminGRPCConn)
+		_, err = secCli.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{
+			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+		})
+		t.Logf("err: %v", err)
+		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
+			"not found")
+	})
+}
+
+func TestVerifyIdentity(t *testing.T) {
+	t.Parallel()
+
+	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	defer cancel()
+
+	aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
+	createApp, err := aiCli.CreateApp(ctx, &api.CreateAppRequest{
+		App: random.App("api-app", uuid.NewString()),
+	})
+	t.Logf("createApp, err: %+v, %v", createApp, err)
+	require.NoError(t, err)
+
+	t.Run("Verify identity by valid ID with HOTP", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{
+				Identity: random.Identity("api-identity", uuid.NewString(),
+					createApp.Id),
+			})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+
+		base32NoPad := base32.StdEncoding.WithPadding(base32.NoPadding)
+		secret, err := base32NoPad.DecodeString(createIdentity.Secret)
+		require.NoError(t, err)
+
+		otp := &oath.OTP{
+			Algorithm: oath.HOTP, Hash: crypto.SHA512, Digits: 6, Key: secret,
+		}
+		passcode, err := otp.HOTP(5)
+		require.NoError(t, err)
+
+		activateIdentity, err := aiCli.ActivateIdentity(ctx,
+			&api.ActivateIdentityRequest{
+				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Passcode: passcode,
+			})
+		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
+		require.NoError(t, err)
+		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.Status)
+		require.WithinDuration(t, time.Now(),
+			activateIdentity.UpdatedAt.AsTime(), 2*time.Second)
+
+		passcode, err = otp.HOTP(6)
+		require.NoError(t, err)
+
+		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
+			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Passcode: passcode,
+		})
+		t.Logf("err: %v", err)
+		require.NoError(t, err)
+	})
+
+	t.Run("Verify identity by valid ID with soft TOTP", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		identity := random.Identity("api-identity", uuid.NewString(),
+			createApp.Id)
+		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{}
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{Identity: identity})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+
+		base32NoPad := base32.StdEncoding.WithPadding(base32.NoPadding)
+		secret, err := base32NoPad.DecodeString(createIdentity.Secret)
+		require.NoError(t, err)
+
+		otp := &oath.OTP{
+			Algorithm: oath.HOTP, Hash: crypto.SHA512, Digits: 7, Key: secret,
+		}
+		passcode, err := otp.TOTP(time.Now().Add(-30 * time.Second))
+		require.NoError(t, err)
+
+		activateIdentity, err := aiCli.ActivateIdentity(ctx,
+			&api.ActivateIdentityRequest{
+				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Passcode: passcode,
+			})
+		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
+		require.NoError(t, err)
+		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.Status)
+		require.WithinDuration(t, time.Now(),
+			activateIdentity.UpdatedAt.AsTime(), 2*time.Second)
+
+		passcode, err = otp.TOTP(time.Now())
+		require.NoError(t, err)
+
+		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
+			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Passcode: passcode,
+		})
+		t.Logf("err: %v", err)
+		require.NoError(t, err)
+	})
+
+	t.Run("Verify identity by valid ID with hard TOTP", func(t *testing.T) {
+		t.Parallel()
+
+		randKey := make([]byte, 32)
+		_, err = rand.Read(randKey)
+		require.NoError(t, err)
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		identity := random.Identity("api-identity", uuid.NewString(),
+			createApp.Id)
+		identity.MethodOneof = &api.Identity_HardwareTotpMethod{
+			HardwareTotpMethod: &api.HardwareTOTPMethod{
+				Digits: 7, Secret: randKey,
+			},
+		}
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{Identity: identity})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+
+		otp := &oath.OTP{
+			Algorithm: oath.HOTP, Hash: crypto.SHA512, Digits: 7, Key: randKey,
+		}
+		passcode, err := otp.TOTP(time.Now().Add(-90 * time.Second))
+		require.NoError(t, err)
+
+		activateIdentity, err := aiCli.ActivateIdentity(ctx,
+			&api.ActivateIdentityRequest{
+				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Passcode: passcode,
+			})
+		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
+		require.NoError(t, err)
+		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.Status)
+		require.WithinDuration(t, time.Now(),
+			activateIdentity.UpdatedAt.AsTime(), 2*time.Second)
+
+		passcode, err = otp.TOTP(time.Now().Add(-60 * time.Second))
+		require.NoError(t, err)
+
+		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
+			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Passcode: passcode,
+		})
+		t.Logf("err: %v", err)
+		require.NoError(t, err)
+	})
+
+	t.Run("Verify identity with insufficient role", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		aiCli := api.NewAppIdentityServiceClient(secondaryViewerGRPCConn)
+		_, err := aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
+			Id: uuid.NewString(), AppId: uuid.NewString(),
+			Passcode: "000000",
+		})
+		t.Logf("err: %v", err)
+		require.EqualError(t, err, "rpc error: code = PermissionDenied desc = "+
+			"permission denied, AUTHENTICATOR role required")
+	})
+
+	t.Run("Verify identity by unknown ID", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
+		_, err := aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
+			Id: uuid.NewString(), AppId: uuid.NewString(),
+			Passcode: "000000",
+		})
+		t.Logf("err: %v", err)
+		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
+			"not found")
+	})
+
+	t.Run("Verifications are isolated by org ID", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{
+				Identity: random.Identity("api-identity", uuid.NewString(),
+					createApp.Id),
+			})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+
+		secCli := api.NewAppIdentityServiceClient(secondaryAdminGRPCConn)
+		_, err = secCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
+			Id: uuid.NewString(), AppId: uuid.NewString(),
+			Passcode: "000000",
+		})
+		t.Logf("err: %v", err)
+		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
+			"not found")
+	})
+
+	t.Run("Verify identity that not activated", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{
+				Identity: random.Identity("api-identity", uuid.NewString(),
+					createApp.Id),
+			})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+
+		base32NoPad := base32.StdEncoding.WithPadding(base32.NoPadding)
+		secret, err := base32NoPad.DecodeString(createIdentity.Secret)
+		require.NoError(t, err)
+
+		otp := &oath.OTP{
+			Algorithm: oath.HOTP, Hash: crypto.SHA512, Digits: 6, Key: secret,
+		}
+		passcode, err := otp.HOTP(5)
+		require.NoError(t, err)
+
+		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
+			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Passcode: passcode,
+		})
+		t.Logf("err:%v", err)
+		require.EqualError(t, err, "rpc error: code = FailedPrecondition desc "+
+			"= identity is not activated")
+	})
+
+	t.Run("Verify identity by reused passcode", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		identity := random.Identity("api-identity", uuid.NewString(),
+			createApp.Id)
+		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{}
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{Identity: identity})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+
+		base32NoPad := base32.StdEncoding.WithPadding(base32.NoPadding)
+		secret, err := base32NoPad.DecodeString(createIdentity.Secret)
+		require.NoError(t, err)
+
+		otp := &oath.OTP{
+			Algorithm: oath.HOTP, Hash: crypto.SHA512, Digits: 7, Key: secret,
+		}
+		passcode, err := otp.TOTP(time.Now().Add(-30 * time.Second))
+		require.NoError(t, err)
+
+		activateIdentity, err := aiCli.ActivateIdentity(ctx,
+			&api.ActivateIdentityRequest{
+				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Passcode: passcode,
+			})
+		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
+		require.NoError(t, err)
+		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.Status)
+		require.WithinDuration(t, time.Now(),
+			activateIdentity.UpdatedAt.AsTime(), 2*time.Second)
+
+		passcode, err = otp.TOTP(time.Now())
+		require.NoError(t, err)
+
+		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
+			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Passcode: passcode,
+		})
+		t.Logf("err: %v", err)
+		require.NoError(t, err)
+
+		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
+			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Passcode: passcode,
+		})
+		t.Logf("err: %v", err)
+		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+
+			"oath: invalid passcode")
+	})
+
+	t.Run("Verify identity by invalid passcode", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		identity := random.Identity("api-identity", uuid.NewString(),
+			createApp.Id)
+		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{}
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{Identity: identity})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+
+		base32NoPad := base32.StdEncoding.WithPadding(base32.NoPadding)
+		secret, err := base32NoPad.DecodeString(createIdentity.Secret)
+		require.NoError(t, err)
+
+		otp := &oath.OTP{
+			Algorithm: oath.HOTP, Hash: crypto.SHA512, Digits: 7, Key: secret,
+		}
+		passcode, err := otp.TOTP(time.Now())
+		require.NoError(t, err)
+
+		activateIdentity, err := aiCli.ActivateIdentity(ctx,
+			&api.ActivateIdentityRequest{
+				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Passcode: passcode,
+			})
+		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
+		require.NoError(t, err)
+		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.Status)
+		require.WithinDuration(t, time.Now(),
+			activateIdentity.UpdatedAt.AsTime(), 2*time.Second)
+
+		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
+			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Passcode: "000000",
+		})
+		t.Logf("err: %v", err)
+		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+
+			"oath: invalid passcode")
 	})
 }
 

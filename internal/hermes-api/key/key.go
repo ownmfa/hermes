@@ -19,3 +19,9 @@ func TOTPOffset(orgID, appID, identityID string) string {
 	return fmt.Sprintf("api:totpoffset:org:%s:app:%s:identity:%s", orgID,
 		appID, identityID)
 }
+
+// Reuse returns a cache key to support disallowing passcode reuse.
+func Reuse(orgID, appID, identityID, passcode string) string {
+	return fmt.Sprintf("api:reuse:org:%s:app:%s:identity:%s:passcode:%s", orgID,
+		appID, identityID, passcode)
+}
