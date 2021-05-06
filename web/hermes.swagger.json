@@ -1366,7 +1366,7 @@
         },
         "textBodyTemplate": {
           "type": "string",
-          "description": "Application text body template. Templates generate HTML-safe output using the [Go template engine](https://golang.org/pkg/html/template/)."
+          "description": "Application text body template. Templates generate HTML-safe output using the [Go template engine](https://golang.org/pkg/html/template/). Optional, for notification methods that support text bodies. To prevent fraud, SMS notifications used a fixed body that includes the application display_name and verification code."
         },
         "htmlBodyTemplate": {
           "type": "string",
@@ -1552,6 +1552,10 @@
         "hardwareTOTPMethod": {
           "$ref": "#/definitions/apiHardwareTOTPMethod",
           "description": "Hardware TOTP method configuration."
+        },
+        "smsMethod": {
+          "$ref": "#/definitions/apiSMSMethod",
+          "description": "SMS method configuration."
         },
         "createdAt": {
           "type": "string",
@@ -1809,6 +1813,16 @@
         }
       },
       "description": "Org represents an organization as stored in the database."
+    },
+    "apiSMSMethod": {
+      "type": "object",
+      "properties": {
+        "phone": {
+          "type": "string",
+          "description": "Phone number. Must be in valid [E.164](https://www.twilio.com/docs/glossary/what-e164) format."
+        }
+      },
+      "description": "SMSMethod configures an SMS passcode method."
     },
     "apiSoftwareHOTPMethod": {
       "type": "object",
