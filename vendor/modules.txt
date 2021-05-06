@@ -39,6 +39,11 @@ github.com/golang/protobuf/ptypes/timestamp
 # github.com/google/uuid v1.2.0
 ## explicit
 github.com/google/uuid
+# github.com/gorilla/mux v1.8.0
+github.com/gorilla/mux
+# github.com/gregdel/pushover v1.0.0
+## explicit
+github.com/gregdel/pushover
 # github.com/grpc-ecosystem/grpc-gateway/v2 v2.4.0
 ## explicit
 github.com/grpc-ecosystem/grpc-gateway/v2/internal/httprule
@@ -68,13 +73,39 @@ github.com/jackc/pgtype
 github.com/jackc/pgx/v4
 github.com/jackc/pgx/v4/internal/sanitize
 github.com/jackc/pgx/v4/stdlib
+# github.com/json-iterator/go v1.1.11
+## explicit
+github.com/json-iterator/go
+# github.com/kevinburke/go-types v0.0.0-20201208005256-aee49f568a20
+## explicit
+github.com/kevinburke/go-types
+# github.com/kevinburke/go.uuid v1.2.0
+## explicit
+github.com/kevinburke/go.uuid
+# github.com/kevinburke/rest v0.0.0-20210506044642-5611499aa33c
+## explicit
+github.com/kevinburke/rest/restclient
+github.com/kevinburke/rest/resterror
+# github.com/kevinburke/twilio-go v0.0.0-20210327194925-1623146bcf73
+## explicit
+github.com/kevinburke/twilio-go
+# github.com/mailgun/mailgun-go/v4 v4.5.1
+## explicit
+github.com/mailgun/mailgun-go/v4
+github.com/mailgun/mailgun-go/v4/events
 # github.com/mennanov/fmutils v0.1.0
 ## explicit
 github.com/mennanov/fmutils
+# github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+github.com/modern-go/concurrent
+# github.com/modern-go/reflect2 v1.0.1
+github.com/modern-go/reflect2
 # github.com/ownmfa/api/go v0.0.0-20210506130832-9cdf46f3f066
 ## explicit
 github.com/ownmfa/api/go/api
 github.com/ownmfa/api/go/common
+# github.com/pkg/errors v0.9.1
+github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
 # github.com/rs/zerolog v1.21.0
@@ -94,6 +125,12 @@ github.com/smira/go-statsd
 ## explicit
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
+# github.com/ttacon/builder v0.0.0-20170518171403-c099f663e1c2
+## explicit
+github.com/ttacon/builder
+# github.com/ttacon/libphonenumber v1.2.1
+## explicit
+github.com/ttacon/libphonenumber
 # go.opentelemetry.io/otel v0.20.0
 ## explicit
 go.opentelemetry.io/otel
@@ -112,18 +149,22 @@ go.opentelemetry.io/otel/metric/number
 go.opentelemetry.io/otel/metric/registry
 # go.opentelemetry.io/otel/trace v0.20.0
 go.opentelemetry.io/otel/trace
-# golang.org/x/crypto v0.0.0-20210505212654-3497b51f5e64
+# golang.org/x/crypto v0.0.0-20210506145944-38f3c27a63bf
 ## explicit
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/pbkdf2
 # golang.org/x/net v0.0.0-20210505214959-0714010a04ed
+golang.org/x/net/context
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/trace
+# golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+## explicit
+golang.org/x/sync/errgroup
 # golang.org/x/sys v0.0.0-20210503173754-0981d6026fa6
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
@@ -141,7 +182,8 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# google.golang.org/genproto v0.0.0-20210505142820-a42aa055cf76
+# google.golang.org/genproto v0.0.0-20210506142907-4a47615972c2
+## explicit
 google.golang.org/genproto/googleapis/api/annotations
 google.golang.org/genproto/googleapis/api/httpbody
 google.golang.org/genproto/googleapis/rpc/status
