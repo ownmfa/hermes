@@ -1055,7 +1055,7 @@ func RegisterAppIdentityServiceHandlerServer(ctx context.Context, mux *runtime.S
 
 	})
 
-	mux.Handle("PUT", pattern_AppIdentityService_VerifyIdentity_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_AppIdentityService_VerifyIdentity_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -1406,7 +1406,7 @@ func RegisterAppIdentityServiceHandlerClient(ctx context.Context, mux *runtime.S
 
 	})
 
-	mux.Handle("PUT", pattern_AppIdentityService_VerifyIdentity_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_AppIdentityService_VerifyIdentity_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
