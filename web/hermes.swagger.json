@@ -484,7 +484,7 @@
       }
     },
     "/v1/applications/{appID}/identities/{id}/verify": {
-      "put": {
+      "post": {
         "summary": "Verify an identity.",
         "operationId": "AppIdentityService_VerifyIdentity",
         "responses": {
