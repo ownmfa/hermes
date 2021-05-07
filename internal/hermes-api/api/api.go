@@ -25,6 +25,7 @@ import (
 	"github.com/ownmfa/hermes/pkg/dao/user"
 	"github.com/ownmfa/hermes/pkg/hlog"
 	"github.com/ownmfa/hermes/pkg/notify"
+	"github.com/ownmfa/hermes/pkg/queue"
 	"google.golang.org/grpc"
 
 	// encoding/gzip imported for use by UseCompressor CallOption.
@@ -80,6 +81,13 @@ func New(cfg *config.Config) (*API, error) {
 		n = notify.New(redis, "", cfg.SMSSID, cfg.SMSSecret, "", "")
 	}
 
+	// Build the NSQ connection for publishing.
+	nsq, err := queue.NewNSQ(cfg.NSQPubAddr, nil, "",
+		queue.DefaultNSQRequeueDelay)
+	if err != nil {
+		return nil, err
+	}
+
 	// Register gRPC services.
 	skipAuth := map[string]struct{}{
 		"/ownmfa.api.SessionService/Login": {},
@@ -98,7 +106,7 @@ func New(cfg *config.Config) (*API, error) {
 	))
 	api.RegisterAppIdentityServiceServer(srv,
 		service.NewAppIdentity(app.NewDAO(pg), identity.NewDAO(pg,
-			cfg.IdentityKey), redis, n))
+			cfg.IdentityKey), redis, n, nsq, cfg.NSQPubTopic))
 	api.RegisterOrgServiceServer(srv, service.NewOrg(org.NewDAO(pg)))
 	api.RegisterSessionServiceServer(srv, service.NewSession(user.NewDAO(pg),
 		key.NewDAO(pg), redis, cfg.PWTKey))
