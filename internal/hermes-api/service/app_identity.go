@@ -5,6 +5,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/cache"
 	"github.com/ownmfa/hermes/pkg/hlog"
+	"github.com/ownmfa/hermes/pkg/notify"
 	"github.com/ownmfa/hermes/pkg/oath"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -23,6 +25,9 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
+
+// E.164 format: https://www.twilio.com/docs/glossary/what-e164
+var rePhone = regexp.MustCompile(`^\+[1-9]\d{1,14}$`)
 
 // Apper defines the methods provided by an app.DAO.
 type Apper interface {
@@ -55,15 +60,19 @@ type AppIdentity struct {
 	appDAO      Apper
 	identityDAO Identityer
 	cache       cache.Cacher
+
+	notify notify.Notifier
 }
 
 // NewAppIdentity instantiates and returns a new AppIdentity service.
 func NewAppIdentity(appDAO Apper, identityDAO Identityer,
-	cache cache.Cacher) *AppIdentity {
+	cache cache.Cacher, notify notify.Notifier) *AppIdentity {
 	return &AppIdentity{
 		appDAO:      appDAO,
 		identityDAO: identityDAO,
 		cache:       cache,
+
+		notify: notify,
 	}
 }
 
@@ -98,6 +107,18 @@ func (ai *AppIdentity) CreateIdentity(ctx context.Context,
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < common.Role_AUTHENTICATOR {
 		return nil, errPerm(common.Role_AUTHENTICATOR)
+	}
+
+	// Validate phone number, if present.
+	if sms, ok := req.Identity.MethodOneof.(*api.Identity_SmsMethod); ok {
+		if !rePhone.MatchString(sms.SmsMethod.Phone) {
+			return nil, status.Error(codes.InvalidArgument,
+				"invalid E.164 phone number")
+		}
+
+		if err := ai.notify.VaildateSMS(ctx, sms.SmsMethod.Phone); err != nil {
+			return nil, errToStatus(err)
+		}
 	}
 
 	req.Identity.OrgId = sess.OrgID

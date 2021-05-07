@@ -32,10 +32,11 @@ func TestCreate(t *testing.T) {
 	t.Logf("createApp, err: %+v, %v", createApp, err)
 	require.NoError(t, err)
 
-	t.Run("Create valid identity", func(t *testing.T) {
+	t.Run("Create valid HOTP identity", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.Identity("dao-identity", createOrg.Id, createApp.Id)
+		identity := random.HOTPIdentity("dao-identity", createOrg.Id,
+			createApp.Id)
 		createIdentity, _ := proto.Clone(identity).(*api.Identity)
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
@@ -57,10 +58,37 @@ func TestCreate(t *testing.T) {
 		require.True(t, retSecret)
 	})
 
+	t.Run("Create valid SMS identity", func(t *testing.T) {
+		t.Parallel()
+
+		identity := random.SMSIdentity("dao-identity", createOrg.Id,
+			createApp.Id)
+		createIdentity, _ := proto.Clone(identity).(*api.Identity)
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createIdentity, createOTP, retSecret, err := globalIdentityDAO.Create(
+			ctx, createIdentity)
+		t.Logf("identity, createIdentity, createOTP, retSecret, err: %+v, "+
+			"%+v, %#v, %v, %v", identity, createIdentity, createOTP, retSecret,
+			err)
+		require.NoError(t, err)
+		require.NotEqual(t, identity.Id, createIdentity.Id)
+		require.Equal(t, api.IdentityStatus_UNVERIFIED, createIdentity.Status)
+		require.WithinDuration(t, time.Now(), createIdentity.CreatedAt.AsTime(),
+			2*time.Second)
+		require.WithinDuration(t, time.Now(), createIdentity.UpdatedAt.AsTime(),
+			2*time.Second)
+		require.NotNil(t, createOTP)
+		require.False(t, retSecret)
+	})
+
 	t.Run("Create invalid identity", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.Identity("dao-identity", createOrg.Id, createApp.Id)
+		identity := random.HOTPIdentity("dao-identity", createOrg.Id,
+			createApp.Id)
 		identity.Comment = "dao-identity-" + random.String(80)
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
@@ -84,7 +112,7 @@ func TestCreate(t *testing.T) {
 		defer cancel()
 
 		createIdentity, createOTP, retSecret, err := globalIdentityDAO.Create(
-			ctx, random.Identity("dao-identity", createOrg.Id,
+			ctx, random.HOTPIdentity("dao-identity", createOrg.Id,
 				uuid.NewString()))
 		t.Logf("createIdentity, createOTP, retSecret, err: %+v, %#v, %v, %v",
 			createIdentity, createOTP, retSecret, err)
@@ -110,17 +138,48 @@ func TestRead(t *testing.T) {
 	t.Logf("createApp, err: %+v, %v", createApp, err)
 	require.NoError(t, err)
 
-	createIdentity, createOTP, retSecret, err := globalIdentityDAO.Create(ctx,
-		random.Identity("dao-identity", createOrg.Id, createApp.Id))
-	t.Logf("createIdentity, createOTP, retSecret, err: %+v, %#v, %v, %v",
-		createIdentity, createOTP, retSecret, err)
+	createIdentity, createOTP, _, err := globalIdentityDAO.Create(ctx,
+		random.HOTPIdentity("dao-identity", createOrg.Id, createApp.Id))
+	t.Logf("createIdentity, createOTP, err: %+v, %#v, %v", createIdentity,
+		createOTP, err)
 	require.NoError(t, err)
 
-	t.Run("Read identity by valid ID", func(t *testing.T) {
+	t.Run("Read HOTP identity by valid ID", func(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
+
+		readIdentity, readOTP, err := globalIdentityDAO.Read(ctx,
+			createIdentity.Id, createIdentity.OrgId, createIdentity.AppId)
+		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
+			readOTP, err)
+		require.NoError(t, err)
+
+		// Testify does not currently support protobuf equality:
+		// https://github.com/stretchr/testify/issues/758
+		if !proto.Equal(createIdentity, readIdentity) {
+			t.Fatalf("\nExpect: %+v\nActual: %+v", createIdentity, readIdentity)
+		}
+
+		require.Equal(t, createOTP, readOTP)
+		require.Equal(t, createIdentity.GetSoftwareHotpMethod().Hash,
+			hashCryptoToAPI[readOTP.Hash])
+		require.Equal(t, createIdentity.GetSoftwareHotpMethod().Digits,
+			int32(readOTP.Digits))
+	})
+
+	t.Run("Read SMS identity by valid ID", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createIdentity, createOTP, _, err := globalIdentityDAO.Create(ctx,
+			random.SMSIdentity("dao-identity", createOrg.Id, createApp.Id))
+		t.Logf("createIdentity, createOTP, err: %+v, %#v, %v", createIdentity,
+			createOTP, err)
+		require.NoError(t, err)
 
 		readIdentity, readOTP, err := globalIdentityDAO.Read(ctx,
 			createIdentity.Id, createIdentity.OrgId, createIdentity.AppId)
@@ -135,11 +194,7 @@ func TestRead(t *testing.T) {
 			t.Fatalf("\nExpect: %+v\nActual: %+v", createIdentity, readIdentity)
 		}
 
-		require.Equal(t, createIdentity.GetSoftwareHotpMethod().Hash,
-			hashCryptoToAPI[readOTP.Hash])
-		require.Equal(t, createIdentity.GetSoftwareHotpMethod().Digits,
-			int32(readOTP.Digits))
-		require.Equal(t, createOTP.Key, readOTP.Key)
+		require.Equal(t, createOTP, readOTP)
 	})
 
 	t.Run("Read identity by unknown ID", func(t *testing.T) {
@@ -224,10 +279,9 @@ func TestUpdateStatus(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		createIdentity, createOTP, retSecret, err := globalIdentityDAO.Create(
-			ctx, random.Identity("dao-identity", createOrg.Id, createApp.Id))
-		t.Logf("createIdentity, createOTP, retSecret, err: %+v, %#v, %v, %v",
-			createIdentity, createOTP, retSecret, err)
+		createIdentity, _, _, err := globalIdentityDAO.Create(ctx,
+			random.HOTPIdentity("dao-identity", createOrg.Id, createApp.Id))
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		updateIdentity, err := globalIdentityDAO.UpdateStatus(ctx,
@@ -260,10 +314,9 @@ func TestUpdateStatus(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		createIdentity, createOTP, retSecret, err := globalIdentityDAO.Create(
-			ctx, random.Identity("dao-identity", createOrg.Id, createApp.Id))
-		t.Logf("createIdentity, createOTP, retSecret, err: %+v, %#v, %v, %v",
-			createIdentity, createOTP, retSecret, err)
+		createIdentity, _, _, err := globalIdentityDAO.Create(ctx,
+			random.HOTPIdentity("dao-identity", createOrg.Id, createApp.Id))
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		updateIdentity, err := globalIdentityDAO.UpdateStatus(ctx,
@@ -296,10 +349,9 @@ func TestDelete(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		createIdentity, createOTP, retSecret, err := globalIdentityDAO.Create(
-			ctx, random.Identity("dao-identity", createOrg.Id, createApp.Id))
-		t.Logf("createIdentity, createOTP, retSecret, err: %+v, %#v, %v, %v",
-			createIdentity, createOTP, retSecret, err)
+		createIdentity, _, _, err := globalIdentityDAO.Create(ctx,
+			random.HOTPIdentity("dao-identity", createOrg.Id, createApp.Id))
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		err = globalIdentityDAO.Delete(ctx, createIdentity.Id, createOrg.Id,
@@ -342,10 +394,9 @@ func TestDelete(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		createIdentity, createOTP, retSecret, err := globalIdentityDAO.Create(
-			ctx, random.Identity("dao-identity", createOrg.Id, createApp.Id))
-		t.Logf("createIdentity, createOTP, retSecret, err: %+v, %#v, %v, %v",
-			createIdentity, createOTP, retSecret, err)
+		createIdentity, _, _, err := globalIdentityDAO.Create(ctx,
+			random.HOTPIdentity("dao-identity", createOrg.Id, createApp.Id))
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		err = globalIdentityDAO.Delete(ctx, createIdentity.Id, createOrg.Id,
@@ -360,10 +411,9 @@ func TestDelete(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		createIdentity, createOTP, retSecret, err := globalIdentityDAO.Create(
-			ctx, random.Identity("dao-identity", createOrg.Id, createApp.Id))
-		t.Logf("createIdentity, createOTP, retSecret, err: %+v, %#v, %v, %v",
-			createIdentity, createOTP, retSecret, err)
+		createIdentity, _, _, err := globalIdentityDAO.Create(ctx,
+			random.HOTPIdentity("dao-identity", createOrg.Id, createApp.Id))
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		err = globalIdentityDAO.Delete(ctx, createIdentity.Id, uuid.NewString(),
@@ -392,10 +442,9 @@ func TestList(t *testing.T) {
 	identityComments := []string{}
 	identityTSes := []time.Time{}
 	for i := 0; i < 3; i++ {
-		createIdentity, createOTP, retSecret, err := globalIdentityDAO.Create(
-			ctx, random.Identity("dao-identity", createOrg.Id, createApp.Id))
-		t.Logf("createIdentity, createOTP, retSecret, err: %+v, %#v, %v, %v",
-			createIdentity, createOTP, retSecret, err)
+		createIdentity, _, _, err := globalIdentityDAO.Create(ctx,
+			random.HOTPIdentity("dao-identity", createOrg.Id, createApp.Id))
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		identityIDs = append(identityIDs, createIdentity.Id)

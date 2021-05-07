@@ -108,7 +108,7 @@ func TestApp(t *testing.T) {
 	}
 }
 
-func TestIdentity(t *testing.T) {
+func TestHOTPIdentity(t *testing.T) {
 	t.Parallel()
 
 	for i := 0; i < 5; i++ {
@@ -121,13 +121,37 @@ func TestIdentity(t *testing.T) {
 			orgID := uuid.NewString()
 			appID := uuid.NewString()
 
-			a1 := Identity(prefix, orgID, appID)
-			a2 := Identity(prefix, orgID, appID)
-			t.Logf("a1, a2: %+v, %+v", a1, a2)
+			i1 := HOTPIdentity(prefix, orgID, appID)
+			i2 := HOTPIdentity(prefix, orgID, appID)
+			t.Logf("i1, i2: %+v, %+v", i1, i2)
 
-			require.NotEqual(t, a1, a2)
-			require.True(t, strings.HasPrefix(a1.Comment, prefix))
-			require.True(t, strings.HasPrefix(a2.Comment, prefix))
+			require.NotEqual(t, i1, i2)
+			require.True(t, strings.HasPrefix(i1.Comment, prefix))
+			require.True(t, strings.HasPrefix(i2.Comment, prefix))
+		})
+	}
+}
+
+func TestSMSIdentity(t *testing.T) {
+	t.Parallel()
+
+	for i := 0; i < 5; i++ {
+		lTest := i
+
+		t.Run(fmt.Sprintf("Can generate %v", lTest), func(t *testing.T) {
+			t.Parallel()
+
+			prefix := String(10)
+			orgID := uuid.NewString()
+			appID := uuid.NewString()
+
+			i1 := SMSIdentity(prefix, orgID, appID)
+			i2 := SMSIdentity(prefix, orgID, appID)
+			t.Logf("i1, i2: %+v, %+v", i1, i2)
+
+			require.NotEqual(t, i1, i2)
+			require.True(t, strings.HasPrefix(i1.Comment, prefix))
+			require.True(t, strings.HasPrefix(i2.Comment, prefix))
 		})
 	}
 }

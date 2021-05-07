@@ -17,6 +17,7 @@ import (
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/cache"
 	"github.com/ownmfa/hermes/pkg/dao"
+	"github.com/ownmfa/hermes/pkg/notify"
 	"github.com/ownmfa/hermes/pkg/oath"
 	"github.com/ownmfa/hermes/pkg/test/matcher"
 	"github.com/ownmfa/hermes/pkg/test/random"
@@ -45,7 +46,7 @@ func TestCreateApp(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(apper, nil, nil)
+		aiSvc := NewAppIdentity(apper, nil, nil, nil)
 		createApp, err := aiSvc.CreateApp(ctx, &api.CreateAppRequest{App: app})
 		t.Logf("app, createApp, err: %+v, %+v, %v", app, createApp, err)
 		require.NoError(t, err)
@@ -63,7 +64,7 @@ func TestCreateApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		createApp, err := aiSvc.CreateApp(ctx, &api.CreateAppRequest{})
 		t.Logf("createApp, err: %+v, %v", createApp, err)
 		require.Nil(t, createApp)
@@ -79,7 +80,7 @@ func TestCreateApp(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		createApp, err := aiSvc.CreateApp(ctx, &api.CreateAppRequest{})
 		t.Logf("createApp, err: %+v, %v", createApp, err)
 		require.Nil(t, createApp)
@@ -102,7 +103,7 @@ func TestCreateApp(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(apper, nil, nil)
+		aiSvc := NewAppIdentity(apper, nil, nil, nil)
 		createApp, err := aiSvc.CreateApp(ctx, &api.CreateAppRequest{App: app})
 		t.Logf("app, createApp, err: %+v, %+v, %v", app, createApp, err)
 		require.Nil(t, createApp)
@@ -114,10 +115,10 @@ func TestCreateApp(t *testing.T) {
 func TestCreateIdentity(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Create valid identity", func(t *testing.T) {
+	t.Run("Create valid HOTP identity", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
 
@@ -131,7 +132,7 @@ func TestCreateIdentity(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, nil)
+		aiSvc := NewAppIdentity(nil, identityer, nil, nil)
 		createIdentity, err := aiSvc.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{Identity: identity})
 		t.Logf("identity, createIdentity, err: %+v, %+v, %v", identity,
@@ -148,7 +149,45 @@ func TestCreateIdentity(t *testing.T) {
 		}
 	})
 
-	t.Run("Create valid identity with OTP", func(t *testing.T) {
+	t.Run("Create valid SMS identity", func(t *testing.T) {
+		t.Parallel()
+
+		identity := random.SMSIdentity("api-identity", uuid.NewString(),
+			uuid.NewString())
+		retIdentity, _ := proto.Clone(identity).(*api.Identity)
+
+		ctrl := gomock.NewController(t)
+		identityer := NewMockIdentityer(ctrl)
+		identityer.EXPECT().Create(gomock.Any(), identity).Return(retIdentity,
+			nil, false, nil).Times(1)
+		notifier := notify.NewMockNotifier(ctrl)
+		notifier.EXPECT().VaildateSMS(gomock.Any(),
+			identity.GetSmsMethod().Phone).Return(nil).Times(1)
+
+		ctx, cancel := context.WithTimeout(session.NewContext(
+			context.Background(), &session.Session{
+				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+			}), testTimeout)
+		defer cancel()
+
+		aiSvc := NewAppIdentity(nil, identityer, nil, notifier)
+		createIdentity, err := aiSvc.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{Identity: identity})
+		t.Logf("identity, createIdentity, err: %+v, %+v, %v", identity,
+			createIdentity, err)
+		require.NoError(t, err)
+
+		// Testify does not currently support protobuf equality:
+		// https://github.com/stretchr/testify/issues/758
+		if !proto.Equal(&api.CreateIdentityResponse{Identity: identity},
+			createIdentity) {
+			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.CreateIdentityResponse{
+				Identity: identity,
+			}, createIdentity)
+		}
+	})
+
+	t.Run("Create valid HOTP identity with OTP", func(t *testing.T) {
 		t.Parallel()
 
 		key, err := hex.DecodeString("b76c5da0d71b5646ed38b483532cded2622d072" +
@@ -161,7 +200,7 @@ func TestCreateIdentity(t *testing.T) {
 		}
 
 		app := random.App("api-app", uuid.NewString())
-		identity := random.Identity("api-identity", app.OrgId, app.Id)
+		identity := random.HOTPIdentity("api-identity", app.OrgId, app.Id)
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
 
 		ctrl := gomock.NewController(t)
@@ -178,7 +217,7 @@ func TestCreateIdentity(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(apper, identityer, nil)
+		aiSvc := NewAppIdentity(apper, identityer, nil, nil)
 		createIdentity, err := aiSvc.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{Identity: identity})
 		t.Logf("identity, createIdentity, err: %+v, %+v, %v", identity,
@@ -204,7 +243,7 @@ func TestCreateIdentity(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		createIdentity, err := aiSvc.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
@@ -221,7 +260,7 @@ func TestCreateIdentity(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		createIdentity, err := aiSvc.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
@@ -229,10 +268,62 @@ func TestCreateIdentity(t *testing.T) {
 		require.Equal(t, errPerm(common.Role_AUTHENTICATOR), err)
 	})
 
+	t.Run("Create identity with non-E.164 phone number", func(t *testing.T) {
+		t.Parallel()
+
+		identity := random.SMSIdentity("api-identity", uuid.NewString(),
+			uuid.NewString())
+		identity.MethodOneof = &api.Identity_SmsMethod{
+			SmsMethod: &api.SMSMethod{Phone: random.String(10)},
+		}
+
+		ctx, cancel := context.WithTimeout(session.NewContext(
+			context.Background(), &session.Session{
+				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+			}), testTimeout)
+		defer cancel()
+
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
+		createIdentity, err := aiSvc.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{Identity: identity})
+		t.Logf("identity, createIdentity, err: %+v, %+v, %v", identity,
+			createIdentity, err)
+		require.Nil(t, createIdentity)
+		require.Equal(t, status.Error(codes.InvalidArgument,
+			"invalid E.164 phone number"), err)
+	})
+
+	t.Run("Create identity with unsupported phone number", func(t *testing.T) {
+		t.Parallel()
+
+		identity := random.SMSIdentity("api-identity", uuid.NewString(),
+			uuid.NewString())
+
+		ctrl := gomock.NewController(t)
+		notifier := notify.NewMockNotifier(ctrl)
+		notifier.EXPECT().VaildateSMS(gomock.Any(),
+			identity.GetSmsMethod().Phone).Return(notify.ErrInvalidSMS).Times(1)
+
+		ctx, cancel := context.WithTimeout(session.NewContext(
+			context.Background(), &session.Session{
+				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+			}), testTimeout)
+		defer cancel()
+
+		aiSvc := NewAppIdentity(nil, nil, nil, notifier)
+		createIdentity, err := aiSvc.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{Identity: identity})
+		t.Logf("identity, createIdentity, err: %+v, %+v, %v", identity,
+			createIdentity, err)
+		require.Nil(t, createIdentity)
+		require.Equal(t, status.Error(codes.InvalidArgument,
+			"unknown or unsupported phone number"), err)
+	})
+
 	t.Run("Create invalid identity", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
 		identity.Comment = random.String(81)
 
@@ -246,7 +337,7 @@ func TestCreateIdentity(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, nil)
+		aiSvc := NewAppIdentity(nil, identityer, nil, nil)
 		createIdentity, err := aiSvc.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{Identity: identity})
 		t.Logf("identity, createIdentity, err: %+v, %+v, %v", identity,
@@ -260,7 +351,7 @@ func TestCreateIdentity(t *testing.T) {
 		t.Parallel()
 
 		app := random.App("api-app", uuid.NewString())
-		identity := random.Identity("api-identity", app.OrgId, app.Id)
+		identity := random.HOTPIdentity("api-identity", app.OrgId, app.Id)
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
 
 		ctrl := gomock.NewController(t)
@@ -277,7 +368,7 @@ func TestCreateIdentity(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(apper, identityer, nil)
+		aiSvc := NewAppIdentity(apper, identityer, nil, nil)
 		createIdentity, err := aiSvc.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{Identity: identity})
 		t.Logf("identity, createIdentity, err: %+v, %+v, %v", identity,
@@ -302,7 +393,7 @@ func TestVerify(t *testing.T) {
 			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6, Key: knownKey,
 		}
 
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
@@ -323,7 +414,7 @@ func TestVerify(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, cacher)
+		aiSvc := NewAppIdentity(nil, identityer, cacher, nil)
 		err := aiSvc.verify(ctx, identity.Id, identity.OrgId, identity.AppId,
 			api.IdentityStatus_UNVERIFIED, "861821", oath.DefaultHOTPLookAhead,
 			oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead)
@@ -340,7 +431,7 @@ func TestVerify(t *testing.T) {
 		passcode, err := otp.TOTP(time.Now().Add(-30 * time.Second))
 		require.NoError(t, err)
 
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{}
@@ -362,7 +453,7 @@ func TestVerify(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, cacher)
+		aiSvc := NewAppIdentity(nil, identityer, cacher, nil)
 		err = aiSvc.verify(ctx, identity.Id, identity.OrgId, identity.AppId,
 			api.IdentityStatus_UNVERIFIED, passcode, oath.DefaultHOTPLookAhead,
 			oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead)
@@ -379,7 +470,7 @@ func TestVerify(t *testing.T) {
 		passcode, err := otp.TOTP(time.Now().Add(-90 * time.Second))
 		require.NoError(t, err)
 
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		identity.MethodOneof = &api.Identity_HardwareTotpMethod{}
@@ -401,7 +492,7 @@ func TestVerify(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, cacher)
+		aiSvc := NewAppIdentity(nil, identityer, cacher, nil)
 		err = aiSvc.verify(ctx, identity.Id, identity.OrgId, identity.AppId,
 			api.IdentityStatus_UNVERIFIED, passcode, oath.DefaultHOTPLookAhead,
 			oath.DefaultTOTPLookAhead, 20)
@@ -419,7 +510,7 @@ func TestVerify(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, nil)
+		aiSvc := NewAppIdentity(nil, identityer, nil, nil)
 		err := aiSvc.verify(ctx, uuid.NewString(), uuid.NewString(),
 			uuid.NewString(), api.IdentityStatus_UNVERIFIED, "",
 			oath.DefaultHOTPLookAhead, oath.DefaultTOTPLookAhead,
@@ -431,7 +522,7 @@ func TestVerify(t *testing.T) {
 	t.Run("Verify matching status", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
 		identity.Status = api.IdentityStatus_ACTIVATED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
@@ -443,7 +534,7 @@ func TestVerify(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, nil)
+		aiSvc := NewAppIdentity(nil, identityer, nil, nil)
 		err := aiSvc.verify(ctx, identity.Id, identity.OrgId, identity.AppId,
 			api.IdentityStatus_UNVERIFIED, "", oath.DefaultHOTPLookAhead,
 			oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead)
@@ -459,7 +550,7 @@ func TestVerify(t *testing.T) {
 			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6, Key: knownKey,
 		}
 
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
@@ -476,7 +567,7 @@ func TestVerify(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, cacher)
+		aiSvc := NewAppIdentity(nil, identityer, cacher, nil)
 		err := aiSvc.verify(ctx, identity.Id, identity.OrgId, identity.AppId,
 			api.IdentityStatus_UNVERIFIED, "861821", oath.DefaultHOTPLookAhead,
 			oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead)
@@ -491,7 +582,7 @@ func TestVerify(t *testing.T) {
 			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6, Key: knownKey,
 		}
 
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
@@ -508,7 +599,7 @@ func TestVerify(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, cacher)
+		aiSvc := NewAppIdentity(nil, identityer, cacher, nil)
 		err := aiSvc.verify(ctx, identity.Id, identity.OrgId, identity.AppId,
 			api.IdentityStatus_UNVERIFIED, "861821", oath.DefaultHOTPLookAhead,
 			oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead)
@@ -523,7 +614,7 @@ func TestVerify(t *testing.T) {
 			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6, Key: knownKey,
 		}
 
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
@@ -543,7 +634,7 @@ func TestVerify(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, cacher)
+		aiSvc := NewAppIdentity(nil, identityer, cacher, nil)
 		err := aiSvc.verify(ctx, identity.Id, identity.OrgId, identity.AppId,
 			api.IdentityStatus_UNVERIFIED, "0000000", oath.DefaultHOTPLookAhead,
 			oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead)
@@ -558,7 +649,7 @@ func TestVerify(t *testing.T) {
 			Algorithm: oath.TOTP, Hash: crypto.SHA512, Digits: 7, Key: knownKey,
 		}
 
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{}
@@ -579,7 +670,7 @@ func TestVerify(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, cacher)
+		aiSvc := NewAppIdentity(nil, identityer, cacher, nil)
 		err := aiSvc.verify(ctx, identity.Id, identity.OrgId, identity.AppId,
 			api.IdentityStatus_UNVERIFIED, "0000000", oath.DefaultHOTPLookAhead,
 			oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead)
@@ -594,7 +685,7 @@ func TestVerify(t *testing.T) {
 			Algorithm: oath.TOTP, Hash: crypto.SHA512, Digits: 7, Key: knownKey,
 		}
 
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		identity.MethodOneof = &api.Identity_HardwareTotpMethod{}
@@ -615,7 +706,7 @@ func TestVerify(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, cacher)
+		aiSvc := NewAppIdentity(nil, identityer, cacher, nil)
 		err := aiSvc.verify(ctx, identity.Id, identity.OrgId, identity.AppId,
 			api.IdentityStatus_UNVERIFIED, "0000000", oath.DefaultHOTPLookAhead,
 			oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead)
@@ -630,7 +721,7 @@ func TestVerify(t *testing.T) {
 			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6, Key: knownKey,
 		}
 
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
@@ -649,7 +740,7 @@ func TestVerify(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, cacher)
+		aiSvc := NewAppIdentity(nil, identityer, cacher, nil)
 		err := aiSvc.verify(ctx, identity.Id, identity.OrgId, identity.AppId,
 			api.IdentityStatus_UNVERIFIED, "0000000", oath.DefaultHOTPLookAhead,
 			oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead)
@@ -664,7 +755,7 @@ func TestVerify(t *testing.T) {
 			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6, Key: knownKey,
 		}
 
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
@@ -686,7 +777,7 @@ func TestVerify(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, cacher)
+		aiSvc := NewAppIdentity(nil, identityer, cacher, nil)
 		err := aiSvc.verify(ctx, identity.Id, identity.OrgId, identity.AppId,
 			api.IdentityStatus_UNVERIFIED, "861821", oath.DefaultHOTPLookAhead,
 			oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead)
@@ -703,7 +794,7 @@ func TestVerify(t *testing.T) {
 		passcode, err := otp.TOTP(time.Now().Add(-30 * time.Second))
 		require.NoError(t, err)
 
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{}
@@ -726,7 +817,7 @@ func TestVerify(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, cacher)
+		aiSvc := NewAppIdentity(nil, identityer, cacher, nil)
 		err = aiSvc.verify(ctx, identity.Id, identity.OrgId, identity.AppId,
 			api.IdentityStatus_UNVERIFIED, passcode, oath.DefaultHOTPLookAhead,
 			oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead)
@@ -749,7 +840,7 @@ func TestActivateIdentity(t *testing.T) {
 			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6, Key: knownKey,
 		}
 
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
@@ -776,7 +867,7 @@ func TestActivateIdentity(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, cacher)
+		aiSvc := NewAppIdentity(nil, identityer, cacher, nil)
 		activateIdentity, err := aiSvc.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
 				Id: identity.Id, AppId: identity.AppId, Passcode: "861821",
@@ -798,7 +889,7 @@ func TestActivateIdentity(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		activateIdentity, err := aiSvc.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
@@ -815,7 +906,7 @@ func TestActivateIdentity(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		activateIdentity, err := aiSvc.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
@@ -836,7 +927,7 @@ func TestActivateIdentity(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, nil)
+		aiSvc := NewAppIdentity(nil, identityer, nil, nil)
 		activateIdentity, err := aiSvc.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
 				Id: uuid.NewString(), AppId: uuid.NewString(),
@@ -853,7 +944,7 @@ func TestActivateIdentity(t *testing.T) {
 			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6, Key: knownKey,
 		}
 
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
@@ -880,7 +971,7 @@ func TestActivateIdentity(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, cacher)
+		aiSvc := NewAppIdentity(nil, identityer, cacher, nil)
 		activateIdentity, err := aiSvc.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
 				Id: identity.Id, AppId: identity.AppId, Passcode: "861821",
@@ -897,7 +988,7 @@ func TestChallengeIdentity(t *testing.T) {
 	t.Run("Challenge identity by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
 
 		identityer := NewMockIdentityer(gomock.NewController(t))
@@ -910,7 +1001,7 @@ func TestChallengeIdentity(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, nil)
+		aiSvc := NewAppIdentity(nil, identityer, nil, nil)
 		_, err := aiSvc.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{
 			Id: identity.Id, AppId: identity.AppId,
 		})
@@ -924,7 +1015,7 @@ func TestChallengeIdentity(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		_, err := aiSvc.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{})
 		t.Logf("err: %v", err)
 		require.Equal(t, errPerm(common.Role_AUTHENTICATOR), err)
@@ -939,7 +1030,7 @@ func TestChallengeIdentity(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		_, err := aiSvc.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{})
 		t.Logf("err: %v", err)
 		require.Equal(t, errPerm(common.Role_AUTHENTICATOR), err)
@@ -958,7 +1049,7 @@ func TestChallengeIdentity(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, nil)
+		aiSvc := NewAppIdentity(nil, identityer, nil, nil)
 		_, err := aiSvc.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{
 			Id: uuid.NewString(), AppId: uuid.NewString(),
 		})
@@ -981,7 +1072,7 @@ func TestVerifyIdentity(t *testing.T) {
 			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6, Key: knownKey,
 		}
 
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
 		identity.Status = api.IdentityStatus_ACTIVATED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
@@ -1005,7 +1096,7 @@ func TestVerifyIdentity(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, cacher)
+		aiSvc := NewAppIdentity(nil, identityer, cacher, nil)
 		_, err := aiSvc.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
 			Id: identity.Id, AppId: identity.AppId, Passcode: "861821",
 		})
@@ -1019,7 +1110,7 @@ func TestVerifyIdentity(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		_, err := aiSvc.VerifyIdentity(ctx, &api.VerifyIdentityRequest{})
 		t.Logf("err: %v", err)
 		require.Equal(t, errPerm(common.Role_AUTHENTICATOR), err)
@@ -1034,7 +1125,7 @@ func TestVerifyIdentity(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		_, err := aiSvc.VerifyIdentity(ctx, &api.VerifyIdentityRequest{})
 		t.Logf("err: %v", err)
 		require.Equal(t, errPerm(common.Role_AUTHENTICATOR), err)
@@ -1053,7 +1144,7 @@ func TestVerifyIdentity(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, nil)
+		aiSvc := NewAppIdentity(nil, identityer, nil, nil)
 		_, err := aiSvc.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
 			Id: uuid.NewString(), AppId: uuid.NewString(),
 		})
@@ -1081,7 +1172,7 @@ func TestGetApp(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(apper, nil, nil)
+		aiSvc := NewAppIdentity(apper, nil, nil, nil)
 		getApp, err := aiSvc.GetApp(ctx, &api.GetAppRequest{Id: app.Id})
 		t.Logf("app, getApp, err: %+v, %+v, %v", app, getApp, err)
 		require.NoError(t, err)
@@ -1099,7 +1190,7 @@ func TestGetApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		getApp, err := aiSvc.GetApp(ctx, &api.GetAppRequest{})
 		t.Logf("getApp, err: %+v, %v", getApp, err)
 		require.Nil(t, getApp)
@@ -1115,7 +1206,7 @@ func TestGetApp(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		getApp, err := aiSvc.GetApp(ctx, &api.GetAppRequest{})
 		t.Logf("getApp, err: %+v, %v", getApp, err)
 		require.Nil(t, getApp)
@@ -1135,7 +1226,7 @@ func TestGetApp(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(apper, nil, nil)
+		aiSvc := NewAppIdentity(apper, nil, nil, nil)
 		getApp, err := aiSvc.GetApp(ctx,
 			&api.GetAppRequest{Id: uuid.NewString()})
 		t.Logf("getApp, err: %+v, %v", getApp, err)
@@ -1150,7 +1241,7 @@ func TestGetIdentity(t *testing.T) {
 	t.Run("Get identity by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
 
@@ -1164,7 +1255,7 @@ func TestGetIdentity(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, nil)
+		aiSvc := NewAppIdentity(nil, identityer, nil, nil)
 		getIdentity, err := aiSvc.GetIdentity(ctx,
 			&api.GetIdentityRequest{Id: identity.Id, AppId: identity.AppId})
 		t.Logf("identity, getIdentity, err: %+v, %+v, %v", identity,
@@ -1184,7 +1275,7 @@ func TestGetIdentity(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		getIdentity, err := aiSvc.GetIdentity(ctx,
 			&api.GetIdentityRequest{})
 		t.Logf("getIdentity, err: %+v, %v", getIdentity, err)
@@ -1201,7 +1292,7 @@ func TestGetIdentity(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		getIdentity, err := aiSvc.GetIdentity(ctx,
 			&api.GetIdentityRequest{})
 		t.Logf("getIdentity, err: %+v, %v", getIdentity, err)
@@ -1222,7 +1313,7 @@ func TestGetIdentity(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, nil)
+		aiSvc := NewAppIdentity(nil, identityer, nil, nil)
 		getIdentity, err := aiSvc.GetIdentity(ctx,
 			&api.GetIdentityRequest{
 				Id: uuid.NewString(), AppId: uuid.NewString(),
@@ -1251,7 +1342,7 @@ func TestUpdateApp(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(apper, nil, nil)
+		aiSvc := NewAppIdentity(apper, nil, nil, nil)
 		updateApp, err := aiSvc.UpdateApp(ctx, &api.UpdateAppRequest{
 			App: app,
 		})
@@ -1294,7 +1385,7 @@ func TestUpdateApp(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(apper, nil, nil)
+		aiSvc := NewAppIdentity(apper, nil, nil, nil)
 		updateApp, err := aiSvc.UpdateApp(ctx, &api.UpdateAppRequest{
 			App: part, UpdateMask: &fieldmaskpb.FieldMask{
 				Paths: []string{"name", "display_name"},
@@ -1316,7 +1407,7 @@ func TestUpdateApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		updateApp, err := aiSvc.UpdateApp(ctx, &api.UpdateAppRequest{})
 		t.Logf("updateApp, err: %+v, %v", updateApp, err)
 		require.Nil(t, updateApp)
@@ -1332,7 +1423,7 @@ func TestUpdateApp(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		updateApp, err := aiSvc.UpdateApp(ctx, &api.UpdateAppRequest{})
 		t.Logf("updateApp, err: %+v, %v", updateApp, err)
 		require.Nil(t, updateApp)
@@ -1348,7 +1439,7 @@ func TestUpdateApp(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		updateApp, err := aiSvc.UpdateApp(ctx, &api.UpdateAppRequest{App: nil})
 		t.Logf("updateApp, err: %+v, %v", updateApp, err)
 		require.Nil(t, updateApp)
@@ -1367,7 +1458,7 @@ func TestUpdateApp(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		updateApp, err := aiSvc.UpdateApp(ctx, &api.UpdateAppRequest{
 			App: app, UpdateMask: &fieldmaskpb.FieldMask{
 				Paths: []string{"aaa"},
@@ -1395,7 +1486,7 @@ func TestUpdateApp(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(apper, nil, nil)
+		aiSvc := NewAppIdentity(apper, nil, nil, nil)
 		updateApp, err := aiSvc.UpdateApp(ctx, &api.UpdateAppRequest{
 			App: part, UpdateMask: &fieldmaskpb.FieldMask{
 				Paths: []string{"name"},
@@ -1418,7 +1509,7 @@ func TestUpdateApp(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		updateApp, err := aiSvc.UpdateApp(ctx, &api.UpdateAppRequest{
 			App: app,
 		})
@@ -1445,7 +1536,7 @@ func TestUpdateApp(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(apper, nil, nil)
+		aiSvc := NewAppIdentity(apper, nil, nil, nil)
 		updateApp, err := aiSvc.UpdateApp(ctx, &api.UpdateAppRequest{
 			App: app,
 		})
@@ -1472,7 +1563,7 @@ func TestDeleteApp(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(apper, nil, nil)
+		aiSvc := NewAppIdentity(apper, nil, nil, nil)
 		_, err := aiSvc.DeleteApp(ctx,
 			&api.DeleteAppRequest{Id: uuid.NewString()})
 		t.Logf("err: %v", err)
@@ -1485,7 +1576,7 @@ func TestDeleteApp(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		_, err := aiSvc.DeleteApp(ctx, &api.DeleteAppRequest{})
 		t.Logf("err: %v", err)
 		require.Equal(t, errPerm(common.Role_ADMIN), err)
@@ -1500,7 +1591,7 @@ func TestDeleteApp(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		_, err := aiSvc.DeleteApp(ctx, &api.DeleteAppRequest{})
 		t.Logf("err: %v", err)
 		require.Equal(t, errPerm(common.Role_ADMIN), err)
@@ -1519,7 +1610,7 @@ func TestDeleteApp(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(apper, nil, nil)
+		aiSvc := NewAppIdentity(apper, nil, nil, nil)
 		_, err := aiSvc.DeleteApp(ctx,
 			&api.DeleteAppRequest{Id: uuid.NewString()})
 		t.Logf("err: %v", err)
@@ -1543,7 +1634,7 @@ func TestDeleteIdentity(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, nil)
+		aiSvc := NewAppIdentity(nil, identityer, nil, nil)
 		_, err := aiSvc.DeleteIdentity(ctx, &api.DeleteIdentityRequest{
 			Id: uuid.NewString(), AppId: uuid.NewString(),
 		})
@@ -1557,7 +1648,7 @@ func TestDeleteIdentity(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		_, err := aiSvc.DeleteIdentity(ctx, &api.DeleteIdentityRequest{})
 		t.Logf("err: %v", err)
 		require.Equal(t, errPerm(common.Role_AUTHENTICATOR), err)
@@ -1572,7 +1663,7 @@ func TestDeleteIdentity(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		_, err := aiSvc.DeleteIdentity(ctx, &api.DeleteIdentityRequest{})
 		t.Logf("err: %v", err)
 		require.Equal(t, errPerm(common.Role_AUTHENTICATOR), err)
@@ -1591,7 +1682,7 @@ func TestDeleteIdentity(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, nil)
+		aiSvc := NewAppIdentity(nil, identityer, nil, nil)
 		_, err := aiSvc.DeleteIdentity(ctx, &api.DeleteIdentityRequest{
 			Id: uuid.NewString(), AppId: uuid.NewString(),
 		})
@@ -1624,7 +1715,7 @@ func TestListApps(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(apper, nil, nil)
+		aiSvc := NewAppIdentity(apper, nil, nil, nil)
 		listApps, err := aiSvc.ListApps(ctx, &api.ListAppsRequest{})
 		t.Logf("listApps, err: %+v, %v", listApps, err)
 		require.NoError(t, err)
@@ -1664,7 +1755,7 @@ func TestListApps(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(apper, nil, nil)
+		aiSvc := NewAppIdentity(apper, nil, nil, nil)
 		listApps, err := aiSvc.ListApps(ctx, &api.ListAppsRequest{PageSize: 2})
 		t.Logf("listApps, err: %+v, %v", listApps, err)
 		require.NoError(t, err)
@@ -1687,7 +1778,7 @@ func TestListApps(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		listApps, err := aiSvc.ListApps(ctx, &api.ListAppsRequest{})
 		t.Logf("listApps, err: %+v, %v", listApps, err)
 		require.Nil(t, listApps)
@@ -1703,7 +1794,7 @@ func TestListApps(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		listApps, err := aiSvc.ListApps(ctx, &api.ListAppsRequest{})
 		t.Logf("listApps, err: %+v, %v", listApps, err)
 		require.Nil(t, listApps)
@@ -1719,7 +1810,7 @@ func TestListApps(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		listApps, err := aiSvc.ListApps(ctx,
 			&api.ListAppsRequest{PageToken: badUUID})
 		t.Logf("listApps, err: %+v, %v", listApps, err)
@@ -1741,7 +1832,7 @@ func TestListApps(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(apper, nil, nil)
+		aiSvc := NewAppIdentity(apper, nil, nil, nil)
 		listApps, err := aiSvc.ListApps(ctx, &api.ListAppsRequest{})
 		t.Logf("listApps, err: %+v, %v", listApps, err)
 		require.Nil(t, listApps)
@@ -1771,7 +1862,7 @@ func TestListApps(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(apper, nil, nil)
+		aiSvc := NewAppIdentity(apper, nil, nil, nil)
 		listApps, err := aiSvc.ListApps(ctx, &api.ListAppsRequest{PageSize: 2})
 		t.Logf("listApps, err: %+v, %v", listApps, err)
 		require.NoError(t, err)
@@ -1797,9 +1888,9 @@ func TestListIdentities(t *testing.T) {
 		orgID := uuid.NewString()
 
 		identities := []*api.Identity{
-			random.Identity("api-identity", uuid.NewString(), uuid.NewString()),
-			random.Identity("api-identity", uuid.NewString(), uuid.NewString()),
-			random.Identity("api-identity", uuid.NewString(), uuid.NewString()),
+			random.HOTPIdentity("api-identity", uuid.NewString(), uuid.NewString()),
+			random.HOTPIdentity("api-identity", uuid.NewString(), uuid.NewString()),
+			random.HOTPIdentity("api-identity", uuid.NewString(), uuid.NewString()),
 		}
 
 		identityer := NewMockIdentityer(gomock.NewController(t))
@@ -1812,7 +1903,7 @@ func TestListIdentities(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, nil)
+		aiSvc := NewAppIdentity(nil, identityer, nil, nil)
 		listIdentities, err := aiSvc.ListIdentities(ctx,
 			&api.ListIdentitiesRequest{})
 		t.Logf("listIdentities, err: %+v, %v", listIdentities, err)
@@ -1836,9 +1927,9 @@ func TestListIdentities(t *testing.T) {
 		orgID := uuid.NewString()
 
 		identities := []*api.Identity{
-			random.Identity("api-identity", uuid.NewString(), uuid.NewString()),
-			random.Identity("api-identity", uuid.NewString(), uuid.NewString()),
-			random.Identity("api-identity", uuid.NewString(), uuid.NewString()),
+			random.HOTPIdentity("api-identity", uuid.NewString(), uuid.NewString()),
+			random.HOTPIdentity("api-identity", uuid.NewString(), uuid.NewString()),
+			random.HOTPIdentity("api-identity", uuid.NewString(), uuid.NewString()),
 		}
 
 		next, err := session.GeneratePageToken(identities[1].CreatedAt.AsTime(),
@@ -1855,7 +1946,7 @@ func TestListIdentities(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, nil)
+		aiSvc := NewAppIdentity(nil, identityer, nil, nil)
 		listIdentities, err := aiSvc.ListIdentities(ctx,
 			&api.ListIdentitiesRequest{PageSize: 2})
 		t.Logf("listIdentities, err: %+v, %v", listIdentities, err)
@@ -1879,7 +1970,7 @@ func TestListIdentities(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		listIdentities, err := aiSvc.ListIdentities(ctx,
 			&api.ListIdentitiesRequest{})
 		t.Logf("listIdentities, err: %+v, %v", listIdentities, err)
@@ -1896,7 +1987,7 @@ func TestListIdentities(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		listIdentities, err := aiSvc.ListIdentities(ctx,
 			&api.ListIdentitiesRequest{})
 		t.Logf("listIdentities, err: %+v, %v", listIdentities, err)
@@ -1913,7 +2004,7 @@ func TestListIdentities(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, nil, nil)
+		aiSvc := NewAppIdentity(nil, nil, nil, nil)
 		listIdentities, err := aiSvc.ListIdentities(ctx,
 			&api.ListIdentitiesRequest{PageToken: badUUID})
 		t.Logf("listIdentities, err: %+v, %v", listIdentities, err)
@@ -1936,7 +2027,7 @@ func TestListIdentities(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, nil)
+		aiSvc := NewAppIdentity(nil, identityer, nil, nil)
 		listIdentities, err := aiSvc.ListIdentities(ctx,
 			&api.ListIdentitiesRequest{})
 		t.Logf("listIdentities, err: %+v, %v", listIdentities, err)
@@ -1951,9 +2042,12 @@ func TestListIdentities(t *testing.T) {
 		orgID := uuid.NewString()
 
 		identities := []*api.Identity{
-			random.Identity("api-identity", uuid.NewString(), uuid.NewString()),
-			random.Identity("api-identity", uuid.NewString(), uuid.NewString()),
-			random.Identity("api-identity", uuid.NewString(), uuid.NewString()),
+			random.HOTPIdentity("api-identity", uuid.NewString(),
+				uuid.NewString()),
+			random.HOTPIdentity("api-identity", uuid.NewString(),
+				uuid.NewString()),
+			random.HOTPIdentity("api-identity", uuid.NewString(),
+				uuid.NewString()),
 		}
 		identities[1].Id = badUUID
 
@@ -1967,7 +2061,7 @@ func TestListIdentities(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, nil)
+		aiSvc := NewAppIdentity(nil, identityer, nil, nil)
 		listIdentities, err := aiSvc.ListIdentities(ctx,
 			&api.ListIdentitiesRequest{PageSize: 2})
 		t.Logf("listIdentities, err: %+v, %v", listIdentities, err)
