@@ -38,7 +38,7 @@ func New() *Config {
 		IdentityKey: config.ByteSlice(pref + "IDENTITY_KEY"),
 
 		NSQPubAddr:  config.String(pref+"NSQ_PUB_ADDR", "127.0.0.1:4150"),
-		NSQPubTopic: config.String(pref+"NSQ_PUB_TOPIC", "ValidatorIn"),
+		NSQPubTopic: config.String(pref+"NSQ_PUB_TOPIC", "NotifierIn"),
 
 		// TODO: add SID.
 		SMSSID:    config.String(pref+"SMS_SID", "TODO_FIX_ME"),

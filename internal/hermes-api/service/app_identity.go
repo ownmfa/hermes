@@ -9,15 +9,18 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/mennanov/fmutils"
 	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/api/go/common"
+	"github.com/ownmfa/hermes/api/go/message"
 	"github.com/ownmfa/hermes/internal/hermes-api/key"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/cache"
 	"github.com/ownmfa/hermes/pkg/hlog"
 	"github.com/ownmfa/hermes/pkg/notify"
 	"github.com/ownmfa/hermes/pkg/oath"
+	"github.com/ownmfa/hermes/pkg/queue"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -62,17 +65,24 @@ type AppIdentity struct {
 	cache       cache.Cacher
 
 	notify notify.Notifier
+
+	aiQueue     queue.Queuer
+	nInPubTopic string
 }
 
 // NewAppIdentity instantiates and returns a new AppIdentity service.
-func NewAppIdentity(appDAO Apper, identityDAO Identityer,
-	cache cache.Cacher, notify notify.Notifier) *AppIdentity {
+func NewAppIdentity(appDAO Apper, identityDAO Identityer, cache cache.Cacher,
+	notify notify.Notifier, pubQueue queue.Queuer,
+	pubTopic string) *AppIdentity {
 	return &AppIdentity{
 		appDAO:      appDAO,
 		identityDAO: identityDAO,
 		cache:       cache,
 
 		notify: notify,
+
+		aiQueue:     pubQueue,
+		nInPubTopic: pubTopic,
 	}
 }
 
@@ -272,9 +282,48 @@ func (ai *AppIdentity) ChallengeIdentity(ctx context.Context,
 		return nil, errPerm(common.Role_AUTHENTICATOR)
 	}
 
-	if _, _, err := ai.identityDAO.Read(ctx, req.Id, sess.OrgID,
-		req.AppId); err != nil {
+	// Verify an identity exists, even in cases where no challenge is sent.
+	identity, _, err := ai.identityDAO.Read(ctx, req.Id, sess.OrgID,
+		req.AppId)
+	if err != nil {
 		return nil, errToStatus(err)
+	}
+
+	// Build and publish NotifierIn message for methods that require it.
+	if _, ok := identity.MethodOneof.(*api.Identity_SmsMethod); ok {
+		// Add logging fields.
+		traceID := uuid.New()
+		logger.Logger = logger.WithStr("traceID", traceID.String())
+		logger.Logger = logger.WithStr("appID", identity.AppId)
+		logger.Logger = logger.WithStr("identityID", identity.Id)
+
+		nIn := &message.NotifierIn{
+			OrgId:      identity.OrgId,
+			AppId:      identity.AppId,
+			IdentityId: identity.Id,
+			TraceId:    traceID[:],
+		}
+
+		bNIn, err := proto.Marshal(nIn)
+		if err != nil {
+			logger.Errorf("ChallengeIdentity proto.Marshal: %v", err)
+
+			return nil, status.Error(codes.Internal, "encode failure")
+		}
+
+		if err = ai.aiQueue.Publish(ai.nInPubTopic, bNIn); err != nil {
+			logger.Errorf("ChallengeIdentity ai.aiQueue.Publish: %v", err)
+
+			return nil, status.Error(codes.Internal, "publish failure")
+		}
+
+		logger.Debugf("ChallengeIdentity published: %+v", nIn)
+		if err := grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
+			"202")); err != nil {
+			logger.Errorf("ChallengeIdentity grpc.SetHeader: %v", err)
+		}
+
+		return &emptypb.Empty{}, nil
 	}
 
 	if err := grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,

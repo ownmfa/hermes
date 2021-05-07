@@ -36,6 +36,9 @@ github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/empty
 github.com/golang/protobuf/ptypes/struct
 github.com/golang/protobuf/ptypes/timestamp
+# github.com/golang/snappy v0.0.3
+## explicit
+github.com/golang/snappy
 # github.com/google/uuid v1.2.0
 ## explicit
 github.com/google/uuid
@@ -100,6 +103,9 @@ github.com/mennanov/fmutils
 github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.1
 github.com/modern-go/reflect2
+# github.com/nsqio/go-nsq v1.0.8
+## explicit
+github.com/nsqio/go-nsq
 # github.com/ownmfa/api/go v0.0.0-20210507150434-d0dfd9ec2f5c
 ## explicit
 github.com/ownmfa/api/go/api
@@ -165,7 +171,7 @@ golang.org/x/net/trace
 # golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 ## explicit
 golang.org/x/sync/errgroup
-# golang.org/x/sys v0.0.0-20210507014357-30e306a8bba5
+# golang.org/x/sys v0.0.0-20210507161434-a76c4d0a0096
 ## explicit
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix

@@ -10,9 +10,9 @@ type Notifier interface {
 	// VaildateSMS verifies that a phone number is correct and supported for SMS
 	// usage.
 	VaildateSMS(ctx context.Context, phone string) error
-	// SMS sends an SMS notification. This operation can block based on rate
+	// SMS sends an SMS verification. This operation can block based on rate
 	// limiting.
-	SMS(ctx context.Context, phone, body string) error
+	SMS(ctx context.Context, phone, displayName, passcode string) error
 	// Pushover sends a Pushover notification. This operation can block based on
 	// rate limiting.
 	Pushover(ctx context.Context, userKey, subject, body string) error

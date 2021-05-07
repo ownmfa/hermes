@@ -14,6 +14,9 @@ const (
 	ErrInvalidSMS consterr.Error = "unknown or unsupported phone number"
 	smsKey                       = "notify.sms"
 	smsRateDelay                 = 750 * time.Millisecond
+
+	smsBodyTempl = "Your %s verification code is: %s. DO NOT share this " +
+		"code. We will NOT contact you for it."
 )
 
 // VaildateSMS verifies that a phone number is correct and supported for SMS
@@ -37,16 +40,11 @@ func (n *notify) VaildateSMS(ctx context.Context, phone string) error {
 	return nil
 }
 
-// SMS sends an SMS notification. This operation can block based on rate
+// SMS sends an SMS verification. This operation can block based on rate
 // limiting.
-func (n *notify) SMS(ctx context.Context, phone, body string) error {
+func (n *notify) SMS(ctx context.Context, phone, displayName,
+	passcode string) error {
 	client := twilio.NewClient(n.smsSID, n.smsSecret, nil)
-
-	// Truncate to message limit:
-	// https://www.twilio.com/docs/glossary/what-sms-character-limit
-	if len(body) > 160 {
-		body = fmt.Sprintf("%s...", body[:157])
-	}
 
 	// Support modified Twilio rate limit of 1 per second, serially. Twilio will
 	// queue up to 4 hours worth of messages (14,400), but at the risk of abuse
@@ -65,6 +63,7 @@ func (n *notify) SMS(ctx context.Context, phone, body string) error {
 		}
 	}
 
+	body := fmt.Sprintf(smsBodyTempl, displayName, passcode)
 	_, err = client.Messages.SendMessage(n.smsPhone, phone, body, nil)
 
 	return err

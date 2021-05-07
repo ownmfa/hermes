@@ -1,0 +1,19 @@
+syntax = "proto3";
+package ownmfa.int.message;
+
+option go_package = "github.com/ownmfa/hermes/api/go/message";
+
+// NotifierIn represents notification metadata as used in message queues.
+message NotifierIn {
+  // Organization ID (UUID).
+  string org_id = 1;
+
+  // Application ID (UUID).
+  string app_id = 2;
+
+  // Identity ID (UUID).
+  string identity_id = 3;
+
+  // Trace ID (UUID).
+  bytes trace_id = 4;
+}
