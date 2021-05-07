@@ -26,15 +26,16 @@ var hashCryptoToAPI = map[crypto.Hash]api.Hash{
 	crypto.SHA1:   api.Hash_SHA1,
 }
 
-// methodToOTP converts an Identity MethodOneof into an OTP and bool
-// representing whether the OTP secret and QR should be returned.
-func methodToOTP(identity *api.Identity) (*oath.OTP, bool, error) {
+// methodToOTP converts an Identity MethodOneof into an OTP, phone number, and
+// bool representing whether the OTP secret and QR should be returned.
+func methodToOTP(identity *api.Identity) (*oath.OTP, string, bool, error) {
 	secret := make([]byte, 32)
 	if _, err := rand.Read(secret); err != nil {
-		return nil, false, err
+		return nil, "", false, err
 	}
 
 	otp := &oath.OTP{Algorithm: oath.HOTP, Key: secret}
+	var phone string
 	retSecret := true
 
 	switch m := identity.MethodOneof.(type) {
@@ -86,16 +87,26 @@ func methodToOTP(identity *api.Identity) (*oath.OTP, bool, error) {
 		m.HardwareTotpMethod.Secret = nil
 
 		retSecret = false
+	case *api.Identity_SmsMethod:
+		otp.Hash = crypto.SHA512
+		otp.Digits = defaultDigits
+
+		phone = m.SmsMethod.Phone
+		retSecret = false
 	}
 
-	return otp, retSecret, nil
+	return otp, phone, retSecret, nil
 }
 
-// otpToMethod modifies an Identity MethodOneof in-place based on an algorithm,
-// api.Hash, and digits.
-func otpToMethod(identity *api.Identity, algorithm string, hash api.Hash,
+// otpToMethod modifies an Identity MethodOneof in-place based on a phone
+// number, algorithm, api.Hash, and digits.
+func otpToMethod(identity *api.Identity, phone, algorithm string, hash api.Hash,
 	digits int32) {
 	switch {
+	case phone != "":
+		identity.MethodOneof = &api.Identity_SmsMethod{
+			SmsMethod: &api.SMSMethod{Phone: phone},
+		}
 	case algorithm == oath.HOTP && hash == api.Hash_SHA512 &&
 		digits == defaultDigits:
 		identity.MethodOneof = &api.Identity_GoogleAuthHotpMethod{

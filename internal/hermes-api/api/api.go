@@ -24,6 +24,7 @@ import (
 	"github.com/ownmfa/hermes/pkg/dao/org"
 	"github.com/ownmfa/hermes/pkg/dao/user"
 	"github.com/ownmfa/hermes/pkg/hlog"
+	"github.com/ownmfa/hermes/pkg/notify"
 	"google.golang.org/grpc"
 
 	// encoding/gzip imported for use by UseCompressor CallOption.
@@ -70,15 +71,24 @@ func New(cfg *config.Config) (*API, error) {
 		return nil, err
 	}
 
+	// Set up Notifier. Allow a mock for local usage, but warn loudly.
+	var n notify.Notifier
+	if cfg.SMSSecret == "" {
+		hlog.Error("New notify secrets not found, using notify.NewFake()")
+		n = notify.NewFake()
+	} else {
+		n = notify.New(redis, "", cfg.SMSSID, cfg.SMSSecret, "", "")
+	}
+
 	// Register gRPC services.
 	skipAuth := map[string]struct{}{
 		"/ownmfa.api.SessionService/Login": {},
 	}
 	skipValidate := map[string]struct{}{
 		// Update actions validate after merge to support partial updates.
-		"/ownmfa.api.AppService/UpdateApp":   {},
-		"/ownmfa.api.OrgService/UpdateOrg":   {},
-		"/ownmfa.api.UserService/UpdateUser": {},
+		"/ownmfa.api.AppIdentityService/UpdateApp": {},
+		"/ownmfa.api.OrgService/UpdateOrg":         {},
+		"/ownmfa.api.UserService/UpdateUser":       {},
 	}
 
 	srv := grpc.NewServer(grpc.ChainUnaryInterceptor(
@@ -88,7 +98,7 @@ func New(cfg *config.Config) (*API, error) {
 	))
 	api.RegisterAppIdentityServiceServer(srv,
 		service.NewAppIdentity(app.NewDAO(pg), identity.NewDAO(pg,
-			cfg.IdentityKey), redis))
+			cfg.IdentityKey), redis, n))
 	api.RegisterOrgServiceServer(srv, service.NewOrg(org.NewDAO(pg)))
 	api.RegisterSessionServiceServer(srv, service.NewSession(user.NewDAO(pg),
 		key.NewDAO(pg), redis, cfg.PWTKey))

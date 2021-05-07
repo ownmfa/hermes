@@ -19,6 +19,9 @@ type Config struct {
 
 	NSQPubAddr  string
 	NSQPubTopic string
+
+	SMSSID    string
+	SMSSecret string
 }
 
 // New instantiates a service Config, parses the environment, and returns it.
@@ -36,5 +39,9 @@ func New() *Config {
 
 		NSQPubAddr:  config.String(pref+"NSQ_PUB_ADDR", "127.0.0.1:4150"),
 		NSQPubTopic: config.String(pref+"NSQ_PUB_TOPIC", "ValidatorIn"),
+
+		// TODO: add SID.
+		SMSSID:    config.String(pref+"SMS_SID", "TODO_FIX_ME"),
+		SMSSecret: config.String(pref+"SMS_SECRET", ""),
 	}
 }

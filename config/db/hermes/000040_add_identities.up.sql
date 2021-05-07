@@ -17,6 +17,7 @@ CREATE TABLE identities (
   hash hash NOT NULL,
   digits integer NOT NULL,
   secret_enc bytea CHECK (octet_length(secret_enc) <= 128),
+  phone varchar(16) NOT NULL,
   created_at timestamptz NOT NULL,
   updated_at timestamptz NOT NULL
 );

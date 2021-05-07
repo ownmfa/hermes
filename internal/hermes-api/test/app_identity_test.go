@@ -83,21 +83,24 @@ func TestCreateApp(t *testing.T) {
 func TestCreateIdentity(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Create valid identity", func(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	defer cancel()
+
+	aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
+	createApp, err := aiCli.CreateApp(ctx, &api.CreateAppRequest{
+		App: random.App("api-app", uuid.NewString()),
+	})
+	t.Logf("createApp, err: %+v, %v", createApp, err)
+	require.NoError(t, err)
+
+	t.Run("Create valid HOTP identity", func(t *testing.T) {
 		t.Parallel()
+
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
+			createApp.Id)
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
-
-		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
-		createApp, err := aiCli.CreateApp(ctx, &api.CreateAppRequest{
-			App: random.App("api-app", uuid.NewString()),
-		})
-		t.Logf("createApp, err: %+v, %v", createApp, err)
-		require.NoError(t, err)
-
-		identity := random.Identity("api-identity", uuid.NewString(),
-			createApp.Id)
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{Identity: identity})
@@ -114,6 +117,30 @@ func TestCreateIdentity(t *testing.T) {
 		require.Greater(t, len(createIdentity.Qr), 800)
 	})
 
+	t.Run("Create valid SMS identity", func(t *testing.T) {
+		t.Parallel()
+
+		identity := random.SMSIdentity("api-identity", uuid.NewString(),
+			createApp.Id)
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{Identity: identity})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+		require.NotEqual(t, identity.Id, createIdentity.Identity.Id)
+		require.Equal(t, api.IdentityStatus_UNVERIFIED,
+			createIdentity.Identity.Status)
+		require.WithinDuration(t, time.Now(),
+			createIdentity.Identity.CreatedAt.AsTime(), 2*time.Second)
+		require.WithinDuration(t, time.Now(),
+			createIdentity.Identity.UpdatedAt.AsTime(), 2*time.Second)
+		require.Empty(t, createIdentity.Secret)
+		require.Empty(t, createIdentity.Qr)
+	})
+
 	t.Run("Create valid identity with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
@@ -123,7 +150,7 @@ func TestCreateIdentity(t *testing.T) {
 		aiCli := api.NewAppIdentityServiceClient(secondaryViewerGRPCConn)
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.Identity("api-identity", uuid.NewString(),
+				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
 					uuid.NewString()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
@@ -135,7 +162,7 @@ func TestCreateIdentity(t *testing.T) {
 	t.Run("Create invalid identity", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
 		identity.Comment = "api-identity-" + random.String(80)
 
@@ -151,6 +178,26 @@ func TestCreateIdentity(t *testing.T) {
 			"invalid CreateIdentityRequest.Identity: embedded message failed "+
 			"validation | caused by: invalid Identity.Comment: value length "+
 			"must be between 5 and 80 runes, inclusive")
+	})
+
+	t.Run("Create identity with non-E.164 phone number", func(t *testing.T) {
+		t.Parallel()
+
+		identity := random.SMSIdentity("api-identity", uuid.NewString(),
+			uuid.NewString())
+		identity.MethodOneof = &api.Identity_SmsMethod{
+			SmsMethod: &api.SMSMethod{Phone: random.String(10)},
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{Identity: identity})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.Nil(t, createIdentity)
+		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+
+			"invalid E.164 phone number")
 	})
 }
 
@@ -175,7 +222,7 @@ func TestActivateIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.Identity("api-identity", uuid.NewString(),
+				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
 					createApp.Id),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
@@ -214,12 +261,12 @@ func TestActivateIdentity(t *testing.T) {
 	t.Run("Activate identity by valid ID with soft TOTP", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
-		defer cancel()
-
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			createApp.Id)
 		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{}
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{Identity: identity})
@@ -263,16 +310,16 @@ func TestActivateIdentity(t *testing.T) {
 		_, err = rand.Read(randKey)
 		require.NoError(t, err)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
-		defer cancel()
-
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			createApp.Id)
 		identity.MethodOneof = &api.Identity_HardwareTotpMethod{
 			HardwareTotpMethod: &api.HardwareTOTPMethod{
 				Digits: 7, Secret: randKey,
 			},
 		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{Identity: identity})
@@ -349,7 +396,7 @@ func TestActivateIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.Identity("api-identity", uuid.NewString(),
+				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
 					createApp.Id),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
@@ -375,7 +422,7 @@ func TestActivateIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.Identity("api-identity", uuid.NewString(),
+				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
 					createApp.Id),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
@@ -421,7 +468,7 @@ func TestActivateIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.Identity("api-identity", uuid.NewString(),
+				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
 					createApp.Id),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
@@ -442,22 +489,25 @@ func TestActivateIdentity(t *testing.T) {
 func TestChallengeIdentity(t *testing.T) {
 	t.Parallel()
 
+	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	defer cancel()
+
+	aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
+	createApp, err := aiCli.CreateApp(ctx, &api.CreateAppRequest{
+		App: random.App("api-app", uuid.NewString()),
+	})
+	t.Logf("createApp, err: %+v, %v", createApp, err)
+	require.NoError(t, err)
+
 	t.Run("Challenge identity by valid ID", func(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
-		createApp, err := aiCli.CreateApp(ctx, &api.CreateAppRequest{
-			App: random.App("api-app", uuid.NewString()),
-		})
-		t.Logf("createApp, err: %+v, %v", createApp, err)
-		require.NoError(t, err)
-
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.Identity("api-identity", uuid.NewString(),
+				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
 					createApp.Id),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
@@ -506,16 +556,9 @@ func TestChallengeIdentity(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
-		createApp, err := aiCli.CreateApp(ctx, &api.CreateAppRequest{
-			App: random.App("api-app", uuid.NewString()),
-		})
-		t.Logf("createApp, err: %+v, %v", createApp, err)
-		require.NoError(t, err)
-
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.Identity("api-identity", uuid.NewString(),
+				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
 					createApp.Id),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
@@ -552,7 +595,7 @@ func TestVerifyIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.Identity("api-identity", uuid.NewString(),
+				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
 					createApp.Id),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
@@ -593,12 +636,12 @@ func TestVerifyIdentity(t *testing.T) {
 	t.Run("Verify identity by valid ID with soft TOTP", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
-		defer cancel()
-
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			createApp.Id)
 		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{}
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{Identity: identity})
@@ -644,16 +687,16 @@ func TestVerifyIdentity(t *testing.T) {
 		_, err = rand.Read(randKey)
 		require.NoError(t, err)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
-		defer cancel()
-
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			createApp.Id)
 		identity.MethodOneof = &api.Identity_HardwareTotpMethod{
 			HardwareTotpMethod: &api.HardwareTOTPMethod{
 				Digits: 7, Secret: randKey,
 			},
 		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{Identity: identity})
@@ -728,7 +771,7 @@ func TestVerifyIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.Identity("api-identity", uuid.NewString(),
+				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
 					createApp.Id),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
@@ -752,7 +795,7 @@ func TestVerifyIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.Identity("api-identity", uuid.NewString(),
+				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
 					createApp.Id),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
@@ -780,12 +823,12 @@ func TestVerifyIdentity(t *testing.T) {
 	t.Run("Verify identity by reused passcode", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
-		defer cancel()
-
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			createApp.Id)
 		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{}
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{Identity: identity})
@@ -835,12 +878,12 @@ func TestVerifyIdentity(t *testing.T) {
 	t.Run("Verify identity by invalid passcode", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
-		defer cancel()
-
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			createApp.Id)
 		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{}
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{Identity: identity})
@@ -955,7 +998,7 @@ func TestGetIdentity(t *testing.T) {
 	require.NoError(t, err)
 
 	createIdentity, err := aiCli.CreateIdentity(ctx, &api.CreateIdentityRequest{
-		Identity: random.Identity("api-identity", uuid.NewString(),
+		Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
 			createApp.Id),
 	})
 	t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
@@ -1373,7 +1416,7 @@ func TestDeleteIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.Identity("api-identity", uuid.NewString(),
+				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
 					createApp.Id),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
@@ -1448,7 +1491,7 @@ func TestDeleteIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.Identity("api-identity", uuid.NewString(),
+				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
 					createApp.Id),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
@@ -1578,7 +1621,7 @@ func TestListIdentities(t *testing.T) {
 	identityIDs := []string{}
 	identityComments := []string{}
 	for i := 0; i < 3; i++ {
-		identity := random.Identity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			createApp.Id)
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)

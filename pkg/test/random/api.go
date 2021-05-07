@@ -58,14 +58,14 @@ func App(prefix, orgID string) *api.App {
 		DisplayName:      prefix + "-" + String(10),
 		Email:            prefix + "-" + Email(),
 		SubjectTemplate:  `{{displayName}} verification code`,
-		TextBodyTemplate: `Your {{displayName}} verification code is: 1234567`,
+		TextBodyTemplate: `Your {{displayName}} verification code is: 1234567.`,
 		HtmlBodyTemplate: []byte(`<html><body>Your {{displayName}} ` +
-			`verification code is: 1234567</body></html>`),
+			`verification code is: 1234567.</body></html>`),
 	}
 }
 
-// Identity generates a random identity with prefixed identifiers.
-func Identity(prefix, orgID, appID string) *api.Identity {
+// HOTPIdentity generates a random HOTP identity with prefixed identifiers.
+func HOTPIdentity(prefix, orgID, appID string) *api.Identity {
 	return &api.Identity{
 		Id:      uuid.NewString(),
 		OrgId:   orgID,
@@ -77,6 +77,23 @@ func Identity(prefix, orgID, appID string) *api.Identity {
 		}[Intn(2)],
 		MethodOneof: &api.Identity_SoftwareHotpMethod{
 			SoftwareHotpMethod: &api.SoftwareHOTPMethod{Digits: 6},
+		},
+	}
+}
+
+// SMSIdentity generates a random SMS identity with prefixed identifiers.
+func SMSIdentity(prefix, orgID, appID string) *api.Identity {
+	return &api.Identity{
+		Id:      uuid.NewString(),
+		OrgId:   orgID,
+		AppId:   appID,
+		Comment: prefix + "-" + String(10),
+		Status: []api.IdentityStatus{
+			api.IdentityStatus_UNVERIFIED,
+			api.IdentityStatus_ACTIVATED,
+		}[Intn(2)],
+		MethodOneof: &api.Identity_SmsMethod{
+			SmsMethod: &api.SMSMethod{Phone: "+15125551212"},
 		},
 	}
 }

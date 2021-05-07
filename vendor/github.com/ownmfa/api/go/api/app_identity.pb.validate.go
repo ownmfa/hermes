@@ -1281,6 +1281,77 @@ var _ interface {
 	ErrorName() string
 } = HardwareTOTPMethodValidationError{}
 
+// Validate checks the field values on SMSMethod with the rules defined in the
+// proto definition for this message. If any rules are violated, an error is returned.
+func (m *SMSMethod) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	if l := utf8.RuneCountInString(m.GetPhone()); l < 8 || l > 16 {
+		return SMSMethodValidationError{
+			field:  "Phone",
+			reason: "value length must be between 8 and 16 runes, inclusive",
+		}
+	}
+
+	return nil
+}
+
+// SMSMethodValidationError is the validation error returned by
+// SMSMethod.Validate if the designated constraints aren't met.
+type SMSMethodValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SMSMethodValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SMSMethodValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SMSMethodValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SMSMethodValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SMSMethodValidationError) ErrorName() string { return "SMSMethodValidationError" }
+
+// Error satisfies the builtin error interface
+func (e SMSMethodValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSMSMethod.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SMSMethodValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SMSMethodValidationError{}
+
 // Validate checks the field values on Identity with the rules defined in the
 // proto definition for this message. If any rules are violated, an error is returned.
 func (m *Identity) Validate() error {
@@ -1403,6 +1474,18 @@ func (m *Identity) Validate() error {
 			if err := v.Validate(); err != nil {
 				return IdentityValidationError{
 					field:  "HardwareTotpMethod",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *Identity_SmsMethod:
+
+		if v, ok := interface{}(m.GetSmsMethod()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return IdentityValidationError{
+					field:  "SmsMethod",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}

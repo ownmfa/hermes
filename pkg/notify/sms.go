@@ -19,7 +19,7 @@ const (
 // VaildateSMS verifies that a phone number is correct and supported for SMS
 // usage.
 func (n *notify) VaildateSMS(ctx context.Context, phone string) error {
-	client := twilio.NewClient(n.smsAccountSID, n.smsAuthToken, nil)
+	client := twilio.NewClient(n.smsSID, n.smsSecret, nil)
 
 	lookup, err := client.LookupPhoneNumbers.Get(ctx, phone,
 		url.Values{"Type": []string{"carrier"}})
@@ -40,7 +40,7 @@ func (n *notify) VaildateSMS(ctx context.Context, phone string) error {
 // SMS sends an SMS notification. This operation can block based on rate
 // limiting.
 func (n *notify) SMS(ctx context.Context, phone, body string) error {
-	client := twilio.NewClient(n.smsAccountSID, n.smsAuthToken, nil)
+	client := twilio.NewClient(n.smsSID, n.smsSecret, nil)
 
 	// Truncate to message limit:
 	// https://www.twilio.com/docs/glossary/what-sms-character-limit

@@ -24,10 +24,12 @@ func TestMethodToOTP(t *testing.T) {
 	require.NoError(t, err)
 
 	email := random.Email()
+	phone := random.String(10)
 
 	tests := []struct {
 		inpIdentity  *api.Identity
 		resOTP       *oath.OTP
+		resPhone     string
 		resRetSecret bool
 		err          error
 	}{
@@ -37,7 +39,7 @@ func TestMethodToOTP(t *testing.T) {
 			}}, &oath.OTP{
 				Algorithm: oath.HOTP, Hash: crypto.SHA512,
 				Digits: defaultDigits, AccountName: email,
-			}, true, nil,
+			}, "", true, nil,
 		},
 		{
 			&api.Identity{MethodOneof: &api.Identity_SoftwareTotpMethod{
@@ -45,7 +47,7 @@ func TestMethodToOTP(t *testing.T) {
 			}}, &oath.OTP{
 				Algorithm: oath.TOTP, Hash: crypto.SHA512,
 				Digits: defaultDigits,
-			}, true, nil,
+			}, "", true, nil,
 		},
 		{
 			&api.Identity{MethodOneof: &api.Identity_GoogleAuthHotpMethod{
@@ -53,7 +55,7 @@ func TestMethodToOTP(t *testing.T) {
 			}}, &oath.OTP{
 				Algorithm: oath.HOTP, Hash: crypto.SHA512,
 				Digits: defaultDigits,
-			}, true, nil,
+			}, "", true, nil,
 		},
 		{
 			&api.Identity{MethodOneof: &api.Identity_GoogleAuthTotpMethod{
@@ -61,7 +63,7 @@ func TestMethodToOTP(t *testing.T) {
 			}}, &oath.OTP{
 				Algorithm: oath.TOTP, Hash: crypto.SHA512,
 				Digits: defaultDigits,
-			}, true, nil,
+			}, "", true, nil,
 		},
 		{
 			&api.Identity{MethodOneof: &api.Identity_MicrosoftAuthTotpMethod{
@@ -71,7 +73,7 @@ func TestMethodToOTP(t *testing.T) {
 			}}, &oath.OTP{
 				Algorithm: oath.TOTP, Hash: crypto.SHA1, Digits: 6,
 				AccountName: email,
-			}, true, nil,
+			}, "", true, nil,
 		},
 		{
 			&api.Identity{MethodOneof: &api.Identity_HardwareHotpMethod{
@@ -80,7 +82,7 @@ func TestMethodToOTP(t *testing.T) {
 				},
 			}}, &oath.OTP{
 				Algorithm: oath.HOTP, Hash: crypto.SHA512, Digits: 8,
-			}, false, nil,
+			}, "", false, nil,
 		},
 		{
 			&api.Identity{MethodOneof: &api.Identity_HardwareTotpMethod{
@@ -89,8 +91,13 @@ func TestMethodToOTP(t *testing.T) {
 				},
 			}}, &oath.OTP{
 				Algorithm: oath.TOTP, Hash: crypto.SHA512, Digits: 9,
-			}, false, nil,
+			}, "", false, nil,
 		},
+		{&api.Identity{MethodOneof: &api.Identity_SmsMethod{
+			SmsMethod: &api.SMSMethod{Phone: phone},
+		}}, &oath.OTP{
+			Algorithm: oath.HOTP, Hash: crypto.SHA512, Digits: defaultDigits,
+		}, phone, false, nil},
 	}
 
 	for _, test := range tests {
@@ -99,18 +106,20 @@ func TestMethodToOTP(t *testing.T) {
 		t.Run(fmt.Sprintf("Can convert %+v", lTest), func(t *testing.T) {
 			t.Parallel()
 
-			identity := random.Identity("dao-identity", uuid.NewString(),
+			identity := random.HOTPIdentity("dao-identity", uuid.NewString(),
 				uuid.NewString())
 			identity.MethodOneof = lTest.inpIdentity.MethodOneof
 
-			otp, retSecret, err := methodToOTP(identity)
-			t.Logf("otp, retSecret, err: %#v, %v, %v", otp, retSecret, err)
+			otp, phone, retSecret, err := methodToOTP(identity)
+			t.Logf("otp, phone, retSecret, err: %#v, %v, %v, %v", otp, phone,
+				retSecret, err)
 
 			// Normalize secret.
 			require.Len(t, otp.Key, 32)
 			lTest.resOTP.Key = otp.Key
 
 			require.Equal(t, lTest.resOTP, otp)
+			require.Equal(t, lTest.resPhone, phone)
 			require.Equal(t, lTest.resRetSecret, retSecret)
 			require.Equal(t, lTest.err, err)
 		})
@@ -120,35 +129,45 @@ func TestMethodToOTP(t *testing.T) {
 func TestOTPToMethod(t *testing.T) {
 	t.Parallel()
 
+	phone := random.String(10)
+
 	tests := []struct {
+		inpPhone    string
 		inpAlg      string
 		inpHash     api.Hash
 		inpDigits   int32
 		resIdentity *api.Identity
 	}{
 		{
-			oath.HOTP, api.Hash_SHA512, defaultDigits, &api.Identity{
+			phone, oath.HOTP, api.Hash_SHA512, defaultDigits, &api.Identity{
+				MethodOneof: &api.Identity_SmsMethod{
+					SmsMethod: &api.SMSMethod{Phone: phone},
+				},
+			},
+		},
+		{
+			"", oath.HOTP, api.Hash_SHA512, defaultDigits, &api.Identity{
 				MethodOneof: &api.Identity_GoogleAuthHotpMethod{
 					GoogleAuthHotpMethod: &api.GoogleAuthHOTPMethod{},
 				},
 			},
 		},
 		{
-			oath.TOTP, api.Hash_SHA512, defaultDigits, &api.Identity{
+			"", oath.TOTP, api.Hash_SHA512, defaultDigits, &api.Identity{
 				MethodOneof: &api.Identity_GoogleAuthTotpMethod{
 					GoogleAuthTotpMethod: &api.GoogleAuthTOTPMethod{},
 				},
 			},
 		},
 		{
-			oath.TOTP, api.Hash_SHA1, 6, &api.Identity{
+			"", oath.TOTP, api.Hash_SHA1, 6, &api.Identity{
 				MethodOneof: &api.Identity_MicrosoftAuthTotpMethod{
 					MicrosoftAuthTotpMethod: &api.MicrosoftAuthTOTPMethod{},
 				},
 			},
 		},
 		{
-			oath.HOTP, api.Hash_SHA512, 8, &api.Identity{
+			"", oath.HOTP, api.Hash_SHA512, 8, &api.Identity{
 				MethodOneof: &api.Identity_SoftwareHotpMethod{
 					SoftwareHotpMethod: &api.SoftwareHOTPMethod{
 						Hash: api.Hash_SHA512, Digits: 8,
@@ -157,7 +176,7 @@ func TestOTPToMethod(t *testing.T) {
 			},
 		},
 		{
-			oath.TOTP, api.Hash_SHA256, 9, &api.Identity{
+			"", oath.TOTP, api.Hash_SHA256, 9, &api.Identity{
 				MethodOneof: &api.Identity_SoftwareTotpMethod{
 					SoftwareTotpMethod: &api.SoftwareTOTPMethod{
 						Hash: api.Hash_SHA256, Digits: 9,
@@ -174,7 +193,8 @@ func TestOTPToMethod(t *testing.T) {
 			t.Parallel()
 
 			identity := &api.Identity{}
-			otpToMethod(identity, lTest.inpAlg, lTest.inpHash, lTest.inpDigits)
+			otpToMethod(identity, lTest.inpPhone, lTest.inpAlg, lTest.inpHash,
+				lTest.inpDigits)
 			t.Logf("identity: %+v", identity)
 
 			// Testify does not currently support protobuf equality:
