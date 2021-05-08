@@ -106,7 +106,7 @@ github.com/modern-go/reflect2
 # github.com/nsqio/go-nsq v1.0.8
 ## explicit
 github.com/nsqio/go-nsq
-# github.com/ownmfa/api/go v0.0.0-20210507150434-d0dfd9ec2f5c
+# github.com/ownmfa/api/go v0.0.0-20210508010539-aee6a7fca0bd
 ## explicit
 github.com/ownmfa/api/go/api
 github.com/ownmfa/api/go/common
@@ -172,7 +172,6 @@ golang.org/x/net/trace
 ## explicit
 golang.org/x/sync/errgroup
 # golang.org/x/sys v0.0.0-20210507161434-a76c4d0a0096
-## explicit
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 # golang.org/x/text v0.3.6

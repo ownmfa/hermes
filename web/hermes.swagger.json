@@ -472,7 +472,7 @@
           },
           {
             "name": "id",
-            "description": "Identity ID (UUID) to issue challenge.",
+            "description": "Identity ID (UUID) to issue challenge. The rate limit for methods that send notifications is one challenge per identity every 30 seconds.",
             "in": "path",
             "required": true,
             "type": "string"

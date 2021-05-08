@@ -1017,9 +1017,14 @@ func TestChallengeIdentity(t *testing.T) {
 		identity := random.SMSIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
 
-		identityer := NewMockIdentityer(gomock.NewController(t))
+		ctrl := gomock.NewController(t)
+		identityer := NewMockIdentityer(ctrl)
 		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
 			identity.AppId).Return(identity, nil, nil).Times(1)
+		cacher := cache.NewMockCacher(ctrl)
+		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(), key.Challenge(
+			identity.OrgId, identity.AppId, identity.Id), 1, notifyRate).
+			Return(true, nil).Times(1)
 
 		aiQueue := queue.NewFake()
 		nInSub, err := aiQueue.Subscribe("")
@@ -1032,7 +1037,8 @@ func TestChallengeIdentity(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, nil, nil, aiQueue, nInPubTopic)
+		aiSvc := NewAppIdentity(nil, identityer, cacher, nil, aiQueue,
+			nInPubTopic)
 		_, err = aiSvc.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{
 			Id: identity.Id, AppId: identity.AppId,
 		})
@@ -1115,7 +1121,66 @@ func TestChallengeIdentity(t *testing.T) {
 		require.Equal(t, status.Error(codes.NotFound, "object not found"), err)
 	})
 
-	t.Run("Challenge SMS identity with bad queue", func(t *testing.T) {
+	t.Run("Challenge SMS identity by invalid rate cache", func(t *testing.T) {
+		t.Parallel()
+
+		identity := random.SMSIdentity("api-identity", uuid.NewString(),
+			uuid.NewString())
+
+		ctrl := gomock.NewController(t)
+		identityer := NewMockIdentityer(ctrl)
+		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
+			identity.AppId).Return(identity, nil, nil).Times(1)
+		cacher := cache.NewMockCacher(ctrl)
+		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(), key.Challenge(
+			identity.OrgId, identity.AppId, identity.Id), 1, notifyRate).
+			Return(false, dao.ErrNotFound).Times(1)
+
+		ctx, cancel := context.WithTimeout(session.NewContext(
+			context.Background(), &session.Session{
+				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+			}), testTimeout)
+		defer cancel()
+
+		aiSvc := NewAppIdentity(nil, identityer, cacher, nil, nil, "")
+		_, err := aiSvc.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{
+			Id: identity.Id, AppId: identity.AppId,
+		})
+		t.Logf("err: %v", err)
+		require.Equal(t, status.Error(codes.NotFound, "object not found"), err)
+	})
+
+	t.Run("Challenge SMS identity by invalid rate", func(t *testing.T) {
+		t.Parallel()
+
+		identity := random.SMSIdentity("api-identity", uuid.NewString(),
+			uuid.NewString())
+
+		ctrl := gomock.NewController(t)
+		identityer := NewMockIdentityer(ctrl)
+		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
+			identity.AppId).Return(identity, nil, nil).Times(1)
+		cacher := cache.NewMockCacher(ctrl)
+		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(), key.Challenge(
+			identity.OrgId, identity.AppId, identity.Id), 1, notifyRate).
+			Return(false, nil).Times(1)
+
+		ctx, cancel := context.WithTimeout(session.NewContext(
+			context.Background(), &session.Session{
+				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+			}), testTimeout)
+		defer cancel()
+
+		aiSvc := NewAppIdentity(nil, identityer, cacher, nil, nil, "")
+		_, err := aiSvc.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{
+			Id: identity.Id, AppId: identity.AppId,
+		})
+		t.Logf("err: %v", err)
+		require.Equal(t, status.Error(codes.Unavailable, "rate limit exceeded"),
+			err)
+	})
+
+	t.Run("Challenge SMS identity by invalid queue", func(t *testing.T) {
 		t.Parallel()
 
 		identity := random.SMSIdentity("api-identity", uuid.NewString(),
@@ -1126,6 +1191,10 @@ func TestChallengeIdentity(t *testing.T) {
 		identityer := NewMockIdentityer(ctrl)
 		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
 			identity.AppId).Return(identity, nil, nil).Times(1)
+		cacher := cache.NewMockCacher(ctrl)
+		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(), key.Challenge(
+			identity.OrgId, identity.AppId, identity.Id), 1, notifyRate).
+			Return(true, nil).Times(1)
 		queuer := queue.NewMockQueuer(ctrl)
 		queuer.EXPECT().Publish(nInPubTopic, gomock.Any()).
 			Return(dao.ErrNotFound).Times(1)
@@ -1136,7 +1205,8 @@ func TestChallengeIdentity(t *testing.T) {
 			}), testTimeout)
 		defer cancel()
 
-		aiSvc := NewAppIdentity(nil, identityer, nil, nil, queuer, nInPubTopic)
+		aiSvc := NewAppIdentity(nil, identityer, cacher, nil, queuer,
+			nInPubTopic)
 		_, err := aiSvc.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{
 			Id: identity.Id, AppId: identity.AppId,
 		})

@@ -621,6 +621,61 @@ func TestChallengeIdentity(t *testing.T) {
 		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
 			"not found")
 	})
+
+	t.Run("Challenge SMS identity by invalid rate", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{
+				Identity: random.SMSIdentity("api-identity", uuid.NewString(),
+					createApp.Id),
+			})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+
+		_, err = aiCli.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{
+			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+		})
+		t.Logf("err: %v", err)
+		require.NoError(t, err)
+
+		select {
+		case msg := <-globalPubSub.C():
+			msg.Ack()
+			t.Logf("msg.Topic, msg.Payload: %v, %s", msg.Topic(), msg.Payload())
+			require.Equal(t, globalPubTopic, msg.Topic())
+
+			res := &message.NotifierIn{}
+			require.NoError(t, proto.Unmarshal(msg.Payload(), res))
+			t.Logf("res: %+v", res)
+
+			// Normalize generated trace ID.
+			nIn := &message.NotifierIn{
+				OrgId:      createIdentity.Identity.OrgId,
+				AppId:      createIdentity.Identity.AppId,
+				IdentityId: createIdentity.Identity.Id,
+				TraceId:    res.TraceId,
+			}
+
+			// Testify does not currently support protobuf equality:
+			// https://github.com/stretchr/testify/issues/758
+			if !proto.Equal(nIn, res) {
+				t.Fatalf("\nExpect: %+v\nActual: %+v", nIn, res)
+			}
+		case <-time.After(testTimeout):
+			t.Fatal("Message timed out")
+		}
+
+		_, err = aiCli.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{
+			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+		})
+		t.Logf("err: %v", err)
+		require.EqualError(t, err, "rpc error: code = Unavailable desc = rate "+
+			"limit exceeded")
+	})
 }
 
 func TestVerifyIdentity(t *testing.T) {
