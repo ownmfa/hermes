@@ -29,6 +29,11 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+const (
+	reuseRate  = 24 * time.Hour
+	notifyRate = 30 * time.Second
+)
+
 // E.164 format: https://www.twilio.com/docs/glossary/what-e164
 var rePhone = regexp.MustCompile(`^\+[1-9]\d{1,14}$`)
 
@@ -178,11 +183,11 @@ func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
 
 	// Disallow passcode reuse, even when counter tracking would prevent it.
 	ok, err := ai.cache.SetIfNotExistTTL(ctx, key.Reuse(identity.OrgId,
-		identity.AppId, identity.Id, passcode), 1, 24*time.Hour)
+		identity.AppId, identity.Id, passcode), 1, reuseRate)
 	if err != nil {
 		return err
 	}
-	for !ok {
+	if !ok {
 		return oath.ErrInvalidPasscode
 	}
 
@@ -291,6 +296,21 @@ func (ai *AppIdentity) ChallengeIdentity(ctx context.Context,
 
 	// Build and publish NotifierIn message for methods that require it.
 	if _, ok := identity.MethodOneof.(*api.Identity_SmsMethod); ok {
+		// Rate limit.
+		notifyKey := key.Challenge(identity.OrgId, identity.AppId, identity.Id)
+		ok, err := ai.cache.SetIfNotExistTTL(ctx, notifyKey, 1, notifyRate)
+		if err != nil {
+			return nil, errToStatus(err)
+		}
+		if !ok {
+			if err := grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
+				"429")); err != nil {
+				logger.Errorf("ChallengeIdentity grpc.SetHeader: %v", err)
+			}
+
+			return nil, status.Error(codes.Unavailable, "rate limit exceeded")
+		}
+
 		// Add logging fields.
 		traceID := uuid.New()
 		logger.Logger = logger.WithStr("traceID", traceID.String())
@@ -304,6 +324,7 @@ func (ai *AppIdentity) ChallengeIdentity(ctx context.Context,
 			TraceId:    traceID[:],
 		}
 
+		// Build and publish NotifierIn message.
 		bNIn, err := proto.Marshal(nIn)
 		if err != nil {
 			logger.Errorf("ChallengeIdentity proto.Marshal: %v", err)

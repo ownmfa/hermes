@@ -1497,7 +1497,7 @@ type ChallengeIdentityRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Identity ID (UUID) to issue challenge.
+	// Identity ID (UUID) to issue challenge. The rate limit for methods that send notifications is one challenge per identity every 30 seconds.
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// Application ID (UUID).
 	AppId string `protobuf:"bytes,2,opt,name=app_id,json=appID,proto3" json:"app_id,omitempty"`

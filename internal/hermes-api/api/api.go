@@ -82,8 +82,7 @@ func New(cfg *config.Config) (*API, error) {
 	}
 
 	// Build the NSQ connection for publishing.
-	nsq, err := queue.NewNSQ(cfg.NSQPubAddr, nil, "",
-		queue.DefaultNSQRequeueDelay)
+	nsq, err := queue.NewNSQ(cfg.NSQPubAddr, nil, "")
 	if err != nil {
 		return nil, err
 	}

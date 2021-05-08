@@ -8,20 +8,17 @@ import (
 )
 
 const (
-	DefaultNSQRequeueDelay = 15 * time.Second
-	nsqDisconnectTimeout   = 5 * time.Second
-
-	ErrTimeout consterr.Error = "queue: timed out"
+	nsqDisconnectTimeout                = 5 * time.Second
+	ErrTimeout           consterr.Error = "queue: timed out"
 )
 
 // nsqQueue contains methods to publish and subscribe to NSQ and implements the
 // Queuer interface.
 type nsqQueue struct {
-	producer     *nsq.Producer
-	pubAddr      string
-	lookupAddrs  []string
-	subChannel   string
-	requeueDelay time.Duration
+	producer    *nsq.Producer
+	pubAddr     string
+	lookupAddrs []string
+	subChannel  string
 }
 
 // Verify nsqQueue implements Queuer.
@@ -29,10 +26,8 @@ var _ Queuer = &nsqQueue{}
 
 // NewNSQ builds a new Queuer and returns it and an error value. If lookupAddrs
 // is nil, pubAddr is used for subscriptions. subChannel may be empty for a
-// publish-only Queue. requeueDelay should usually be set to
-// DefaultNSQRequeueDelay.
-func NewNSQ(pubAddr string, lookupAddrs []string, subChannel string,
-	requeueDelay time.Duration) (Queuer,
+// publish-only Queue.
+func NewNSQ(pubAddr string, lookupAddrs []string, subChannel string) (Queuer,
 	error) {
 	config := nsq.NewConfig()
 
@@ -46,11 +41,10 @@ func NewNSQ(pubAddr string, lookupAddrs []string, subChannel string,
 	}
 
 	return &nsqQueue{
-		producer:     producer,
-		pubAddr:      pubAddr,
-		lookupAddrs:  lookupAddrs,
-		subChannel:   subChannel,
-		requeueDelay: requeueDelay,
+		producer:    producer,
+		pubAddr:     pubAddr,
+		lookupAddrs: lookupAddrs,
+		subChannel:  subChannel,
 	}, nil
 }
 
@@ -136,7 +130,7 @@ func (n *nsqQueue) Subscribe(topic string) (Subber, error) {
 
 	config := nsq.NewConfig()
 	config.MaxInFlight = 10
-	config.DefaultRequeueDelay = n.requeueDelay
+	config.DefaultRequeueDelay = 15 * time.Second
 
 	consumer, err := nsq.NewConsumer(topic, n.subChannel, config)
 	if err != nil {

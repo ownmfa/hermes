@@ -25,3 +25,9 @@ func Reuse(orgID, appID, identityID, passcode string) string {
 	return fmt.Sprintf("api:reuse:org:%s:app:%s:identity:%s:passcode:%s", orgID,
 		appID, identityID, passcode)
 }
+
+// Challenge returns a cache key to support rate limiting notifications.
+func Challenge(orgID, appID, identityID string) string {
+	return fmt.Sprintf("api:challenge:org:%s:app:%s:identity:%s", orgID, appID,
+		identityID)
+}
