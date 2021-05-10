@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// Constants used for endpoint behavior.
 const (
 	StatusCodeKey   = "hermes-status-code"
 	defaultPageSize = 50

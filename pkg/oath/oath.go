@@ -14,16 +14,22 @@ import (
 	"github.com/skip2/go-qrcode"
 )
 
+// Constants used to configure the OTP Algorithm field and URI.
 const (
-	HOTP                string         = "hotp"
-	TOTP                string         = "totp"
+	HOTP string = "hotp"
+	TOTP string = "totp"
+
+	period int = 30
+)
+
+// Errors returned due to OTP validation failures.
+const (
 	ErrUnknownAlgorithm consterr.Error = "oath: unknown OATH algorithm"
 	ErrHashSupport      consterr.Error = "oath: unsupported hash function"
 	ErrDigitsRange      consterr.Error = "oath: digits outside supported range"
 	ErrKeyLength        consterr.Error = "oath: insufficient key length"
 	//#nosec G101 // false positive for hardcoded credentials
 	ErrInvalidPasscode consterr.Error = "oath: invalid passcode"
-	period             int            = 30
 )
 
 // OTP represents a one-time password generator, and is compatible with both

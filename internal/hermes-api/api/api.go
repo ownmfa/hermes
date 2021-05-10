@@ -32,12 +32,18 @@ import (
 	_ "google.golang.org/grpc/encoding/gzip"
 )
 
-const (
-	ServiceName = "api"
-	GRPCHost    = "127.0.0.1"
-	GRPCPort    = ":50051"
-	httpPort    = ":8000"
+// ServiceName provides consistent naming, including logs and metrics.
+const ServiceName = "api"
 
+// Constants used for service configuration.
+const (
+	GRPCHost = "127.0.0.1"
+	GRPCPort = ":50051"
+	httpPort = ":8000"
+)
+
+// Errors returned due to insufficient key length.
+const (
 	errPWTLength      consterr.Error = "pwt key must be 32 bytes"
 	errIdentityLength consterr.Error = "identity key must be 32 bytes"
 )

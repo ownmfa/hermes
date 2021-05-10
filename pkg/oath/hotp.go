@@ -9,6 +9,7 @@ import (
 	"math"
 )
 
+// DefaultHOTPLookAhead defines the default HOTP look-ahead count.
 const DefaultHOTPLookAhead = 50
 
 // HOTP generates a passcode using a counter.
