@@ -10,7 +10,7 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/uuid v1.2.0
-	github.com/gregdel/pushover v1.0.0
+	github.com/gregdel/pushover v1.1.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.4.0
 	github.com/jackc/pgconn v1.8.1
 	github.com/jackc/pgproto3/v2 v2.0.7 // indirect
@@ -32,7 +32,9 @@ require (
 	github.com/ttacon/libphonenumber v1.2.1 // indirect
 	go.opentelemetry.io/otel v0.20.0 // indirect
 	golang.org/x/crypto v0.0.0-20210506145944-38f3c27a63bf
+	golang.org/x/net v0.0.0-20210510120150-4163338589ed // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
+	golang.org/x/sys v0.0.0-20210510120138-977fb7262007 // indirect
 	google.golang.org/grpc v1.37.0
 	google.golang.org/protobuf v1.26.0
 )

@@ -7,10 +7,11 @@ import (
 	"github.com/ownmfa/hermes/pkg/consterr"
 )
 
-const (
-	nsqDisconnectTimeout                = 5 * time.Second
-	ErrTimeout           consterr.Error = "queue: timed out"
-)
+// ErrTimeout is returned when a Queue operation times out.
+const ErrTimeout consterr.Error = "queue: timed out"
+
+// nsqDisconnectTimeout configures the NSQ unsubscribe wait time.
+const nsqDisconnectTimeout = 5 * time.Second
 
 // nsqQueue contains methods to publish and subscribe to NSQ and implements the
 // Queuer interface.

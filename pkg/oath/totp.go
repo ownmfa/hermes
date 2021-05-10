@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// DefaultTOTPLookAhead defines the default look-ahead window count.
 const DefaultTOTPLookAhead = 1
 
 // TOTP generates a passcode based on the provided time.

@@ -10,10 +10,13 @@ import (
 	"github.com/ownmfa/hermes/pkg/consterr"
 )
 
+// ErrInvalidSMS is returned when a phone number fails validation for use.
+const ErrInvalidSMS consterr.Error = "unknown or unsupported phone number"
+
+// Constants used for the configuration of SMS notifications.
 const (
-	ErrInvalidSMS consterr.Error = "unknown or unsupported phone number"
-	smsKey                       = "notify.sms"
-	smsRateDelay                 = 750 * time.Millisecond
+	smsKey       = "notify.sms"
+	smsRateDelay = 750 * time.Millisecond
 
 	smsBodyTempl = "Your %s verification code is: %s. DO NOT share this " +
 		"code. We will NOT contact you for it."
