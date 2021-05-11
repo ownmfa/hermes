@@ -353,6 +353,53 @@ func TestActivateIdentity(t *testing.T) {
 		require.Equal(t, int64(-3), counter)
 	})
 
+	t.Run("Activate SMS identity by valid ID", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{
+				Identity: random.SMSIdentity("api-identity", uuid.NewString(),
+					createApp.Id),
+			})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+
+		_, otp, err := globalIdentityDAO.Read(ctx, createIdentity.Identity.Id,
+			createIdentity.Identity.OrgId, createIdentity.Identity.AppId)
+		require.NoError(t, err)
+
+		passcode, err := otp.HOTP(5)
+		require.NoError(t, err)
+
+		ok, err := globalCache.SetIfNotExist(ctx, key.Expire(
+			createIdentity.Identity.OrgId, createIdentity.Identity.AppId,
+			createIdentity.Identity.Id, passcode), 1)
+		require.True(t, ok)
+		require.NoError(t, err)
+
+		activateIdentity, err := aiCli.ActivateIdentity(ctx,
+			&api.ActivateIdentityRequest{
+				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Passcode: passcode,
+			})
+		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
+		require.NoError(t, err)
+		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.Status)
+		require.WithinDuration(t, time.Now(),
+			activateIdentity.UpdatedAt.AsTime(), 2*time.Second)
+
+		ok, counter, err := globalCache.GetI(ctx, key.HOTPCounter(
+			activateIdentity.OrgId, activateIdentity.AppId,
+			activateIdentity.Id))
+		t.Logf("ok, counter, err: %v, %v, %v", ok, counter, err)
+		require.True(t, ok)
+		require.NoError(t, err)
+		require.Equal(t, int64(6), counter)
+	})
+
 	t.Run("Activate identity with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
@@ -459,6 +506,31 @@ func TestActivateIdentity(t *testing.T) {
 		require.Nil(t, activateIdentity)
 		require.EqualError(t, err, "rpc error: code = FailedPrecondition desc "+
 			"= identity is not unverified")
+	})
+
+	t.Run("Activate identity by expired passcode", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{
+				Identity: random.SMSIdentity("api-identity", uuid.NewString(),
+					createApp.Id),
+			})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+
+		activateIdentity, err := aiCli.ActivateIdentity(ctx,
+			&api.ActivateIdentityRequest{
+				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Passcode: "000000",
+			})
+		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
+		require.Nil(t, activateIdentity)
+		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+
+			"oath: invalid passcode")
 	})
 
 	t.Run("Activate identity by invalid passcode", func(t *testing.T) {
@@ -835,6 +907,61 @@ func TestVerifyIdentity(t *testing.T) {
 		require.NoError(t, err)
 	})
 
+	t.Run("Verify SMS identity by valid ID", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{
+				Identity: random.SMSIdentity("api-identity", uuid.NewString(),
+					createApp.Id),
+			})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+
+		_, otp, err := globalIdentityDAO.Read(ctx, createIdentity.Identity.Id,
+			createIdentity.Identity.OrgId, createIdentity.Identity.AppId)
+		require.NoError(t, err)
+
+		passcode, err := otp.HOTP(5)
+		require.NoError(t, err)
+
+		ok, err := globalCache.SetIfNotExist(ctx, key.Expire(
+			createIdentity.Identity.OrgId, createIdentity.Identity.AppId,
+			createIdentity.Identity.Id, passcode), 1)
+		require.True(t, ok)
+		require.NoError(t, err)
+
+		activateIdentity, err := aiCli.ActivateIdentity(ctx,
+			&api.ActivateIdentityRequest{
+				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Passcode: passcode,
+			})
+		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
+		require.NoError(t, err)
+		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.Status)
+		require.WithinDuration(t, time.Now(),
+			activateIdentity.UpdatedAt.AsTime(), 2*time.Second)
+
+		passcode, err = otp.HOTP(6)
+		require.NoError(t, err)
+
+		ok, err = globalCache.SetIfNotExist(ctx, key.Expire(
+			createIdentity.Identity.OrgId, createIdentity.Identity.AppId,
+			createIdentity.Identity.Id, passcode), 1)
+		require.True(t, ok)
+		require.NoError(t, err)
+
+		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
+			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Passcode: passcode,
+		})
+		t.Logf("err: %v", err)
+		require.NoError(t, err)
+	})
+
 	t.Run("Verify identity with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
@@ -922,6 +1049,56 @@ func TestVerifyIdentity(t *testing.T) {
 		t.Logf("err:%v", err)
 		require.EqualError(t, err, "rpc error: code = FailedPrecondition desc "+
 			"= identity is not activated")
+	})
+
+	t.Run("Verify identity by expired passcode", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{
+				Identity: random.SMSIdentity("api-identity", uuid.NewString(),
+					createApp.Id),
+			})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+
+		_, otp, err := globalIdentityDAO.Read(ctx, createIdentity.Identity.Id,
+			createIdentity.Identity.OrgId, createIdentity.Identity.AppId)
+		require.NoError(t, err)
+
+		passcode, err := otp.HOTP(5)
+		require.NoError(t, err)
+
+		ok, err := globalCache.SetIfNotExist(ctx, key.Expire(
+			createIdentity.Identity.OrgId, createIdentity.Identity.AppId,
+			createIdentity.Identity.Id, passcode), 1)
+		require.True(t, ok)
+		require.NoError(t, err)
+
+		activateIdentity, err := aiCli.ActivateIdentity(ctx,
+			&api.ActivateIdentityRequest{
+				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Passcode: passcode,
+			})
+		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
+		require.NoError(t, err)
+		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.Status)
+		require.WithinDuration(t, time.Now(),
+			activateIdentity.UpdatedAt.AsTime(), 2*time.Second)
+
+		passcode, err = otp.HOTP(6)
+		require.NoError(t, err)
+
+		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
+			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Passcode: passcode,
+		})
+		t.Logf("err: %v", err)
+		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+
+			"oath: invalid passcode")
 	})
 
 	t.Run("Verify identity by reused passcode", func(t *testing.T) {

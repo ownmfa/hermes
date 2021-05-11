@@ -31,3 +31,9 @@ func Challenge(orgID, appID, identityID string) string {
 	return fmt.Sprintf("api:challenge:org:%s:app:%s:identity:%s", orgID, appID,
 		identityID)
 }
+
+// Expire returns a cache key to support passcode expiration.
+func Expire(orgID, appID, identityID, passcode string) string {
+	return fmt.Sprintf("api:expire:org:%s:app:%s:identity:%s:passcode:%s",
+		orgID, appID, identityID, passcode)
+}

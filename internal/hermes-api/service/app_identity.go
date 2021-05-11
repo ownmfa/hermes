@@ -181,6 +181,19 @@ func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
 				strings.ToLower(expStatus.String())))
 	}
 
+	// Check passcode expiration for methods that utilize it. Continue to
+	// verification, even if found, to keep HOTP counters in sync.
+	if _, ok := identity.MethodOneof.(*api.Identity_SmsMethod); ok {
+		ok, _, err := ai.cache.GetI(ctx, key.Expire(identity.OrgId,
+			identity.AppId, identity.Id, passcode))
+		if err != nil {
+			return err
+		}
+		if !ok {
+			return oath.ErrInvalidPasscode
+		}
+	}
+
 	// Disallow passcode reuse, even when counter tracking would prevent it.
 	ok, err := ai.cache.SetIfNotExistTTL(ctx, key.Reuse(identity.OrgId,
 		identity.AppId, identity.Id, passcode), 1, reuseRate)
@@ -191,13 +204,18 @@ func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
 		return oath.ErrInvalidPasscode
 	}
 
+	// Add logging fields.
+	logger := hlog.FromContext(ctx)
+	logger.Logger = logger.WithStr("appID", identity.AppId)
+	logger.Logger = logger.WithStr("identityID", identity.Id)
+
 	// Verify passcode and calculate HOTP counter or TOTP window offset.
 	var counter int64
 	var offset int
 
 	switch identity.MethodOneof.(type) {
 	case *api.Identity_SoftwareHotpMethod, *api.Identity_GoogleAuthHotpMethod,
-		*api.Identity_HardwareHotpMethod:
+		*api.Identity_HardwareHotpMethod, *api.Identity_SmsMethod:
 		// Retrieve current HOTP counter. If not found, use the zero value.
 		var curr int64
 		_, curr, err = ai.cache.GetI(ctx, key.HOTPCounter(identity.OrgId,
@@ -228,16 +246,14 @@ func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
 		}
 
 		offset, err = otp.VerifyTOTP(hardTOTPLookAhead, int(off), passcode)
+	default:
+		logger.Errorf("verify unknown identity.MethodOneof: %+v", identity)
+
+		return oath.ErrInvalidPasscode
 	}
 	if err != nil {
 		return err
 	}
-
-	// Add logging fields.
-	logger := hlog.FromContext(ctx)
-	logger.Logger = logger.WithStr("appID", identity.AppId)
-	logger.Logger = logger.WithStr("identityID", identity.Id)
-	logger.Infof("verify counter, offset: %v, %v", counter, offset)
 
 	// Store HOTP counter or TOTP window offset for future verifications.
 	switch {
@@ -252,6 +268,7 @@ func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
 			return err
 		}
 	}
+	logger.Infof("verify counter, offset: %v, %v", counter, offset)
 
 	return nil
 }
@@ -294,7 +311,7 @@ func (ai *AppIdentity) ChallengeIdentity(ctx context.Context,
 		return nil, errToStatus(err)
 	}
 
-	// Build and publish NotifierIn message for methods that require it.
+	// Build and publish NotifierIn message for methods that utilize it.
 	if _, ok := identity.MethodOneof.(*api.Identity_SmsMethod); ok {
 		// Rate limit.
 		notifyKey := key.Challenge(identity.OrgId, identity.AppId, identity.Id)
