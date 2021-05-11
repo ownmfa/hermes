@@ -125,3 +125,27 @@ func TestChallenge(t *testing.T) {
 		})
 	}
 }
+
+func TestExpire(t *testing.T) {
+	t.Parallel()
+
+	for i := 0; i < 5; i++ {
+		lTest := i
+
+		t.Run(fmt.Sprintf("Can key %v", lTest), func(t *testing.T) {
+			t.Parallel()
+
+			orgID := uuid.NewString()
+			appID := uuid.NewString()
+			identityID := uuid.NewString()
+			passcode := random.String(10)
+
+			key := Expire(orgID, appID, identityID, passcode)
+			t.Logf("key: %v", key)
+
+			require.Equal(t, fmt.Sprintf("api:expire:org:%s:app:%s:identity:"+
+				"%s:passcode:%s", orgID, appID, identityID, passcode), key)
+			require.Equal(t, key, Expire(orgID, appID, identityID, passcode))
+		})
+	}
+}

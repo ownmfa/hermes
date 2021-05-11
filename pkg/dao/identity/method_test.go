@@ -98,6 +98,10 @@ func TestMethodToOTP(t *testing.T) {
 		}}, &oath.OTP{
 			Algorithm: oath.HOTP, Hash: crypto.SHA512, Digits: defaultDigits,
 		}, phone, false, nil},
+		{
+			&api.Identity{MethodOneof: nil}, nil, "", false,
+			errUnknownMethodOneof,
+		},
 	}
 
 	for _, test := range tests {
@@ -115,8 +119,10 @@ func TestMethodToOTP(t *testing.T) {
 				retSecret, err)
 
 			// Normalize secret.
-			require.Len(t, otp.Key, 32)
-			lTest.resOTP.Key = otp.Key
+			if lTest.resOTP != nil {
+				require.Len(t, otp.Key, 32)
+				lTest.resOTP.Key = otp.Key
+			}
 
 			require.Equal(t, lTest.resOTP, otp)
 			require.Equal(t, lTest.resPhone, phone)

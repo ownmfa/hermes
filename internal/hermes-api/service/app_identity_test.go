@@ -502,6 +502,45 @@ func TestVerify(t *testing.T) {
 		require.NoError(t, err)
 	})
 
+	t.Run("Verify SMS identity by valid ID", func(t *testing.T) {
+		t.Parallel()
+
+		otp := &oath.OTP{
+			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6, Key: knownKey,
+		}
+
+		identity := random.SMSIdentity("api-identity", uuid.NewString(),
+			uuid.NewString())
+		identity.Status = api.IdentityStatus_UNVERIFIED
+		retIdentity, _ := proto.Clone(identity).(*api.Identity)
+
+		ctrl := gomock.NewController(t)
+		identityer := NewMockIdentityer(ctrl)
+		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
+			identity.AppId).Return(retIdentity, otp, nil).Times(1)
+		cacher := cache.NewMockCacher(ctrl)
+		cacher.EXPECT().GetI(gomock.Any(), key.Expire(identity.OrgId,
+			identity.AppId, identity.Id, "861821")).Return(true, int64(0), nil).
+			Times(1)
+		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(), key.Reuse(identity.OrgId,
+			identity.AppId, identity.Id, "861821"), 1, 24*time.Hour).
+			Return(true, nil).Times(1)
+		cacher.EXPECT().GetI(gomock.Any(), key.HOTPCounter(identity.OrgId,
+			identity.AppId, identity.Id)).Return(false, int64(0), nil).Times(1)
+		cacher.EXPECT().Set(gomock.Any(), key.HOTPCounter(identity.OrgId,
+			identity.AppId, identity.Id), int64(6)).Return(nil).Times(1)
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		aiSvc := NewAppIdentity(nil, identityer, cacher, nil, nil, "")
+		err := aiSvc.verify(ctx, identity.Id, identity.OrgId, identity.AppId,
+			api.IdentityStatus_UNVERIFIED, "861821", oath.DefaultHOTPLookAhead,
+			oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead)
+		t.Logf("err: %v", err)
+		require.NoError(t, err)
+	})
+
 	t.Run("Verify by unknown ID", func(t *testing.T) {
 		t.Parallel()
 
@@ -545,12 +584,64 @@ func TestVerify(t *testing.T) {
 			"identity is not unverified"), err)
 	})
 
-	t.Run("Verify by invalid reuse cache", func(t *testing.T) {
+	t.Run("Verify by invalid expire cache", func(t *testing.T) {
 		t.Parallel()
 
-		otp := &oath.OTP{
-			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6, Key: knownKey,
-		}
+		identity := random.SMSIdentity("api-identity", uuid.NewString(),
+			uuid.NewString())
+		identity.Status = api.IdentityStatus_UNVERIFIED
+		retIdentity, _ := proto.Clone(identity).(*api.Identity)
+
+		ctrl := gomock.NewController(t)
+		identityer := NewMockIdentityer(ctrl)
+		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
+			identity.AppId).Return(retIdentity, nil, nil).Times(1)
+		cacher := cache.NewMockCacher(ctrl)
+		cacher.EXPECT().GetI(gomock.Any(), key.Expire(identity.OrgId,
+			identity.AppId, identity.Id, "")).Return(false, int64(0),
+			dao.ErrNotFound).Times(1)
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		aiSvc := NewAppIdentity(nil, identityer, cacher, nil, nil, "")
+		err := aiSvc.verify(ctx, identity.Id, identity.OrgId, identity.AppId,
+			api.IdentityStatus_UNVERIFIED, "", oath.DefaultHOTPLookAhead,
+			oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead)
+		t.Logf("err: %v", err)
+		require.Equal(t, dao.ErrNotFound, err)
+	})
+
+	t.Run("Verify by expired passcode", func(t *testing.T) {
+		t.Parallel()
+
+		identity := random.SMSIdentity("api-identity", uuid.NewString(),
+			uuid.NewString())
+		identity.Status = api.IdentityStatus_UNVERIFIED
+		retIdentity, _ := proto.Clone(identity).(*api.Identity)
+
+		ctrl := gomock.NewController(t)
+		identityer := NewMockIdentityer(ctrl)
+		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
+			identity.AppId).Return(retIdentity, nil, nil).Times(1)
+		cacher := cache.NewMockCacher(ctrl)
+		cacher.EXPECT().GetI(gomock.Any(), key.Expire(identity.OrgId,
+			identity.AppId, identity.Id, "")).Return(false, int64(0), nil).
+			Times(1)
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		aiSvc := NewAppIdentity(nil, identityer, cacher, nil, nil, "")
+		err := aiSvc.verify(ctx, identity.Id, identity.OrgId, identity.AppId,
+			api.IdentityStatus_UNVERIFIED, "", oath.DefaultHOTPLookAhead,
+			oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead)
+		t.Logf("err: %v", err)
+		require.Equal(t, oath.ErrInvalidPasscode, err)
+	})
+
+	t.Run("Verify by invalid reuse cache", func(t *testing.T) {
+		t.Parallel()
 
 		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
@@ -560,7 +651,7 @@ func TestVerify(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		identityer := NewMockIdentityer(ctrl)
 		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
-			identity.AppId).Return(retIdentity, otp, nil).Times(1)
+			identity.AppId).Return(retIdentity, nil, nil).Times(1)
 		cacher := cache.NewMockCacher(ctrl)
 		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(), key.Reuse(identity.OrgId,
 			identity.AppId, identity.Id, "861821"), 1, 24*time.Hour).
@@ -714,6 +805,35 @@ func TestVerify(t *testing.T) {
 			oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead)
 		t.Logf("err: %v", err)
 		require.Equal(t, dao.ErrNotFound, err)
+	})
+
+	t.Run("Verify by invalid MethodOneof", func(t *testing.T) {
+		t.Parallel()
+
+		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
+			uuid.NewString())
+		identity.Status = api.IdentityStatus_UNVERIFIED
+		identity.MethodOneof = nil
+		retIdentity, _ := proto.Clone(identity).(*api.Identity)
+
+		ctrl := gomock.NewController(t)
+		identityer := NewMockIdentityer(ctrl)
+		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
+			identity.AppId).Return(retIdentity, nil, nil).Times(1)
+		cacher := cache.NewMockCacher(ctrl)
+		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(), key.Reuse(identity.OrgId,
+			identity.AppId, identity.Id, "0000000"), 1, 24*time.Hour).
+			Return(true, nil).Times(1)
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		aiSvc := NewAppIdentity(nil, identityer, cacher, nil, nil, "")
+		err := aiSvc.verify(ctx, identity.Id, identity.OrgId, identity.AppId,
+			api.IdentityStatus_UNVERIFIED, "0000000", oath.DefaultHOTPLookAhead,
+			oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead)
+		t.Logf("err: %v", err)
+		require.Equal(t, oath.ErrInvalidPasscode, err)
 	})
 
 	t.Run("Verify by invalid passcode", func(t *testing.T) {

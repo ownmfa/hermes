@@ -5,11 +5,14 @@ import (
 	"crypto/rand"
 
 	"github.com/ownmfa/api/go/api"
+	"github.com/ownmfa/hermes/pkg/consterr"
 	"github.com/ownmfa/hermes/pkg/oath"
 )
 
 const (
 	defaultDigits = 7
+
+	errUnknownMethodOneof consterr.Error = "unknown identity.MethodOneof"
 )
 
 // hashAPIToCrypto maps an api.Hash to a crypto.Hash.
@@ -93,6 +96,8 @@ func methodToOTP(identity *api.Identity) (*oath.OTP, string, bool, error) {
 
 		phone = m.SmsMethod.Phone
 		retSecret = false
+	default:
+		return nil, "", false, errUnknownMethodOneof
 	}
 
 	return otp, phone, retSecret, nil
