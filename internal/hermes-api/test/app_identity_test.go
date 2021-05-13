@@ -13,7 +13,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/hermes/api/go/message"
-	"github.com/ownmfa/hermes/internal/hermes-api/key"
+	ikey "github.com/ownmfa/hermes/internal/hermes-api/key"
+	"github.com/ownmfa/hermes/pkg/key"
 	"github.com/ownmfa/hermes/pkg/oath"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/stretchr/testify/require"
@@ -295,7 +296,7 @@ func TestActivateIdentity(t *testing.T) {
 		require.WithinDuration(t, time.Now(),
 			activateIdentity.UpdatedAt.AsTime(), 2*time.Second)
 
-		ok, counter, err := globalCache.GetI(ctx, key.TOTPOffset(
+		ok, counter, err := globalCache.GetI(ctx, ikey.TOTPOffset(
 			activateIdentity.OrgId, activateIdentity.AppId,
 			activateIdentity.Id))
 		t.Logf("ok, counter, err: %v, %v, %v", ok, counter, err)
@@ -344,7 +345,7 @@ func TestActivateIdentity(t *testing.T) {
 		require.WithinDuration(t, time.Now(),
 			activateIdentity.UpdatedAt.AsTime(), 2*time.Second)
 
-		ok, counter, err := globalCache.GetI(ctx, key.TOTPOffset(
+		ok, counter, err := globalCache.GetI(ctx, ikey.TOTPOffset(
 			activateIdentity.OrgId, activateIdentity.AppId,
 			activateIdentity.Id))
 		t.Logf("ok, counter, err: %v, %v, %v", ok, counter, err)

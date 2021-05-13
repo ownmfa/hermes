@@ -14,10 +14,11 @@ import (
 	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/api/go/message"
-	"github.com/ownmfa/hermes/internal/hermes-api/key"
+	ikey "github.com/ownmfa/hermes/internal/hermes-api/key"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/cache"
 	"github.com/ownmfa/hermes/pkg/hlog"
+	"github.com/ownmfa/hermes/pkg/key"
 	"github.com/ownmfa/hermes/pkg/notify"
 	"github.com/ownmfa/hermes/pkg/oath"
 	"github.com/ownmfa/hermes/pkg/queue"
@@ -195,7 +196,7 @@ func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
 	}
 
 	// Disallow passcode reuse, even when counter tracking would prevent it.
-	ok, err := ai.cache.SetIfNotExistTTL(ctx, key.Reuse(identity.OrgId,
+	ok, err := ai.cache.SetIfNotExistTTL(ctx, ikey.Reuse(identity.OrgId,
 		identity.AppId, identity.Id, passcode), 1, reuseRate)
 	if err != nil {
 		return err
@@ -229,7 +230,7 @@ func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
 		*api.Identity_MicrosoftAuthTotpMethod:
 		// Retrieve TOTP window offset. If not found, use the zero value.
 		var off int64
-		_, off, err = ai.cache.GetI(ctx, key.TOTPOffset(identity.OrgId,
+		_, off, err = ai.cache.GetI(ctx, ikey.TOTPOffset(identity.OrgId,
 			identity.AppId, identity.Id))
 		if err != nil {
 			return err
@@ -239,7 +240,7 @@ func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
 	case *api.Identity_HardwareTotpMethod:
 		// Retrieve TOTP window offset. If not found, use the zero value.
 		var off int64
-		_, off, err = ai.cache.GetI(ctx, key.TOTPOffset(identity.OrgId,
+		_, off, err = ai.cache.GetI(ctx, ikey.TOTPOffset(identity.OrgId,
 			identity.AppId, identity.Id))
 		if err != nil {
 			return err
@@ -263,7 +264,7 @@ func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
 			return err
 		}
 	case offset != 0:
-		if err = ai.cache.Set(ctx, key.TOTPOffset(identity.OrgId,
+		if err = ai.cache.Set(ctx, ikey.TOTPOffset(identity.OrgId,
 			identity.AppId, identity.Id), offset); err != nil {
 			return err
 		}
@@ -314,7 +315,7 @@ func (ai *AppIdentity) ChallengeIdentity(ctx context.Context,
 	// Build and publish NotifierIn message for methods that utilize it.
 	if _, ok := identity.MethodOneof.(*api.Identity_SmsMethod); ok {
 		// Rate limit.
-		notifyKey := key.Challenge(identity.OrgId, identity.AppId, identity.Id)
+		notifyKey := ikey.Challenge(identity.OrgId, identity.AppId, identity.Id)
 		ok, err := ai.cache.SetIfNotExistTTL(ctx, notifyKey, 1, notifyRate)
 		if err != nil {
 			return nil, errToStatus(err)

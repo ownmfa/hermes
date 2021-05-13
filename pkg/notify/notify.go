@@ -7,8 +7,8 @@ import "github.com/ownmfa/hermes/pkg/cache"
 type notify struct {
 	cache cache.Cacher
 
-	smsSID         string
-	smsSecret      string
+	smsID          string
+	smsToken       string
 	smsPhone       string
 	pushoverAPIKey string
 	emailAPIKey    string
@@ -18,13 +18,13 @@ type notify struct {
 var _ Notifier = &notify{}
 
 // New builds a new Notifier and returns it.
-func New(cache cache.Cacher, smsSID, smsSecret, smsPhone, pushoverAPIKey,
+func New(cache cache.Cacher, smsID, smsToken, smsPhone, pushoverAPIKey,
 	emailAPIKey string) Notifier {
 	return &notify{
 		cache: cache,
 
-		smsSID:         smsSID,
-		smsSecret:      smsSecret,
+		smsID:          smsID,
+		smsToken:       smsToken,
 		smsPhone:       smsPhone,
 		pushoverAPIKey: pushoverAPIKey,
 		emailAPIKey:    emailAPIKey,

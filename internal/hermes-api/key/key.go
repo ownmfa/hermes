@@ -8,12 +8,6 @@ func Disabled(orgID, keyID string) string {
 	return fmt.Sprintf("api:disabled:org:%s:key:%s", orgID, keyID)
 }
 
-// HOTPCounter returns a cache key to retrieve the current HOTP counter.
-func HOTPCounter(orgID, appID, identityID string) string {
-	return fmt.Sprintf("api:hotpcounter:org:%s:app:%s:identity:%s", orgID,
-		appID, identityID)
-}
-
 // TOTPOffset returns a cache key to retrieve the TOTP window offset.
 func TOTPOffset(orgID, appID, identityID string) string {
 	return fmt.Sprintf("api:totpoffset:org:%s:app:%s:identity:%s", orgID,
@@ -30,10 +24,4 @@ func Reuse(orgID, appID, identityID, passcode string) string {
 func Challenge(orgID, appID, identityID string) string {
 	return fmt.Sprintf("api:challenge:org:%s:app:%s:identity:%s", orgID, appID,
 		identityID)
-}
-
-// Expire returns a cache key to support passcode expiration.
-func Expire(orgID, appID, identityID, passcode string) string {
-	return fmt.Sprintf("api:expire:org:%s:app:%s:identity:%s:passcode:%s",
-		orgID, appID, identityID, passcode)
 }

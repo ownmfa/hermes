@@ -25,7 +25,7 @@ const (
 // VaildateSMS verifies that a phone number is correct and supported for SMS
 // usage.
 func (n *notify) VaildateSMS(ctx context.Context, phone string) error {
-	client := twilio.NewClient(n.smsSID, n.smsSecret, nil)
+	client := twilio.NewClient(n.smsID, n.smsToken, nil)
 
 	lookup, err := client.LookupPhoneNumbers.Get(ctx, phone,
 		url.Values{"Type": []string{"carrier"}})
@@ -47,7 +47,7 @@ func (n *notify) VaildateSMS(ctx context.Context, phone string) error {
 // limiting.
 func (n *notify) SMS(ctx context.Context, phone, displayName,
 	passcode string) error {
-	client := twilio.NewClient(n.smsSID, n.smsSecret, nil)
+	client := twilio.NewClient(n.smsID, n.smsToken, nil)
 
 	// Support modified Twilio rate limit of 1 per second, serially. Twilio will
 	// queue up to 4 hours worth of messages (14,400), but at the risk of abuse
