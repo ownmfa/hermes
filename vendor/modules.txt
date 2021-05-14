@@ -106,7 +106,7 @@ github.com/modern-go/reflect2
 # github.com/nsqio/go-nsq v1.0.8
 ## explicit
 github.com/nsqio/go-nsq
-# github.com/ownmfa/api/go v0.0.0-20210508010539-aee6a7fca0bd
+# github.com/ownmfa/api/go v0.0.0-20210514160942-e251f3ba04fd
 ## explicit
 github.com/ownmfa/api/go/api
 github.com/ownmfa/api/go/common
@@ -114,7 +114,7 @@ github.com/ownmfa/api/go/common
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
-# github.com/rs/zerolog v1.21.0
+# github.com/rs/zerolog v1.22.0
 ## explicit
 github.com/rs/zerolog
 github.com/rs/zerolog/internal/cbor
@@ -155,13 +155,12 @@ go.opentelemetry.io/otel/metric/number
 go.opentelemetry.io/otel/metric/registry
 # go.opentelemetry.io/otel/trace v0.20.0
 go.opentelemetry.io/otel/trace
-# golang.org/x/crypto v0.0.0-20210513122933-cd7d49e622d5
+# golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
 ## explicit
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/pbkdf2
 # golang.org/x/net v0.0.0-20210510120150-4163338589ed
-## explicit
 golang.org/x/net/context
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
@@ -172,8 +171,7 @@ golang.org/x/net/trace
 # golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 ## explicit
 golang.org/x/sync/errgroup
-# golang.org/x/sys v0.0.0-20210511113859-b0526f3d8744
-## explicit
+# golang.org/x/sys v0.0.0-20210514084401-e8d321eab015
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 # golang.org/x/text v0.3.6
@@ -190,8 +188,7 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# google.golang.org/genproto v0.0.0-20210510173355-fb37daa5cd7a
-## explicit
+# google.golang.org/genproto v0.0.0-20210513213006-bf773b8c8384
 google.golang.org/genproto/googleapis/api/annotations
 google.golang.org/genproto/googleapis/api/httpbody
 google.golang.org/genproto/googleapis/rpc/status

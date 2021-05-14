@@ -23,19 +23,16 @@ require (
 	github.com/mailgun/mailgun-go/v4 v4.5.1
 	github.com/mennanov/fmutils v0.1.0
 	github.com/nsqio/go-nsq v1.0.8
-	github.com/ownmfa/api/go v0.0.0-20210508010539-aee6a7fca0bd
-	github.com/rs/zerolog v1.21.0
+	github.com/ownmfa/api/go v0.0.0-20210514160942-e251f3ba04fd
+	github.com/rs/zerolog v1.22.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/smira/go-statsd v1.3.2
 	github.com/stretchr/testify v1.7.0
 	github.com/ttacon/builder v0.0.0-20170518171403-c099f663e1c2 // indirect
 	github.com/ttacon/libphonenumber v1.2.1 // indirect
 	go.opentelemetry.io/otel v0.20.0 // indirect
-	golang.org/x/crypto v0.0.0-20210513122933-cd7d49e622d5
-	golang.org/x/net v0.0.0-20210510120150-4163338589ed // indirect
+	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20210511113859-b0526f3d8744 // indirect
-	google.golang.org/genproto v0.0.0-20210510173355-fb37daa5cd7a // indirect
 	google.golang.org/grpc v1.37.1
 	google.golang.org/protobuf v1.26.0
 )
