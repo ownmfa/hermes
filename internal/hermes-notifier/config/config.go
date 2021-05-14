@@ -22,11 +22,11 @@ type Config struct {
 	NSQSubTopic    string
 	NSQSubChannel  string
 
-	AppAPIKey   string
-	SMSID       string
-	SMSToken    string
-	SMSPhone    string
-	EmailAPIKey string
+	SMSID          string
+	SMSToken       string
+	SMSPhone       string
+	PushoverAPIKey string
+	EmailAPIKey    string
 }
 
 // New instantiates a service Config, parses the environment, and returns it.
@@ -48,11 +48,11 @@ func New() *Config {
 		NSQSubTopic:   config.String(pref+"NSQ_SUB_TOPIC", "NotifierIn"),
 		NSQSubChannel: config.String(pref+"NSQ_SUB_CHANNEL", "notifier"),
 
-		// TODO: add ID, phone.
-		AppAPIKey:   config.String(pref+"APP_API_KEY", ""),
-		SMSID:       config.String(pref+"SMS_ID", "TODO_FIX_ME"),
-		SMSToken:    config.String(pref+"SMS_TOKEN", ""),
-		SMSPhone:    config.String(pref+"SMS_PHONE", "+1_TODO_FIX_ME"),
-		EmailAPIKey: config.String(pref+"EMAIL_API_KEY", ""),
+		SMSID: config.String(pref+"SMS_ID",
+			"AC64c88859fa04d39148ac34c18107f883"),
+		SMSToken:       config.String(pref+"SMS_TOKEN", ""),
+		SMSPhone:       config.String(pref+"SMS_PHONE", "+15122344592"),
+		PushoverAPIKey: config.String(pref+"PUSHOVER_API_KEY", ""),
+		EmailAPIKey:    config.String(pref+"EMAIL_API_KEY", ""),
 	}
 }

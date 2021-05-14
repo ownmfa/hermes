@@ -19,6 +19,7 @@ import (
 	"github.com/ownmfa/hermes/pkg/cache"
 	"github.com/ownmfa/hermes/pkg/hlog"
 	"github.com/ownmfa/hermes/pkg/key"
+	"github.com/ownmfa/hermes/pkg/metric"
 	"github.com/ownmfa/hermes/pkg/notify"
 	"github.com/ownmfa/hermes/pkg/oath"
 	"github.com/ownmfa/hermes/pkg/queue"
@@ -356,7 +357,9 @@ func (ai *AppIdentity) ChallengeIdentity(ctx context.Context,
 			return nil, status.Error(codes.Internal, "publish failure")
 		}
 
-		logger.Debugf("ChallengeIdentity published: %+v", nIn)
+		metric.Incr("published", nil)
+		logger.Debug("ChallengeIdentity published")
+
 		if err := grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
 			"202")); err != nil {
 			logger.Errorf("ChallengeIdentity grpc.SetHeader: %v", err)

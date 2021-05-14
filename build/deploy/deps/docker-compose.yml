@@ -1,0 +1,49 @@
+version: "3"
+services:
+  postgres:
+    image: postgres:12-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=notasecurepassword
+      - POSTGRES_DB=hermes
+    volumes:
+      - ./volume/postgres:/var/lib/postgresql/data
+  nsqlookupd:
+    image: nsqio/nsq:v1.2.0
+    command: /nsqlookupd --log-level=warn
+  nsqd:
+    image: nsqio/nsq:v1.2.0
+    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 --broadcast-address=nsqd --log-level=warn
+    depends_on:
+      - nsqlookupd
+    volumes:
+      - ./volume/nsqd:/data
+  nsqadmin:
+    image: nsqio/nsq:v1.2.0
+    command: /nsqadmin --lookupd-http-address=nsqlookupd:4161 --log-level=warn
+    depends_on:
+      - nsqlookupd
+    ports:
+      - "4171:4171"
+  redis:
+    image: redis:6-alpine
+    command: redis-server --save 300 1 --save 60 100 --appendonly no
+    volumes:
+      - ./volume/redis:/data
+  dogstatsd:
+    image: datadog/dogstatsd:latest
+    environment:
+      - DD_API_KEY=notasecurekey
+      - DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true
+      - DD_ENV=dev
+  logspout:
+    image: gliderlabs/logspout:latest
+    command: syslog+tls://logs-01.loggly.com:6514
+    environment:
+      - 'SYSLOG_STRUCTURED_DATA=notasecurekey@41058 tag="dev"'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+networks:
+  default:
+    name: deps
