@@ -84,7 +84,7 @@ func New(cfg *config.Config) (*API, error) {
 		hlog.Error("New notify secrets not found, using notify.NewFake()")
 		n = notify.NewFake()
 	} else {
-		n = notify.New(redis, "", cfg.SMSID, cfg.SMSToken, "", "")
+		n = notify.New(redis, cfg.SMSID, cfg.SMSToken, "", "", "")
 	}
 
 	// Build the NSQ connection for publishing.

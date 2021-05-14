@@ -27,7 +27,7 @@ const (
 func (n *notify) VaildateSMS(ctx context.Context, phone string) error {
 	client := twilio.NewClient(n.smsID, n.smsToken, nil)
 
-	lookup, err := client.LookupPhoneNumbers.Get(ctx, phone,
+	lookup, err := client.Lookup.LookupPhoneNumbers.Get(ctx, phone,
 		url.Values{"Type": []string{"carrier"}})
 	if err != nil {
 		return err

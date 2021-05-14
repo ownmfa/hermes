@@ -40,8 +40,8 @@ func New() *Config {
 		NSQPubAddr:  config.String(pref+"NSQ_PUB_ADDR", "127.0.0.1:4150"),
 		NSQPubTopic: config.String(pref+"NSQ_PUB_TOPIC", "NotifierIn"),
 
-		// TODO: add ID.
-		SMSID:    config.String(pref+"SMS_ID", "TODO_FIX_ME"),
+		SMSID: config.String(pref+"SMS_ID",
+			"AC64c88859fa04d39148ac34c18107f883"),
 		SMSToken: config.String(pref+"SMS_TOKEN", ""),
 	}
 }

@@ -1,0 +1,35 @@
+version: "3"
+services:
+  hermes-api:
+    image: ghcr.io/ownmfa/hermes:d4b5e6ed
+    command: hermes-api
+    depends_on:
+      - hermes-notifier
+    ports:
+      - "8000:8000"
+      - "50051:50051"
+    environment:
+      - API_STATSD_ADDR=dogstatsd:8125
+      - API_PG_URI=postgres://postgres:notasecurepassword@postgres/hermes
+      - API_REDIS_HOST=redis
+      - API_PWT_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      - API_IDENTITY_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      - API_NSQ_PUB_ADDR=nsqd:4150
+      - API_SMS_TOKEN=notasecurekey
+  hermes-notifier:
+    image: ghcr.io/ownmfa/hermes:d4b5e6ed
+    command: hermes-notifier
+    environment:
+      - NOTIFIER_STATSD_ADDR=dogstatsd:8125
+      - NOTIFIER_PG_URI=postgres://postgres:notasecurepassword@postgres/hermes
+      - NOTIFIER_REDIS_HOST=redis
+      - NOTIFIER_IDENTITY_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      - NOTIFIER_NSQ_PUB_ADDR=nsqd:4150
+      - NOTIFIER_NSQ_LOOKUP_ADDRS=nsqlookupd:4161
+      - NOTIFIER_SMS_TOKEN=notasecurekey
+      - NOTIFIER_PUSHOVER_API_KEY=notasecurekey
+      - NOTIFIER_EMAIL_API_KEY=notasecurekey
+networks:
+  default:
+    external:
+      name: deps
