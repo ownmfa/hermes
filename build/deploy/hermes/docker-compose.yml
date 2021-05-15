@@ -1,7 +1,7 @@
 version: "3"
 services:
   hermes-api:
-    image: ghcr.io/ownmfa/hermes:d4b5e6ed
+    image: ghcr.io/ownmfa/hermes:19034735
     command: hermes-api
     depends_on:
       - hermes-notifier
@@ -17,7 +17,7 @@ services:
       - API_NSQ_PUB_ADDR=nsqd:4150
       - API_SMS_TOKEN=notasecurekey
   hermes-notifier:
-    image: ghcr.io/ownmfa/hermes:d4b5e6ed
+    image: ghcr.io/ownmfa/hermes:19034735
     command: hermes-notifier
     environment:
       - NOTIFIER_STATSD_ADDR=dogstatsd:8125

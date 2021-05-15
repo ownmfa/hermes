@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"flag"
 	"fmt"
 	"os"
@@ -13,6 +14,8 @@ import (
 	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/pkg/crypto"
 	"github.com/ownmfa/hermes/pkg/dao"
+	"github.com/ownmfa/hermes/pkg/dao/app"
+	"github.com/ownmfa/hermes/pkg/dao/identity"
 	"github.com/ownmfa/hermes/pkg/dao/org"
 	"github.com/ownmfa/hermes/pkg/dao/user"
 	"github.com/ownmfa/hermes/pkg/test/random"
@@ -23,6 +26,7 @@ const usage = `Usage:
 %[1]s uniqid
 %[1]s [options] org <org name> <admin email> <admin password>
 %[1]s [options] user <org ID> <admin email> <admin password>
+%[1]s [options] qr <base64 identity key> <org ID> <app ID> <identity ID>
 `
 
 func main() {
@@ -36,7 +40,7 @@ func main() {
 	flag.Parse()
 
 	if _, ok := map[string]struct{}{
-		"uuid": {}, "uniqid": {}, "org": {}, "user": {},
+		"uuid": {}, "uniqid": {}, "org": {}, "user": {}, "qr": {},
 	}[flag.Arg(0)]; !ok {
 		flag.Usage()
 		os.Exit(2)
@@ -65,8 +69,7 @@ func main() {
 	// Set up database connection.
 	pg, err := dao.NewPgDB(*pgURI)
 	checkErr(err)
-	orgDAO := org.NewDAO(pg)
-	userDAO := user.NewDAO(pg)
+
 	orgID := flag.Arg(1)
 
 	switch flag.Arg(0) {
@@ -82,8 +85,10 @@ func main() {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 
+		orgDAO := org.NewDAO(pg)
 		createOrg, err := orgDAO.Create(ctx, &api.Org{Name: flag.Arg(1)})
 		checkErr(err)
+
 		orgID = createOrg.Id
 		fmt.Fprintf(os.Stdout, "Org: %+v\n", createOrg)
 
@@ -96,16 +101,40 @@ func main() {
 		ctx, cancel := context.WithTimeout(context.Background(), 6*time.Second)
 		defer cancel()
 
-		user := &api.User{
+		u := &api.User{
 			OrgId:  orgID,
 			Email:  flag.Arg(2),
 			Role:   common.Role_ADMIN,
 			Status: api.Status_ACTIVE,
 		}
-		createUser, err := userDAO.Create(ctx, user)
+
+		userDAO := user.NewDAO(pg)
+		createUser, err := userDAO.Create(ctx, u)
 		checkErr(err)
 
-		checkErr(userDAO.UpdatePassword(ctx, user.Id, orgID, hash))
+		checkErr(userDAO.UpdatePassword(ctx, createUser.Id, orgID, hash))
 		fmt.Fprintf(os.Stdout, "User: %+v\n", createUser)
+	// Generate QR code.
+	case "qr":
+		identityKey, err := base64.StdEncoding.DecodeString(flag.Arg(1))
+		checkErr(err)
+
+		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
+		defer cancel()
+
+		appDAO := app.NewDAO(pg)
+		app, err := appDAO.Read(ctx, flag.Arg(3), flag.Arg(2))
+		checkErr(err)
+
+		identityDAO := identity.NewDAO(pg, identityKey)
+		_, otp, err := identityDAO.Read(ctx, flag.Arg(4), flag.Arg(2),
+			flag.Arg(3))
+		checkErr(err)
+
+		otp.AccountName = os.Args[0]
+		qr, err := otp.QR(app.DisplayName)
+		checkErr(err)
+
+		fmt.Fprint(os.Stdout, base64.StdEncoding.EncodeToString(qr))
 	}
 }
