@@ -1039,80 +1039,6 @@ var _ interface {
 	ErrorName() string
 } = GoogleAuthTOTPMethodValidationError{}
 
-// Validate checks the field values on MicrosoftAuthTOTPMethod with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, an error is returned.
-func (m *MicrosoftAuthTOTPMethod) Validate() error {
-	if m == nil {
-		return nil
-	}
-
-	if utf8.RuneCountInString(m.GetAccountName()) > 80 {
-		return MicrosoftAuthTOTPMethodValidationError{
-			field:  "AccountName",
-			reason: "value length must be at most 80 runes",
-		}
-	}
-
-	return nil
-}
-
-// MicrosoftAuthTOTPMethodValidationError is the validation error returned by
-// MicrosoftAuthTOTPMethod.Validate if the designated constraints aren't met.
-type MicrosoftAuthTOTPMethodValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e MicrosoftAuthTOTPMethodValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e MicrosoftAuthTOTPMethodValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e MicrosoftAuthTOTPMethodValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e MicrosoftAuthTOTPMethodValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e MicrosoftAuthTOTPMethodValidationError) ErrorName() string {
-	return "MicrosoftAuthTOTPMethodValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e MicrosoftAuthTOTPMethodValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sMicrosoftAuthTOTPMethod.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = MicrosoftAuthTOTPMethodValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = MicrosoftAuthTOTPMethodValidationError{}
-
 // Validate checks the field values on HardwareHOTPMethod with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, an error is returned.
@@ -1438,18 +1364,6 @@ func (m *Identity) Validate() error {
 			if err := v.Validate(); err != nil {
 				return IdentityValidationError{
 					field:  "GoogleAuthTotpMethod",
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
-	case *Identity_MicrosoftAuthTotpMethod:
-
-		if v, ok := interface{}(m.GetMicrosoftAuthTotpMethod()).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return IdentityValidationError{
-					field:  "MicrosoftAuthTotpMethod",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}

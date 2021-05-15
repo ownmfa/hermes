@@ -53,21 +53,12 @@ func TestMethodToOTP(t *testing.T) {
 			&api.Identity{MethodOneof: &api.Identity_GoogleAuthHotpMethod{
 				GoogleAuthHotpMethod: &api.GoogleAuthHOTPMethod{},
 			}}, &oath.OTP{
-				Algorithm: oath.HOTP, Hash: crypto.SHA512,
-				Digits: defaultDigits,
+				Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6,
 			}, "", true, nil,
 		},
 		{
 			&api.Identity{MethodOneof: &api.Identity_GoogleAuthTotpMethod{
-				GoogleAuthTotpMethod: &api.GoogleAuthTOTPMethod{},
-			}}, &oath.OTP{
-				Algorithm: oath.TOTP, Hash: crypto.SHA512,
-				Digits: defaultDigits,
-			}, "", true, nil,
-		},
-		{
-			&api.Identity{MethodOneof: &api.Identity_MicrosoftAuthTotpMethod{
-				MicrosoftAuthTotpMethod: &api.MicrosoftAuthTOTPMethod{
+				GoogleAuthTotpMethod: &api.GoogleAuthTOTPMethod{
 					AccountName: email,
 				},
 			}}, &oath.OTP{
@@ -152,23 +143,16 @@ func TestOTPToMethod(t *testing.T) {
 			},
 		},
 		{
-			"", oath.HOTP, api.Hash_SHA512, defaultDigits, &api.Identity{
+			"", oath.HOTP, api.Hash_SHA1, 6, &api.Identity{
 				MethodOneof: &api.Identity_GoogleAuthHotpMethod{
 					GoogleAuthHotpMethod: &api.GoogleAuthHOTPMethod{},
 				},
 			},
 		},
 		{
-			"", oath.TOTP, api.Hash_SHA512, defaultDigits, &api.Identity{
+			"", oath.TOTP, api.Hash_SHA1, 6, &api.Identity{
 				MethodOneof: &api.Identity_GoogleAuthTotpMethod{
 					GoogleAuthTotpMethod: &api.GoogleAuthTOTPMethod{},
-				},
-			},
-		},
-		{
-			"", oath.TOTP, api.Hash_SHA1, 6, &api.Identity{
-				MethodOneof: &api.Identity_MicrosoftAuthTotpMethod{
-					MicrosoftAuthTotpMethod: &api.MicrosoftAuthTOTPMethod{},
 				},
 			},
 		},

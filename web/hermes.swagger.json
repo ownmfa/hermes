@@ -1429,7 +1429,7 @@
           "description": "Account name, such as username or email, for inclusion in QR codes. This field is never saved. If not specified, only the application display name is included in the returned QR code."
         }
       },
-      "description": "GoogleAuthHOTPMethod configures a Google Authenticator HOTP one-time password method."
+      "description": "GoogleAuthHOTPMethod configures a Google Authenticator HOTP one-time password method. This method is limited to 6-digit passcodes using the SHA1 hash function."
     },
     "apiGoogleAuthTOTPMethod": {
       "type": "object",
@@ -1439,7 +1439,7 @@
           "description": "Account name, such as username or email, for inclusion in QR codes. This field is never saved. If not specified, only the application display name is included in the returned QR code."
         }
       },
-      "description": "GoogleAuthTOTPMethod configures a Google Authenticator TOTP one-time password method."
+      "description": "GoogleAuthTOTPMethod configures a Google Authenticator or Microsoft Authenticator TOTP one-time password method. This method is limited to 6-digit passcodes using the SHA1 hash function."
     },
     "apiHardwareHOTPMethod": {
       "type": "object",
@@ -1540,10 +1540,6 @@
         "googleAuthTOTPMethod": {
           "$ref": "#/definitions/apiGoogleAuthTOTPMethod",
           "description": "Google Authenticator TOTP method configuration."
-        },
-        "microsoftAuthTOTPMethod": {
-          "$ref": "#/definitions/apiMicrosoftAuthTOTPMethod",
-          "description": "Microsoft Authenticator TOTP method configuration."
         },
         "hardwareHOTPMethod": {
           "$ref": "#/definitions/apiHardwareHOTPMethod",
@@ -1776,16 +1772,6 @@
         }
       },
       "description": "LoginResponse is sent in response to a user login."
-    },
-    "apiMicrosoftAuthTOTPMethod": {
-      "type": "object",
-      "properties": {
-        "accountName": {
-          "type": "string",
-          "description": "Account name, such as username or email, for inclusion in QR codes. This field is never saved. If not specified, only the application display name is included in the returned QR code."
-        }
-      },
-      "description": "MicrosoftAuthTOTPMethod configures a Microsoft Authenticator TOTP one-time password method. Due to limited hash function and digit support, this method is not recommended unless it is already in wide use."
     },
     "apiOrg": {
       "type": "object",
