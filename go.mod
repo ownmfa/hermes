@@ -23,7 +23,7 @@ require (
 	github.com/mailgun/mailgun-go/v4 v4.5.1
 	github.com/mennanov/fmutils v0.1.0
 	github.com/nsqio/go-nsq v1.0.8
-	github.com/ownmfa/api/go v0.0.0-20210514160942-e251f3ba04fd
+	github.com/ownmfa/api/go v0.0.0-20210515021258-45d6c0524635
 	github.com/rs/zerolog v1.22.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/smira/go-statsd v1.3.2

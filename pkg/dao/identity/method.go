@@ -60,19 +60,14 @@ func methodToOTP(identity *api.Identity) (*oath.OTP, string, bool, error) {
 		}
 		otp.Digits = int(m.SoftwareTotpMethod.Digits)
 	case *api.Identity_GoogleAuthHotpMethod:
-		otp.Hash = crypto.SHA512
-		otp.Digits = defaultDigits
+		otp.Hash = crypto.SHA1
+		otp.Digits = 6
 		otp.AccountName = m.GoogleAuthHotpMethod.AccountName
 	case *api.Identity_GoogleAuthTotpMethod:
 		otp.Algorithm = oath.TOTP
-		otp.Hash = crypto.SHA512
-		otp.Digits = defaultDigits
-		otp.AccountName = m.GoogleAuthTotpMethod.AccountName
-	case *api.Identity_MicrosoftAuthTotpMethod:
-		otp.Algorithm = oath.TOTP
 		otp.Hash = crypto.SHA1
 		otp.Digits = 6
-		otp.AccountName = m.MicrosoftAuthTotpMethod.AccountName
+		otp.AccountName = m.GoogleAuthTotpMethod.AccountName
 	case *api.Identity_HardwareHotpMethod:
 		otp.Hash = hashAPIToCrypto[m.HardwareHotpMethod.Hash]
 		otp.Digits = int(m.HardwareHotpMethod.Digits)
@@ -112,19 +107,13 @@ func otpToMethod(identity *api.Identity, phone, algorithm string, hash api.Hash,
 		identity.MethodOneof = &api.Identity_SmsMethod{
 			SmsMethod: &api.SMSMethod{Phone: phone},
 		}
-	case algorithm == oath.HOTP && hash == api.Hash_SHA512 &&
-		digits == defaultDigits:
+	case algorithm == oath.HOTP && hash == api.Hash_SHA1 && digits == 6:
 		identity.MethodOneof = &api.Identity_GoogleAuthHotpMethod{
 			GoogleAuthHotpMethod: &api.GoogleAuthHOTPMethod{},
 		}
-	case algorithm == oath.TOTP && hash == api.Hash_SHA512 &&
-		digits == defaultDigits:
+	case algorithm == oath.TOTP && hash == api.Hash_SHA1 && digits == 6:
 		identity.MethodOneof = &api.Identity_GoogleAuthTotpMethod{
 			GoogleAuthTotpMethod: &api.GoogleAuthTOTPMethod{},
-		}
-	case algorithm == oath.TOTP && hash == api.Hash_SHA1 && digits == 6:
-		identity.MethodOneof = &api.Identity_MicrosoftAuthTotpMethod{
-			MicrosoftAuthTotpMethod: &api.MicrosoftAuthTOTPMethod{},
 		}
 	case algorithm == oath.HOTP:
 		identity.MethodOneof = &api.Identity_SoftwareHotpMethod{

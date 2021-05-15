@@ -106,7 +106,7 @@ github.com/modern-go/reflect2
 # github.com/nsqio/go-nsq v1.0.8
 ## explicit
 github.com/nsqio/go-nsq
-# github.com/ownmfa/api/go v0.0.0-20210514160942-e251f3ba04fd
+# github.com/ownmfa/api/go v0.0.0-20210515021258-45d6c0524635
 ## explicit
 github.com/ownmfa/api/go/api
 github.com/ownmfa/api/go/common
