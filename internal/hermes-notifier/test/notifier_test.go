@@ -95,7 +95,7 @@ func TestNotifyMessagesError(t *testing.T) {
 		err)
 	require.NoError(t, err)
 
-	passcode, err := otp.HOTP(0)
+	passcode, err := otp.HOTP(1)
 	require.NoError(t, err)
 
 	ok, err := globalCache.SetIfNotExist(ctx, key.Expire(createOrg.Id,
