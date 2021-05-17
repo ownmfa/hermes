@@ -20,8 +20,8 @@ type Config struct {
 	NSQPubAddr  string
 	NSQPubTopic string
 
-	SMSID    string
-	SMSToken string
+	SMSKeyID     string
+	SMSKeySecret string
 }
 
 // New instantiates a service Config, parses the environment, and returns it.
@@ -40,8 +40,8 @@ func New() *Config {
 		NSQPubAddr:  config.String(pref+"NSQ_PUB_ADDR", "127.0.0.1:4150"),
 		NSQPubTopic: config.String(pref+"NSQ_PUB_TOPIC", "NotifierIn"),
 
-		SMSID: config.String(pref+"SMS_ID",
-			"AC64c88859fa04d39148ac34c18107f883"),
-		SMSToken: config.String(pref+"SMS_TOKEN", ""),
+		SMSKeyID: config.String(pref+"SMS_KEY_ID",
+			"SKc8b34a092fe8790061c58b3fb3db752f"),
+		SMSKeySecret: config.String(pref+"SMS_KEY_SECRET", ""),
 	}
 }

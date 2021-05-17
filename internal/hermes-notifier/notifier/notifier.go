@@ -72,12 +72,13 @@ func New(cfg *config.Config) (*Notifier, error) {
 
 	// Set up Notifier. Allow a mock for local usage, but warn loudly.
 	var n notify.Notifier
-	if cfg.PushoverAPIKey == "" || cfg.SMSToken == "" || cfg.EmailAPIKey == "" {
+	if cfg.SMSKeySecret == "" || cfg.PushoverAPIKey == "" ||
+		cfg.EmailAPIKey == "" {
 		hlog.Error("New notify secrets not found, using notify.NewFake()")
 		n = notify.NewFake()
 	} else {
-		n = notify.New(redis, cfg.SMSID, cfg.SMSToken, cfg.SMSPhone,
-			cfg.PushoverAPIKey, cfg.EmailAPIKey)
+		n = notify.New(redis, cfg.SMSKeyID, cfg.SMSAccountID, cfg.SMSKeySecret,
+			cfg.SMSPhone, cfg.PushoverAPIKey, cfg.EmailAPIKey)
 	}
 
 	// Build the NSQ connection for consuming.
