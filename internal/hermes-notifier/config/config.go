@@ -22,8 +22,9 @@ type Config struct {
 	NSQSubTopic    string
 	NSQSubChannel  string
 
-	SMSID          string
-	SMSToken       string
+	SMSKeyID       string
+	SMSAccountID   string
+	SMSKeySecret   string
 	SMSPhone       string
 	PushoverAPIKey string
 	EmailAPIKey    string
@@ -48,9 +49,11 @@ func New() *Config {
 		NSQSubTopic:   config.String(pref+"NSQ_SUB_TOPIC", "NotifierIn"),
 		NSQSubChannel: config.String(pref+"NSQ_SUB_CHANNEL", "notifier"),
 
-		SMSID: config.String(pref+"SMS_ID",
+		SMSKeyID: config.String(pref+"SMS_KEY_ID",
+			"SKc8b34a092fe8790061c58b3fb3db752f"),
+		SMSAccountID: config.String(pref+"SMS_ACCOUNT_ID",
 			"AC64c88859fa04d39148ac34c18107f883"),
-		SMSToken:       config.String(pref+"SMS_TOKEN", ""),
+		SMSKeySecret:   config.String(pref+"SMS_KEY_SECRET", ""),
 		SMSPhone:       config.String(pref+"SMS_PHONE", "+15122344592"),
 		PushoverAPIKey: config.String(pref+"PUSHOVER_API_KEY", ""),
 		EmailAPIKey:    config.String(pref+"EMAIL_API_KEY", ""),

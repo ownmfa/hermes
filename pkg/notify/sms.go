@@ -3,10 +3,8 @@ package notify
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"time"
 
-	"github.com/kevinburke/twilio-go"
 	"github.com/ownmfa/hermes/pkg/consterr"
 )
 
@@ -25,15 +23,9 @@ const (
 // VaildateSMS verifies that a phone number is correct and supported for SMS
 // usage.
 func (n *notify) VaildateSMS(ctx context.Context, phone string) error {
-	client := twilio.NewClient(n.smsID, n.smsToken, nil)
-
-	lookup, err := client.Lookup.LookupPhoneNumbers.Get(ctx, phone,
-		url.Values{"Type": []string{"carrier"}})
+	lookup, err := n.twilio.lookupCarrier(ctx, phone)
 	if err != nil {
 		return err
-	}
-	if lookup == nil {
-		return ErrInvalidSMS
 	}
 
 	if lookup.Carrier.Type != "mobile" && lookup.Carrier.Type != "voip" {
@@ -47,8 +39,6 @@ func (n *notify) VaildateSMS(ctx context.Context, phone string) error {
 // limiting.
 func (n *notify) SMS(ctx context.Context, phone, displayName,
 	passcode string) error {
-	client := twilio.NewClient(n.smsID, n.smsToken, nil)
-
 	// Support modified Twilio rate limit of 1 per second, serially. Twilio will
 	// queue up to 4 hours worth of messages (14,400), but at the risk of abuse
 	// by fraudulent users:
@@ -67,7 +57,7 @@ func (n *notify) SMS(ctx context.Context, phone, displayName,
 	}
 
 	body := fmt.Sprintf(smsBodyTempl, displayName, passcode)
-	_, err = client.Messages.SendMessage(n.smsPhone, phone, body, nil)
+	err = n.twilio.sendSMS(ctx, phone, body)
 
 	return err
 }
