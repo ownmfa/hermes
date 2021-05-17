@@ -66,16 +66,19 @@ func (not *Notifier) notifyMessages() {
 			continue
 		}
 
-		// Retrieve current HOTP counter. If not found, use the zero value.
+		// Increment HOTP counter before each use to prevent resending
+		// the same unverified passcode, and also to invalidate the previous
+		// passcode. This has the side effect of doubling the counter rate on
+		// successful verifications.
 		var counter int64
 		ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
-		_, counter, err = not.cache.GetI(ctx, key.HOTPCounter(identity.OrgId,
+		counter, err = not.cache.Incr(ctx, key.HOTPCounter(identity.OrgId,
 			identity.AppId, identity.Id))
 		cancel()
 		if err != nil {
 			msg.Requeue()
-			metric.Incr("error", map[string]string{"func": "geti"})
-			logger.Errorf("notifyMessages not.cache.GetI: %v", err)
+			metric.Incr("error", map[string]string{"func": "incr"})
+			logger.Errorf("notifyMessages not.cache.Incr: %v", err)
 
 			continue
 		}
@@ -116,8 +119,8 @@ func (not *Notifier) notifyMessages() {
 			if err != nil || !ok {
 				msg.Requeue()
 				metric.Incr("error", map[string]string{"func": "setifnotexist"})
-				logger.Errorf("notifyMessages not.cache.SetIfNotExistTTL: %v",
-					err)
+				logger.Errorf("notifyMessages set expiration collision or "+
+					"error: %v, %v", ok, err)
 
 				continue
 			}
