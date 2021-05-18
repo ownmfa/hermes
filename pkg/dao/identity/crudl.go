@@ -15,8 +15,8 @@ import (
 
 const createIdentity = `
 INSERT INTO identities (org_id, app_id, comment, status, algorithm, hash,
-digits, secret_enc, phone, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $10)
+digits, secret_enc, phone, pushover_key, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $11)
 RETURNING id
 `
 
@@ -29,7 +29,7 @@ func (d *DAO) Create(ctx context.Context,
 	identity.CreatedAt = timestamppb.New(now)
 	identity.UpdatedAt = timestamppb.New(now)
 
-	otp, phone, retSecret, err := methodToOTP(identity)
+	otp, phone, pushoverKey, retSecret, err := methodToOTP(identity)
 	if err != nil {
 		return nil, nil, false, dao.DBToSentinel(err)
 	}
@@ -42,7 +42,7 @@ func (d *DAO) Create(ctx context.Context,
 	if err := d.pg.QueryRowContext(ctx, createIdentity, identity.OrgId,
 		identity.AppId, identity.Comment, identity.Status.String(),
 		otp.Algorithm, hashCryptoToAPI[otp.Hash].String(), otp.Digits,
-		secretEnc, phone, now).Scan(&identity.Id); err != nil {
+		secretEnc, phone, pushoverKey, now).Scan(&identity.Id); err != nil {
 		return nil, nil, false, dao.DBToSentinel(err)
 	}
 
@@ -51,7 +51,7 @@ func (d *DAO) Create(ctx context.Context,
 
 const readIdentity = `
 SELECT id, org_id, app_id, comment, status, algorithm, hash, digits, secret_enc,
-phone, created_at, updated_at
+phone, pushover_key, created_at, updated_at
 FROM identities
 WHERE (id, org_id, app_id) = ($1, $2, $3)
 `
@@ -63,18 +63,19 @@ func (d *DAO) Read(ctx context.Context, identityID, orgID,
 	var status, alg, hash string
 	var digits int32
 	var secretEnc []byte
-	var phone string
+	var phone, pushoverKey string
 	var createdAt, updatedAt time.Time
 
 	if err := d.pg.QueryRowContext(ctx, readIdentity, identityID, orgID,
 		appID).Scan(&identity.Id, &identity.OrgId, &identity.AppId,
 		&identity.Comment, &status, &alg, &hash, &digits, &secretEnc, &phone,
-		&createdAt, &updatedAt); err != nil {
+		&pushoverKey, &createdAt, &updatedAt); err != nil {
 		return nil, nil, dao.DBToSentinel(err)
 	}
 
 	identity.Status = api.IdentityStatus(api.IdentityStatus_value[status])
-	otpToMethod(identity, phone, alg, api.Hash(api.Hash_value[hash]), digits)
+	otpToMethod(identity, phone, pushoverKey, alg,
+		api.Hash(api.Hash_value[hash]), digits)
 	identity.CreatedAt = timestamppb.New(createdAt)
 	identity.UpdatedAt = timestamppb.New(updatedAt)
 
@@ -149,7 +150,7 @@ AND app_id = $2
 
 const listIdentities = `
 SELECT id, org_id, app_id, comment, status, algorithm, hash, digits, phone,
-created_at, updated_at
+pushover_key, created_at, updated_at
 FROM identities
 WHERE org_id = $1
 `
@@ -232,18 +233,18 @@ func (d *DAO) List(ctx context.Context, orgID string, lBoundTS time.Time,
 		identity := &api.Identity{}
 		var status, alg, hash string
 		var digits int32
-		var phone string
+		var phone, pushoverKey string
 		var createdAt, updatedAt time.Time
 
 		if err = rows.Scan(&identity.Id, &identity.OrgId, &identity.AppId,
 			&identity.Comment, &status, &alg, &hash, &digits, &phone,
-			&createdAt, &updatedAt); err != nil {
+			&pushoverKey, &createdAt, &updatedAt); err != nil {
 			return nil, 0, dao.DBToSentinel(err)
 		}
 
 		identity.Status = api.IdentityStatus(api.IdentityStatus_value[status])
-		otpToMethod(identity, phone, alg, api.Hash(api.Hash_value[hash]),
-			digits)
+		otpToMethod(identity, phone, pushoverKey, alg,
+			api.Hash(api.Hash_value[hash]), digits)
 		identity.CreatedAt = timestamppb.New(createdAt)
 		identity.UpdatedAt = timestamppb.New(updatedAt)
 		identities = append(identities, identity)

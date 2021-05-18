@@ -57,6 +57,7 @@ func App(prefix, orgID string) *api.App {
 		Name:             prefix + "-" + String(10),
 		DisplayName:      prefix + "-" + String(10),
 		Email:            prefix + "-" + Email(),
+		PushoverKey:      []string{"", String(30)}[Intn(2)],
 		SubjectTemplate:  `{{displayName}} verification code`,
 		TextBodyTemplate: `Your {{displayName}} verification code is: 1234567.`,
 		HtmlBodyTemplate: []byte(`<html><body>Your {{displayName}} ` +
@@ -94,6 +95,24 @@ func SMSIdentity(prefix, orgID, appID string) *api.Identity {
 		}[Intn(2)],
 		MethodOneof: &api.Identity_SmsMethod{
 			SmsMethod: &api.SMSMethod{Phone: "+15125551212"},
+		},
+	}
+}
+
+// PushoverIdentity generates a random Pushover identity with prefixed
+// identifiers.
+func PushoverIdentity(prefix, orgID, appID string) *api.Identity {
+	return &api.Identity{
+		Id:      uuid.NewString(),
+		OrgId:   orgID,
+		AppId:   appID,
+		Comment: prefix + "-" + String(10),
+		Status: []api.IdentityStatus{
+			api.IdentityStatus_UNVERIFIED,
+			api.IdentityStatus_ACTIVATED,
+		}[Intn(2)],
+		MethodOneof: &api.Identity_PushoverMethod{
+			PushoverMethod: &api.PushoverMethod{PushoverKey: String(30)},
 		},
 	}
 }

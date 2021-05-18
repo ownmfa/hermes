@@ -126,14 +126,20 @@ func (ai *AppIdentity) CreateIdentity(ctx context.Context,
 		return nil, errPerm(common.Role_AUTHENTICATOR)
 	}
 
-	// Validate phone number, if present.
-	if sms, ok := req.Identity.MethodOneof.(*api.Identity_SmsMethod); ok {
-		if !rePhone.MatchString(sms.SmsMethod.Phone) {
+	// Validate notification methods.
+	switch m := req.Identity.MethodOneof.(type) {
+	case *api.Identity_SmsMethod:
+		if !rePhone.MatchString(m.SmsMethod.Phone) {
 			return nil, status.Error(codes.InvalidArgument,
 				"invalid E.164 phone number")
 		}
 
-		if err := ai.notify.VaildateSMS(ctx, sms.SmsMethod.Phone); err != nil {
+		if err := ai.notify.VaildateSMS(ctx, m.SmsMethod.Phone); err != nil {
+			return nil, errToStatus(err)
+		}
+	case *api.Identity_PushoverMethod:
+		if err := ai.notify.VaildatePushover(ctx,
+			m.PushoverMethod.PushoverKey); err != nil {
 			return nil, errToStatus(err)
 		}
 	}
@@ -185,7 +191,8 @@ func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
 
 	// Check passcode expiration for methods that utilize it. Continue to
 	// verification, even if found, to keep HOTP counters in sync.
-	if _, ok := identity.MethodOneof.(*api.Identity_SmsMethod); ok {
+	switch identity.MethodOneof.(type) {
+	case *api.Identity_SmsMethod, *api.Identity_PushoverMethod:
 		ok, _, err := ai.cache.GetI(ctx, key.Expire(identity.OrgId,
 			identity.AppId, identity.Id, passcode))
 		if err != nil {
@@ -217,7 +224,8 @@ func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
 
 	switch identity.MethodOneof.(type) {
 	case *api.Identity_SoftwareHotpMethod, *api.Identity_GoogleAuthHotpMethod,
-		*api.Identity_HardwareHotpMethod, *api.Identity_SmsMethod:
+		*api.Identity_HardwareHotpMethod, *api.Identity_SmsMethod,
+		*api.Identity_PushoverMethod:
 		// Retrieve current HOTP counter. If not found, use the zero value.
 		var curr int64
 		_, curr, err = ai.cache.GetI(ctx, key.HOTPCounter(identity.OrgId,
@@ -313,7 +321,8 @@ func (ai *AppIdentity) ChallengeIdentity(ctx context.Context,
 	}
 
 	// Build and publish NotifierIn message for methods that utilize it.
-	if _, ok := identity.MethodOneof.(*api.Identity_SmsMethod); ok {
+	switch identity.MethodOneof.(type) {
+	case *api.Identity_SmsMethod, *api.Identity_PushoverMethod:
 		// Rate limit.
 		notifyKey := ikey.Challenge(identity.OrgId, identity.AppId, identity.Id)
 		ok, err := ai.cache.SetIfNotExistTTL(ctx, notifyKey, 1, notifyRate)

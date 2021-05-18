@@ -1360,6 +1360,10 @@
           "type": "string",
           "description": "Application email. Optional, used as the 'From' address in email notifications."
         },
+        "pushoverKey": {
+          "type": "string",
+          "description": "Pushover application key. If not specified, the default OwnMFA application will be used."
+        },
         "subjectTemplate": {
           "type": "string",
           "description": "Application subject template. Templates generate HTML-safe output using the [Go template engine](https://golang.org/pkg/html/template/). Optional, for notification methods that support subjects."
@@ -1552,6 +1556,10 @@
         "smsMethod": {
           "$ref": "#/definitions/apiSMSMethod",
           "description": "SMS method configuration."
+        },
+        "pushoverMethod": {
+          "$ref": "#/definitions/apiPushoverMethod",
+          "description": "Pushover method configuration."
         },
         "createdAt": {
           "type": "string",
@@ -1799,6 +1807,16 @@
         }
       },
       "description": "Org represents an organization as stored in the database."
+    },
+    "apiPushoverMethod": {
+      "type": "object",
+      "properties": {
+        "pushoverKey": {
+          "type": "string",
+          "description": "Pushover user key."
+        }
+      },
+      "description": "PushoverMethod configures a Pushover passcode method."
     },
     "apiSMSMethod": {
       "type": "object",

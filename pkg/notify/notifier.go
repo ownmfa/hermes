@@ -13,6 +13,8 @@ type Notifier interface {
 	// SMS sends an SMS verification. This operation can block based on rate
 	// limiting.
 	SMS(ctx context.Context, phone, displayName, passcode string) error
+	// VaildatePushover verifies that a Pushover user key is valid.
+	VaildatePushover(ctx context.Context, userKey string) error
 	// Pushover sends a Pushover notification. This operation can block based on
 	// rate limiting.
 	Pushover(ctx context.Context, userKey, subject, body string) error

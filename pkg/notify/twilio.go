@@ -96,7 +96,6 @@ func (t *twilio) sendSMS(ctx context.Context, to, body string) error {
 	vals.Set("From", t.phone)
 	vals.Set("To", to)
 	vals.Set("Body", body)
-	hlog.Debugf("vals.Encode(): %v", vals.Encode())
 	r := strings.NewReader(vals.Encode())
 
 	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf(smsURL,

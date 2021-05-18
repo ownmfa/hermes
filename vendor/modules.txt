@@ -83,7 +83,7 @@ github.com/json-iterator/go
 ## explicit
 github.com/mailgun/mailgun-go/v4
 github.com/mailgun/mailgun-go/v4/events
-# github.com/mennanov/fmutils v0.1.0
+# github.com/mennanov/fmutils v0.1.1
 ## explicit
 github.com/mennanov/fmutils
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
@@ -93,7 +93,7 @@ github.com/modern-go/reflect2
 # github.com/nsqio/go-nsq v1.0.8
 ## explicit
 github.com/nsqio/go-nsq
-# github.com/ownmfa/api/go v0.0.0-20210515021258-45d6c0524635
+# github.com/ownmfa/api/go v0.0.0-20210518175550-edef1cc8bebc
 ## explicit
 github.com/ownmfa/api/go/api
 github.com/ownmfa/api/go/common
@@ -164,7 +164,7 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# google.golang.org/genproto v0.0.0-20210517163617-5e0236093d7a
+# google.golang.org/genproto v0.0.0-20210518161634-ec7691c0a37d
 ## explicit
 google.golang.org/genproto/googleapis/api/annotations
 google.golang.org/genproto/googleapis/api/httpbody
