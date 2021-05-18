@@ -73,6 +73,13 @@ func (m *App) Validate() error {
 
 	}
 
+	if utf8.RuneCountInString(m.GetPushoverKey()) > 80 {
+		return AppValidationError{
+			field:  "PushoverKey",
+			reason: "value length must be at most 80 runes",
+		}
+	}
+
 	if utf8.RuneCountInString(m.GetSubjectTemplate()) > 1024 {
 		return AppValidationError{
 			field:  "SubjectTemplate",
@@ -1278,6 +1285,78 @@ var _ interface {
 	ErrorName() string
 } = SMSMethodValidationError{}
 
+// Validate checks the field values on PushoverMethod with the rules defined in
+// the proto definition for this message. If any rules are violated, an error
+// is returned.
+func (m *PushoverMethod) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	if utf8.RuneCountInString(m.GetPushoverKey()) > 80 {
+		return PushoverMethodValidationError{
+			field:  "PushoverKey",
+			reason: "value length must be at most 80 runes",
+		}
+	}
+
+	return nil
+}
+
+// PushoverMethodValidationError is the validation error returned by
+// PushoverMethod.Validate if the designated constraints aren't met.
+type PushoverMethodValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PushoverMethodValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PushoverMethodValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PushoverMethodValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PushoverMethodValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PushoverMethodValidationError) ErrorName() string { return "PushoverMethodValidationError" }
+
+// Error satisfies the builtin error interface
+func (e PushoverMethodValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPushoverMethod.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PushoverMethodValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PushoverMethodValidationError{}
+
 // Validate checks the field values on Identity with the rules defined in the
 // proto definition for this message. If any rules are violated, an error is returned.
 func (m *Identity) Validate() error {
@@ -1400,6 +1479,18 @@ func (m *Identity) Validate() error {
 			if err := v.Validate(); err != nil {
 				return IdentityValidationError{
 					field:  "SmsMethod",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *Identity_PushoverMethod:
+
+		if v, ok := interface{}(m.GetPushoverMethod()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return IdentityValidationError{
+					field:  "PushoverMethod",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}

@@ -20,8 +20,9 @@ type Config struct {
 	NSQPubAddr  string
 	NSQPubTopic string
 
-	SMSKeyID     string
-	SMSKeySecret string
+	SMSKeyID       string
+	SMSKeySecret   string
+	PushoverAPIKey string
 }
 
 // New instantiates a service Config, parses the environment, and returns it.
@@ -42,6 +43,7 @@ func New() *Config {
 
 		SMSKeyID: config.String(pref+"SMS_KEY_ID",
 			"SKc8b34a092fe8790061c58b3fb3db752f"),
-		SMSKeySecret: config.String(pref+"SMS_KEY_SECRET", ""),
+		SMSKeySecret:   config.String(pref+"SMS_KEY_SECRET", ""),
+		PushoverAPIKey: config.String(pref+"PUSHOVER_API_KEY", ""),
 	}
 }

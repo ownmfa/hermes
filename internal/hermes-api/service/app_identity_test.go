@@ -190,6 +190,44 @@ func TestCreateIdentity(t *testing.T) {
 		}
 	})
 
+	t.Run("Create valid Pushover identity", func(t *testing.T) {
+		t.Parallel()
+
+		identity := random.PushoverIdentity("api-identity", uuid.NewString(),
+			uuid.NewString())
+		retIdentity, _ := proto.Clone(identity).(*api.Identity)
+
+		ctrl := gomock.NewController(t)
+		identityer := NewMockIdentityer(ctrl)
+		identityer.EXPECT().Create(gomock.Any(), identity).Return(retIdentity,
+			nil, false, nil).Times(1)
+		notifier := notify.NewMockNotifier(ctrl)
+		notifier.EXPECT().VaildatePushover(gomock.Any(),
+			identity.GetPushoverMethod().PushoverKey).Return(nil).Times(1)
+
+		ctx, cancel := context.WithTimeout(session.NewContext(
+			context.Background(), &session.Session{
+				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+			}), testTimeout)
+		defer cancel()
+
+		aiSvc := NewAppIdentity(nil, identityer, nil, notifier, nil, "")
+		createIdentity, err := aiSvc.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{Identity: identity})
+		t.Logf("identity, createIdentity, err: %+v, %+v, %v", identity,
+			createIdentity, err)
+		require.NoError(t, err)
+
+		// Testify does not currently support protobuf equality:
+		// https://github.com/stretchr/testify/issues/758
+		if !proto.Equal(&api.CreateIdentityResponse{Identity: identity},
+			createIdentity) {
+			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.CreateIdentityResponse{
+				Identity: identity,
+			}, createIdentity)
+		}
+	})
+
 	t.Run("Create valid HOTP identity with OTP", func(t *testing.T) {
 		t.Parallel()
 
@@ -321,6 +359,34 @@ func TestCreateIdentity(t *testing.T) {
 		require.Nil(t, createIdentity)
 		require.Equal(t, status.Error(codes.InvalidArgument,
 			"unknown or unsupported phone number"), err)
+	})
+
+	t.Run("Create identity with unsupported user key", func(t *testing.T) {
+		t.Parallel()
+
+		identity := random.PushoverIdentity("api-identity", uuid.NewString(),
+			uuid.NewString())
+
+		ctrl := gomock.NewController(t)
+		notifier := notify.NewMockNotifier(ctrl)
+		notifier.EXPECT().VaildatePushover(gomock.Any(),
+			identity.GetPushoverMethod().PushoverKey).
+			Return(notify.ErrInvalidPushover).Times(1)
+
+		ctx, cancel := context.WithTimeout(session.NewContext(
+			context.Background(), &session.Session{
+				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+			}), testTimeout)
+		defer cancel()
+
+		aiSvc := NewAppIdentity(nil, nil, nil, notifier, nil, "")
+		createIdentity, err := aiSvc.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{Identity: identity})
+		t.Logf("identity, createIdentity, err: %+v, %+v, %v", identity,
+			createIdentity, err)
+		require.Nil(t, createIdentity)
+		require.Equal(t, status.Error(codes.InvalidArgument,
+			"unknown user key"), err)
 	})
 
 	t.Run("Create invalid identity", func(t *testing.T) {
@@ -1641,11 +1707,12 @@ func TestUpdateApp(t *testing.T) {
 		retApp, _ := proto.Clone(app).(*api.App)
 		part := &api.App{
 			Id: app.Id, Name: random.String(10), DisplayName: random.String(10),
+			PushoverKey: random.String(30),
 		}
 		merged := &api.App{
 			Id: app.Id, OrgId: app.OrgId, Name: part.Name,
 			DisplayName: part.DisplayName, Email: app.Email,
-			SubjectTemplate:  app.SubjectTemplate,
+			PushoverKey: part.PushoverKey, SubjectTemplate: app.SubjectTemplate,
 			TextBodyTemplate: app.TextBodyTemplate,
 			HtmlBodyTemplate: app.HtmlBodyTemplate,
 		}
@@ -1666,7 +1733,7 @@ func TestUpdateApp(t *testing.T) {
 		aiSvc := NewAppIdentity(apper, nil, nil, nil, nil, "")
 		updateApp, err := aiSvc.UpdateApp(ctx, &api.UpdateAppRequest{
 			App: part, UpdateMask: &fieldmaskpb.FieldMask{
-				Paths: []string{"name", "display_name"},
+				Paths: []string{"name", "display_name", "pushover_key"},
 			},
 		})
 		t.Logf("merged, updateApp, err: %+v, %+v, %v", merged, updateApp, err)

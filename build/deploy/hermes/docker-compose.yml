@@ -16,6 +16,7 @@ services:
       - API_IDENTITY_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
       - API_NSQ_PUB_ADDR=nsqd:4150
       - API_SMS_KEY_SECRET=notasecurekey
+      - API_PUSHOVER_API_KEY=notasecurekey
   hermes-notifier:
     image: ghcr.io/ownmfa/hermes:680405c4
     command: hermes-notifier

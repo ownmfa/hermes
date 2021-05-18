@@ -29,16 +29,19 @@ var hashCryptoToAPI = map[crypto.Hash]api.Hash{
 	crypto.SHA1:   api.Hash_SHA1,
 }
 
-// methodToOTP converts an Identity MethodOneof into an OTP, phone number, and
-// bool representing whether the OTP secret and QR should be returned.
-func methodToOTP(identity *api.Identity) (*oath.OTP, string, bool, error) {
+// methodToOTP converts an Identity MethodOneof into an OTP, phone number,
+// Pushover user key, and bool representing whether the OTP secret and QR should
+// be returned.
+func methodToOTP(identity *api.Identity) (*oath.OTP, string, string, bool,
+	error) {
 	secret := make([]byte, 32)
 	if _, err := rand.Read(secret); err != nil {
-		return nil, "", false, err
+		return nil, "", "", false, err
 	}
 
 	otp := &oath.OTP{Algorithm: oath.HOTP, Key: secret}
 	var phone string
+	var pushoverKey string
 	retSecret := true
 
 	switch m := identity.MethodOneof.(type) {
@@ -91,18 +94,28 @@ func methodToOTP(identity *api.Identity) (*oath.OTP, string, bool, error) {
 
 		phone = m.SmsMethod.Phone
 		retSecret = false
+	case *api.Identity_PushoverMethod:
+		otp.Hash = crypto.SHA512
+		otp.Digits = defaultDigits
+
+		pushoverKey = m.PushoverMethod.PushoverKey
+		retSecret = false
 	default:
-		return nil, "", false, errUnknownMethodOneof
+		return nil, "", "", false, errUnknownMethodOneof
 	}
 
-	return otp, phone, retSecret, nil
+	return otp, phone, pushoverKey, retSecret, nil
 }
 
 // otpToMethod modifies an Identity MethodOneof in-place based on a phone
 // number, algorithm, api.Hash, and digits.
-func otpToMethod(identity *api.Identity, phone, algorithm string, hash api.Hash,
-	digits int32) {
+func otpToMethod(identity *api.Identity, phone, pushoverKey, algorithm string,
+	hash api.Hash, digits int32) {
 	switch {
+	case pushoverKey != "":
+		identity.MethodOneof = &api.Identity_PushoverMethod{
+			PushoverMethod: &api.PushoverMethod{PushoverKey: pushoverKey},
+		}
 	case phone != "":
 		identity.MethodOneof = &api.Identity_SmsMethod{
 			SmsMethod: &api.SMSMethod{Phone: phone},

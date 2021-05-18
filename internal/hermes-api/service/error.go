@@ -23,12 +23,13 @@ const (
 
 // errToCode maps DAO errors to gRPC error codes.
 var errToCode = map[error]codes.Code{
-	crypto.ErrWeakPass:      codes.InvalidArgument,
-	dao.ErrAlreadyExists:    codes.AlreadyExists,
-	dao.ErrInvalidFormat:    codes.InvalidArgument,
-	dao.ErrNotFound:         codes.NotFound,
-	oath.ErrInvalidPasscode: codes.InvalidArgument,
-	notify.ErrInvalidSMS:    codes.InvalidArgument,
+	crypto.ErrWeakPass:        codes.InvalidArgument,
+	dao.ErrAlreadyExists:      codes.AlreadyExists,
+	dao.ErrInvalidFormat:      codes.InvalidArgument,
+	dao.ErrNotFound:           codes.NotFound,
+	oath.ErrInvalidPasscode:   codes.InvalidArgument,
+	notify.ErrInvalidSMS:      codes.InvalidArgument,
+	notify.ErrInvalidPushover: codes.InvalidArgument,
 }
 
 // errToStatus maps DAO errors to gRPC status errors. This function is

@@ -8,7 +8,7 @@ import (
 	"github.com/ownmfa/hermes/pkg/consterr"
 )
 
-// ErrInvalidSMS is returned when a phone number fails validation for use.
+// ErrInvalidSMS is returned when a phone number fails validation.
 const ErrInvalidSMS consterr.Error = "unknown or unsupported phone number"
 
 // Constants used for the configuration of SMS notifications.
@@ -57,7 +57,6 @@ func (n *notify) SMS(ctx context.Context, phone, displayName,
 	}
 
 	body := fmt.Sprintf(smsBodyTempl, displayName, passcode)
-	err = n.twilio.sendSMS(ctx, phone, body)
 
-	return err
+	return n.twilio.sendSMS(ctx, phone, body)
 }
