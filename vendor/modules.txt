@@ -42,8 +42,6 @@ github.com/golang/snappy
 # github.com/google/uuid v1.2.0
 ## explicit
 github.com/google/uuid
-# github.com/gorilla/mux v1.8.0
-github.com/gorilla/mux
 # github.com/gregdel/pushover v1.1.0
 ## explicit
 github.com/gregdel/pushover
@@ -76,20 +74,9 @@ github.com/jackc/pgtype
 github.com/jackc/pgx/v4
 github.com/jackc/pgx/v4/internal/sanitize
 github.com/jackc/pgx/v4/stdlib
-# github.com/json-iterator/go v1.1.11
-## explicit
-github.com/json-iterator/go
-# github.com/mailgun/mailgun-go/v4 v4.5.1
-## explicit
-github.com/mailgun/mailgun-go/v4
-github.com/mailgun/mailgun-go/v4/events
 # github.com/mennanov/fmutils v0.1.1
 ## explicit
 github.com/mennanov/fmutils
-# github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
-github.com/modern-go/concurrent
-# github.com/modern-go/reflect2 v1.0.1
-github.com/modern-go/reflect2
 # github.com/nsqio/go-nsq v1.0.8
 ## explicit
 github.com/nsqio/go-nsq
@@ -97,8 +84,6 @@ github.com/nsqio/go-nsq
 ## explicit
 github.com/ownmfa/api/go/api
 github.com/ownmfa/api/go/common
-# github.com/pkg/errors v0.9.1
-github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
 # github.com/rs/zerolog v1.22.0

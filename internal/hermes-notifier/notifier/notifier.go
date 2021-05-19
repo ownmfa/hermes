@@ -78,7 +78,7 @@ func New(cfg *config.Config) (*Notifier, error) {
 		n = notify.NewFake()
 	} else {
 		n = notify.New(redis, cfg.SMSKeyID, cfg.SMSAccountID, cfg.SMSKeySecret,
-			cfg.SMSPhone, cfg.PushoverAppKey, cfg.EmailAPIKey)
+			cfg.SMSPhone, cfg.PushoverAppKey, cfg.EmailDomain, cfg.EmailAPIKey)
 	}
 
 	// Build the NSQ connection for consuming.

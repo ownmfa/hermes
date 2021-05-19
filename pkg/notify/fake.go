@@ -22,7 +22,8 @@ func NewFake() Notifier {
 	notifier.EXPECT().PushoverByApp(gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 	notifier.EXPECT().Email(gomock.Any(), gomock.Any(), gomock.Any(),
-		gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).
+		AnyTimes()
 
 	return notifier
 }

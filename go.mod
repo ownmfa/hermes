@@ -15,8 +15,6 @@ require (
 	github.com/jackc/pgconn v1.8.1
 	github.com/jackc/pgproto3/v2 v2.0.7 // indirect
 	github.com/jackc/pgx/v4 v4.11.0
-	github.com/json-iterator/go v1.1.11 // indirect
-	github.com/mailgun/mailgun-go/v4 v4.5.1
 	github.com/mennanov/fmutils v0.1.1
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/ownmfa/api/go v0.0.0-20210519151758-7813d28f093d

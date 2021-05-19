@@ -85,7 +85,7 @@ func New(cfg *config.Config) (*API, error) {
 		n = notify.NewFake()
 	} else {
 		n = notify.New(redis, cfg.SMSKeyID, "", cfg.SMSKeySecret, "",
-			cfg.PushoverAPIKey, "")
+			cfg.PushoverAPIKey, "", "")
 	}
 
 	// Build the NSQ connection for publishing.
