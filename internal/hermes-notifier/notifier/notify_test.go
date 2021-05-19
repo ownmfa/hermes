@@ -31,23 +31,45 @@ func TestNotifyMessages(t *testing.T) {
 	t.Parallel()
 
 	app := random.App("not", uuid.NewString())
-	identity := random.SMSIdentity("not", app.OrgId, app.Id)
+	app.PushoverKey = ""
+	smsIdentity := random.SMSIdentity("not", app.OrgId, app.Id)
+	pushoverIdentity := random.PushoverIdentity("not", app.OrgId, app.Id)
 	traceID := uuid.New()
+
+	appByKey := random.App("not", uuid.NewString())
+	appByKey.PushoverKey = random.String(30)
+	identityByKey := random.PushoverIdentity("not", appByKey.OrgId, appByKey.Id)
 
 	knownKey, err := hex.DecodeString("b76c5da0d71b5646ed38b483532cded2622d07" +
 		"2a5d175030b6540169b7380d58")
 	require.NoError(t, err)
 
 	tests := []struct {
-		inpNIn      *message.NotifierIn
-		inpExpire   time.Duration
-		inpSMSTimes int
+		inpNIn                *message.NotifierIn
+		inpApp                *api.App
+		inpIdentity           *api.Identity
+		inpExpire             time.Duration
+		inpSMSTimes           int
+		inpPushoverTimes      int
+		inpPushoverByAppTimes int
 	}{
 		{
 			&message.NotifierIn{
-				OrgId: app.OrgId, AppId: app.Id, IdentityId: identity.Id,
+				OrgId: app.OrgId, AppId: app.Id, IdentityId: smsIdentity.Id,
 				TraceId: traceID[:],
-			}, smsExpire, 1,
+			}, app, smsIdentity, expire, 1, 0, 0,
+		},
+		{
+			&message.NotifierIn{
+				OrgId: app.OrgId, AppId: app.Id,
+				IdentityId: pushoverIdentity.Id, TraceId: traceID[:],
+			}, app, pushoverIdentity, expire, 0, 1, 0,
+		},
+		{
+			&message.NotifierIn{
+				OrgId: appByKey.OrgId, AppId: appByKey.Id,
+				IdentityId: identityByKey.Id, TraceId: traceID[:],
+			}, appByKey, identityByKey, expire, 0, 0, 1,
 		},
 	}
 
@@ -72,8 +94,8 @@ func TestNotifyMessages(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			identityer := NewMockidentityer(ctrl)
 			identityer.EXPECT().Read(gomock.Any(), lTest.inpNIn.IdentityId,
-				lTest.inpNIn.OrgId, lTest.inpNIn.AppId).Return(identity, otp,
-				nil).Times(1)
+				lTest.inpNIn.OrgId, lTest.inpNIn.AppId).
+				Return(lTest.inpIdentity, otp, nil).Times(1)
 
 			cacher := cache.NewMockCacher(ctrl)
 			cacher.EXPECT().Incr(gomock.Any(), key.HOTPCounter(
@@ -85,15 +107,32 @@ func TestNotifyMessages(t *testing.T) {
 
 			apper := NewMockapper(ctrl)
 			apper.EXPECT().Read(gomock.Any(), lTest.inpNIn.AppId,
-				lTest.inpNIn.OrgId).Return(app, nil).Times(1)
+				lTest.inpNIn.OrgId).Return(lTest.inpApp, nil).Times(1)
 
 			notifier := notify.NewMockNotifier(gomock.NewController(t))
-			notifier.EXPECT().SMS(gomock.Any(), gomock.Any(), app.DisplayName,
-				"861821").DoAndReturn(func(_ ...interface{}) error {
+			notifier.EXPECT().SMS(gomock.Any(), "+15125551212",
+				lTest.inpApp.DisplayName, "861821").
+				DoAndReturn(func(_ ...interface{}) error {
+					defer wg.Done()
+
+					return nil
+				}).Times(lTest.inpSMSTimes)
+			notifier.EXPECT().Pushover(gomock.Any(),
+				pushoverIdentity.GetPushoverMethod().PushoverKey,
+				lTest.inpApp.DisplayName, "861821").
+				DoAndReturn(func(_ ...interface{}) error {
+					defer wg.Done()
+
+					return nil
+				}).Times(lTest.inpPushoverTimes)
+			notifier.EXPECT().PushoverByApp(gomock.Any(),
+				lTest.inpApp.PushoverKey,
+				identityByKey.GetPushoverMethod().PushoverKey, gomock.Any(),
+				gomock.Any()).DoAndReturn(func(_ ...interface{}) error {
 				defer wg.Done()
 
 				return nil
-			}).Times(lTest.inpSMSTimes)
+			}).Times(lTest.inpPushoverByAppTimes)
 
 			not := Notifier{
 				appDAO:      apper,
@@ -123,7 +162,12 @@ func TestNotifyMessagesError(t *testing.T) {
 	t.Parallel()
 
 	app := random.App("not", uuid.NewString())
-	identity := random.SMSIdentity("not", app.OrgId, app.Id)
+	app.PushoverKey = ""
+	smsIdentity := random.SMSIdentity("not", app.OrgId, app.Id)
+	pushoverIdentity := random.PushoverIdentity("not", app.OrgId, app.Id)
+
+	badTemplApp := random.App("not", uuid.NewString())
+	badTemplApp.SubjectTemplate = `{{if`
 
 	knownKey, err := hex.DecodeString("b76c5da0d71b5646ed38b483532cded2622d07" +
 		"2a5d175030b6540169b7380d58")
@@ -142,6 +186,7 @@ func TestNotifyMessagesError(t *testing.T) {
 		inpIncrErr               error
 		inpIncrTimes             int
 		inpOTP                   *oath.OTP
+		inpApp                   *api.App
 		inpAppErr                error
 		inpAppTimes              int
 		inpExpire                time.Duration
@@ -149,47 +194,60 @@ func TestNotifyMessagesError(t *testing.T) {
 		inpSetIfNotExistTTLTimes int
 		inpSMSErr                error
 		inpSMSTimes              int
+		inpPushoverErr           error
+		inpPushoverTimes         int
 		inpNotifyTimes           int
 	}{
 		// Bad payload.
 		{
-			nil, nil, nil, 0, nil, 0, nil, nil, 0, -1, nil, 0, nil, 0, 0,
+			nil, nil, nil, 0, nil, 0, nil, nil, nil, 0, -1, nil, 0, nil, 0, nil,
+			0, 0,
 		},
 		// Identityer error.
 		{
-			&message.NotifierIn{}, identity, errTestProc, 1, nil, 0, nil, nil,
-			0, -1, nil, 0, nil, 0, 0,
+			&message.NotifierIn{}, smsIdentity, errTestProc, 1, nil, 0, nil,
+			nil, nil, 0, -1, nil, 0, nil, 0, nil, 0, 0,
 		},
 		// Cacher Incr error.
 		{
-			&message.NotifierIn{}, identity, nil, 1, errTestProc, 1, nil, nil,
-			0, -1, nil, 0, nil, 0, 0,
+			&message.NotifierIn{}, smsIdentity, nil, 1, errTestProc, 1, nil,
+			nil, nil, 0, -1, nil, 0, nil, 0, nil, 0, 0,
 		},
 		// OTP error.
 		{
-			&message.NotifierIn{}, identity, nil, 1, nil, 1, &oath.OTP{}, nil,
-			0, -1, nil, 0, nil, 0, 0,
+			&message.NotifierIn{}, smsIdentity, nil, 1, nil, 1, &oath.OTP{},
+			nil, nil, 0, -1, nil, 0, nil, 0, nil, 0, 0,
 		},
 		// Apper error.
 		{
-			&message.NotifierIn{}, identity, nil, 1, nil, 1, otp, errTestProc,
-			1, -1, nil, 0, nil, 0, 0,
+			&message.NotifierIn{}, smsIdentity, nil, 1, nil, 1, otp, nil,
+			errTestProc, 1, -1, nil, 0, nil, 0, nil, 0, 0,
+		},
+		// Templates error.
+		{
+			&message.NotifierIn{}, pushoverIdentity, nil, 1, nil, 1, otp,
+			badTemplApp, nil, 1, -1, nil, 0, nil, 0, nil, 0, 0,
 		},
 		// Cacher SetIfNotExistTTL error.
 		{
-			&message.NotifierIn{}, identity, nil, 1, nil, 1, otp, nil, 1,
-			smsExpire, errTestProc, 1, nil, 0, 0,
+			&message.NotifierIn{}, smsIdentity, nil, 1, nil, 1, otp, app, nil,
+			1, expire, errTestProc, 1, nil, 0, nil, 0, 0,
 		},
 		// Notifier SMS error.
 		{
-			&message.NotifierIn{}, identity, nil, 1, nil, 1, otp, nil, 1,
-			smsExpire, nil, 1, errTestProc, 1, 1,
+			&message.NotifierIn{}, smsIdentity, nil, 1, nil, 1, otp, app, nil,
+			1, expire, nil, 1, errTestProc, 1, nil, 0, 1,
+		},
+		// Notifier Pushover error.
+		{
+			&message.NotifierIn{}, pushoverIdentity, nil, 1, nil, 1, otp, app,
+			nil, 1, expire, nil, 1, nil, 0, errTestProc, 1, 1,
 		},
 		// Unsupported identity.MethodOneof.
 		{
 			&message.NotifierIn{}, random.HOTPIdentity("not", app.OrgId,
-				app.Id), nil, 1, nil, 1, otp, nil, 1, smsExpire, nil, 0, nil, 0,
-			0,
+				app.Id), nil, 1, nil, 1, otp, app, nil, 1, expire, nil, 1, nil,
+			0, nil, 0, 0,
 		},
 	}
 
@@ -218,19 +276,27 @@ func TestNotifyMessagesError(t *testing.T) {
 
 			apper := NewMockapper(ctrl)
 			apper.EXPECT().Read(gomock.Any(), gomock.Any(), gomock.Any()).
-				Return(app, lTest.inpAppErr).Times(lTest.inpAppTimes)
+				Return(lTest.inpApp, lTest.inpAppErr).Times(lTest.inpAppTimes)
 
 			cacher.EXPECT().SetIfNotExistTTL(gomock.Any(), gomock.Any(), 1,
 				lTest.inpExpire).Return(true, lTest.inpSetIfNotExistTTLErr).
 				Times(lTest.inpSetIfNotExistTTLTimes)
 
 			notifier := notify.NewMockNotifier(gomock.NewController(t))
-			notifier.EXPECT().SMS(gomock.Any(), gomock.Any(), app.DisplayName,
+			notifier.EXPECT().SMS(gomock.Any(), "+15125551212", app.DisplayName,
 				"861821").DoAndReturn(func(_ ...interface{}) error {
 				defer wg.Done()
 
 				return lTest.inpSMSErr
 			}).Times(lTest.inpSMSTimes)
+			notifier.EXPECT().Pushover(gomock.Any(),
+				pushoverIdentity.GetPushoverMethod().PushoverKey,
+				app.DisplayName, "861821").
+				DoAndReturn(func(_ ...interface{}) error {
+					defer wg.Done()
+
+					return lTest.inpPushoverErr
+				}).Times(lTest.inpPushoverTimes)
 
 			not := Notifier{
 				appDAO:      apper,
@@ -260,6 +326,56 @@ func TestNotifyMessagesError(t *testing.T) {
 				// If the success mode isn't supported by WaitGroup operation,
 				// give it time to traverse the code.
 				time.Sleep(100 * time.Millisecond)
+			}
+		})
+	}
+}
+
+func TestGnTemplates(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		inpApp      *api.App
+		inpPasscode string
+		resSubj     string
+		resBody     string
+		resHTMLBody string
+		err         string
+	}{
+		{
+			&api.App{}, "", "", "", "", "",
+		},
+		{
+			&api.App{SubjectTemplate: `{{if`}, "", "", "", "",
+			"unclosed action",
+		},
+		{
+			&api.App{TextBodyTemplate: `{{if`}, "", "", "", "",
+			"unclosed action",
+		},
+		{
+			&api.App{HtmlBodyTemplate: []byte(`{{if`)}, "", "", "", "",
+			"unclosed action",
+		},
+	}
+
+	for _, test := range tests {
+		lTest := test
+
+		t.Run(fmt.Sprintf("Can generate %+v", lTest), func(t *testing.T) {
+			t.Parallel()
+
+			subj, body, htmlBody, err := genTemplates(lTest.inpApp,
+				lTest.inpPasscode)
+			t.Logf("subj, body, htmlBody, err: %v, %v, %v, %v", subj, body,
+				htmlBody, err)
+			require.Equal(t, lTest.resSubj, subj)
+			require.Equal(t, lTest.resBody, body)
+			require.Equal(t, lTest.resHTMLBody, htmlBody)
+			if lTest.err == "" {
+				require.NoError(t, err)
+			} else {
+				require.Contains(t, err.Error(), lTest.err)
 			}
 		})
 	}

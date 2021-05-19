@@ -52,15 +52,16 @@ func Key(prefix, orgID string) *api.Key {
 // App generates a random application with prefixed identifiers.
 func App(prefix, orgID string) *api.App {
 	return &api.App{
-		Id:               uuid.NewString(),
-		OrgId:            orgID,
-		Name:             prefix + "-" + String(10),
-		DisplayName:      prefix + "-" + String(10),
-		Email:            prefix + "-" + Email(),
-		PushoverKey:      []string{"", String(30)}[Intn(2)],
-		SubjectTemplate:  `{{displayName}} verification code`,
-		TextBodyTemplate: `Your {{displayName}} verification code is: 1234567.`,
-		HtmlBodyTemplate: []byte(`<html><body>Your {{displayName}} ` +
+		Id:              uuid.NewString(),
+		OrgId:           orgID,
+		Name:            prefix + "-" + String(10),
+		DisplayName:     prefix + "-" + String(10),
+		Email:           prefix + "-" + Email(),
+		PushoverKey:     []string{"", String(30)}[Intn(2)],
+		SubjectTemplate: `{{.displayName}} verification code`,
+		TextBodyTemplate: `Your {{.displayName}} verification code is: ` +
+			`1234567.`,
+		HtmlBodyTemplate: []byte(`<html><body>Your {{.displayName}} ` +
 			`verification code is: 1234567.</body></html>`),
 	}
 }

@@ -49,17 +49,31 @@ func (mr *MockNotifierMockRecorder) Email(ctx, displayName, appEmail, userEmail,
 }
 
 // Pushover mocks base method.
-func (m *MockNotifier) Pushover(ctx context.Context, userKey, subject, body string) error {
+func (m *MockNotifier) Pushover(ctx context.Context, userKey, displayName, passcode string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Pushover", ctx, userKey, subject, body)
+	ret := m.ctrl.Call(m, "Pushover", ctx, userKey, displayName, passcode)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Pushover indicates an expected call of Pushover.
-func (mr *MockNotifierMockRecorder) Pushover(ctx, userKey, subject, body interface{}) *gomock.Call {
+func (mr *MockNotifierMockRecorder) Pushover(ctx, userKey, displayName, passcode interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Pushover", reflect.TypeOf((*MockNotifier)(nil).Pushover), ctx, userKey, subject, body)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Pushover", reflect.TypeOf((*MockNotifier)(nil).Pushover), ctx, userKey, displayName, passcode)
+}
+
+// PushoverByApp mocks base method.
+func (m *MockNotifier) PushoverByApp(ctx context.Context, appKey, userKey, subject, body string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PushoverByApp", ctx, appKey, userKey, subject, body)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PushoverByApp indicates an expected call of PushoverByApp.
+func (mr *MockNotifierMockRecorder) PushoverByApp(ctx, appKey, userKey, subject, body interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PushoverByApp", reflect.TypeOf((*MockNotifier)(nil).PushoverByApp), ctx, appKey, userKey, subject, body)
 }
 
 // SMS mocks base method.

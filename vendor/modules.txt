@@ -93,7 +93,7 @@ github.com/modern-go/reflect2
 # github.com/nsqio/go-nsq v1.0.8
 ## explicit
 github.com/nsqio/go-nsq
-# github.com/ownmfa/api/go v0.0.0-20210518175550-edef1cc8bebc
+# github.com/ownmfa/api/go v0.0.0-20210519151758-7813d28f093d
 ## explicit
 github.com/ownmfa/api/go/api
 github.com/ownmfa/api/go/common
@@ -165,7 +165,6 @@ golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
 # google.golang.org/genproto v0.0.0-20210518161634-ec7691c0a37d
-## explicit
 google.golang.org/genproto/googleapis/api/annotations
 google.golang.org/genproto/googleapis/api/httpbody
 google.golang.org/genproto/googleapis/rpc/status
