@@ -39,7 +39,7 @@ func TestNewFake(t *testing.T) {
 				random.String(10), random.String(10), random.String(10)))
 			require.NoError(t, notifier.Email(ctx, random.String(10),
 				random.String(10), random.String(10), random.String(10),
-				random.String(10)))
+				random.String(10), random.String(10)))
 		})
 	}
 }

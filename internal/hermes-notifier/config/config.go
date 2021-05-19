@@ -27,6 +27,7 @@ type Config struct {
 	SMSKeySecret   string
 	SMSPhone       string
 	PushoverAppKey string
+	EmailDomain    string
 	EmailAPIKey    string
 }
 
@@ -56,6 +57,7 @@ func New() *Config {
 		SMSKeySecret:   config.String(pref+"SMS_KEY_SECRET", ""),
 		SMSPhone:       config.String(pref+"SMS_PHONE", "+15122344592"),
 		PushoverAppKey: config.String(pref+"PUSHOVER_APP_KEY", ""),
+		EmailDomain:    config.String(pref+"EMAIL_DOMAIN", "mg.ownmfa.com"),
 		EmailAPIKey:    config.String(pref+"EMAIL_API_KEY", ""),
 	}
 }

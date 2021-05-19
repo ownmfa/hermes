@@ -9,7 +9,7 @@ type notify struct {
 
 	twilio         *twilio
 	pushoverAppKey string
-	emailAPIKey    string
+	mailgun        *mailgun
 }
 
 // Verify notify implements Notifier.
@@ -17,7 +17,7 @@ var _ Notifier = &notify{}
 
 // New builds a new Notifier and returns it.
 func New(cache cache.Cacher, smsKeyID, smsAccountID, smsKeySecret, smsPhone,
-	pushoverAppKey, emailAPIKey string) Notifier {
+	pushoverAppKey, emailDomain, emailAPIKey string) Notifier {
 	return &notify{
 		cache: cache,
 
@@ -28,6 +28,9 @@ func New(cache cache.Cacher, smsKeyID, smsAccountID, smsKeySecret, smsPhone,
 			phone:      smsPhone,
 		},
 		pushoverAppKey: pushoverAppKey,
-		emailAPIKey:    emailAPIKey,
+		mailgun: &mailgun{
+			domain: emailDomain,
+			apiKey: emailAPIKey,
+		},
 	}
 }

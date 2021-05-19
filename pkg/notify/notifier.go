@@ -22,10 +22,8 @@ type Notifier interface {
 	// operation can block based on rate limiting.
 	PushoverByApp(ctx context.Context, appKey, userKey, subject,
 		body string) error
-	// Email sends an email notification. The provider domain used for sending
-	// is derived from the organization's email address: "mg." followed by the
-	// domain name that follows '@' in the address. This operation can block
-	// based on rate limiting.
+	// Email sends an email notification. This operation can block based on rate
+	// limiting.
 	Email(ctx context.Context, displayName, appEmail, userEmail, subject,
-		body string) error
+		body, htmlBody string) error
 }
