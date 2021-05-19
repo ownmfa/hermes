@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/hermes/api/go/message"
+	"github.com/ownmfa/hermes/internal/hermes-notifier/template"
 	"github.com/ownmfa/hermes/pkg/hlog"
 	"github.com/ownmfa/hermes/pkg/key"
 	"github.com/ownmfa/hermes/pkg/metric"
@@ -15,7 +16,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-const smsExpire = 2 * time.Minute
+const expire = 2 * time.Minute
 
 // notifyMessages receives notification metadata, formats messages from
 // application templates, and sends notifications.
@@ -106,32 +107,56 @@ func (not *Notifier) notifyMessages() {
 		}
 		logger.Debugf("notifyMessages app: %+v", app)
 
+		// Generate templates.
+		subj, body, _, err := genTemplates(app, passcode)
+		if err != nil {
+			msg.Ack()
+			logger.Errorf("notifyMessages genTemplates: %v", err)
+
+			continue
+		}
+
+		// Set the passcode expiration. It is not necessary to check for
+		// collisions here, but if one was found, that would be notable.
+		ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
+		ok, err := not.cache.SetIfNotExistTTL(ctx, key.Expire(identity.OrgId,
+			identity.AppId, identity.Id, passcode), 1, expire)
+		cancel()
+		if err != nil || !ok {
+			msg.Requeue()
+			metric.Incr("error", map[string]string{"func": "setifnotexistttl"})
+			logger.Errorf("notifyMessages set expiration collision or error: "+
+				"%v, %v", ok, err)
+
+			continue
+		}
+
+		// Send notification.
 		switch m := identity.MethodOneof.(type) {
 		case *api.Identity_SmsMethod:
-			// Set the passcode expiration. It is not necessary to check for
-			// collisions here, but if one was found, that would be notable.
-			ctx, cancel = context.WithTimeout(context.Background(),
-				5*time.Second)
-			ok, err := not.cache.SetIfNotExistTTL(ctx,
-				key.Expire(identity.OrgId, identity.AppId, identity.Id,
-					passcode), 1, smsExpire)
-			cancel()
-			if err != nil || !ok {
-				msg.Requeue()
-				metric.Incr("error", map[string]string{"func": "setifnotexist"})
-				logger.Errorf("notifyMessages set expiration collision or "+
-					"error: %v, %v", ok, err)
-
-				continue
-			}
-
-			// Send notification.
 			ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
 			err = not.notify.SMS(ctx, m.SmsMethod.Phone, app.DisplayName,
 				passcode)
 			cancel()
 			if err != nil {
-				msg.Requeue()
+				msg.Ack()
+				metric.Incr("error", map[string]string{"func": "sms"})
+				logger.Errorf("notifyMessages not.notify.SMS: %v", err)
+
+				continue
+			}
+		case *api.Identity_PushoverMethod:
+			ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
+			if app.PushoverKey == "" {
+				err = not.notify.Pushover(ctx, m.PushoverMethod.PushoverKey,
+					app.DisplayName, passcode)
+			} else {
+				err = not.notify.PushoverByApp(ctx, app.PushoverKey,
+					m.PushoverMethod.PushoverKey, subj, body)
+			}
+			cancel()
+			if err != nil {
+				msg.Ack()
 				metric.Incr("error", map[string]string{"func": "sms"})
 				logger.Errorf("notifyMessages not.notify.SMS: %v", err)
 
@@ -155,4 +180,34 @@ func (not *Notifier) notifyMessages() {
 			hlog.Infof("notifyMessages processed %v messages", processCount)
 		}
 	}
+}
+
+// genTemplates generates a notification subject, body, and HTML body.
+func genTemplates(app *api.App, passcode string) (string, string, string,
+	error) {
+	subj, err := template.Generate(app.DisplayName, passcode,
+		app.SubjectTemplate)
+	if err != nil {
+		metric.Incr("error", map[string]string{"func": "gensubject"})
+
+		return "", "", "", err
+	}
+
+	body, err := template.Generate(app.DisplayName, passcode,
+		app.TextBodyTemplate)
+	if err != nil {
+		metric.Incr("error", map[string]string{"func": "genbody"})
+
+		return "", "", "", err
+	}
+
+	htmlBody, err := template.Generate(app.DisplayName, passcode,
+		string(app.HtmlBodyTemplate))
+	if err != nil {
+		metric.Incr("error", map[string]string{"func": "genhtmlbody"})
+
+		return "", "", "", err
+	}
+
+	return subj, body, htmlBody, nil
 }

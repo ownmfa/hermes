@@ -73,10 +73,10 @@ func (m *App) Validate() error {
 
 	}
 
-	if utf8.RuneCountInString(m.GetPushoverKey()) > 80 {
+	if utf8.RuneCountInString(m.GetPushoverKey()) > 45 {
 		return AppValidationError{
 			field:  "PushoverKey",
-			reason: "value length must be at most 80 runes",
+			reason: "value length must be at most 45 runes",
 		}
 	}
 
@@ -1293,10 +1293,10 @@ func (m *PushoverMethod) Validate() error {
 		return nil
 	}
 
-	if utf8.RuneCountInString(m.GetPushoverKey()) > 80 {
+	if l := utf8.RuneCountInString(m.GetPushoverKey()); l < 25 || l > 45 {
 		return PushoverMethodValidationError{
 			field:  "PushoverKey",
-			reason: "value length must be at most 80 runes",
+			reason: "value length must be between 25 and 45 runes, inclusive",
 		}
 	}
 

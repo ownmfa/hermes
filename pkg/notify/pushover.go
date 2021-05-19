@@ -2,6 +2,7 @@ package notify
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -14,19 +15,24 @@ import (
 const ErrInvalidPushover consterr.Error = "unknown user key"
 
 const (
-	appKey       = "notify.app"
-	appRateDelay = 500 * time.Millisecond
+	poKey       = "notify.app"
+	poRateDelay = 500 * time.Millisecond
+
+	poSubjTempl = "%s verification code"
+	poBodyTempl = "Your %s verification code is: %s. DO NOT share this code. " +
+		"We will NOT contact you for it."
 )
 
 // VaildatePushover verifies that a Pushover user key is valid.
 func (n *notify) VaildatePushover(ctx context.Context, userKey string) error {
-	po := pushover.New(n.pushoverAPIKey)
+	po := pushover.New(n.pushoverAppKey)
 	recipient := pushover.NewRecipient(userKey)
 
-	// GetRecipientDetails is not returning a sentinel error as described,
-	// return ErrInvalidPushover based on status.
+	// GetRecipientDetails does not return sentinel errors via the API, return
+	// ErrInvalidPushover based on status.
 	det, err := po.GetRecipientDetails(recipient)
-	if det != nil && det.Status != 1 {
+	if errors.Is(err, pushover.ErrInvalidRecipientToken) ||
+		(det != nil && det.Status != 1) {
 		return ErrInvalidPushover
 	}
 	if err != nil {
@@ -36,11 +42,28 @@ func (n *notify) VaildatePushover(ctx context.Context, userKey string) error {
 	return nil
 }
 
-// Pushover sends a Pushover notification. This operation can block based on
-// rate limiting.
-func (n *notify) Pushover(ctx context.Context, userKey, subject,
+// Pushover sends a Pushover notification using the default application key and
+// templates. This operation can block based on rate limiting.
+func (n *notify) Pushover(ctx context.Context, userKey, displayName,
+	passcode string) error {
+	subj := fmt.Sprintf(poSubjTempl, displayName)
+	body := fmt.Sprintf(poBodyTempl, displayName, passcode)
+
+	return n.pushover(ctx, n.pushoverAppKey, userKey, subj, body)
+}
+
+// PushoverByApp sends a Pushover notification by application key. This
+// operation can block based on rate limiting.
+func (n *notify) PushoverByApp(ctx context.Context, appKey, userKey, subject,
 	body string) error {
-	po := pushover.New(n.pushoverAPIKey)
+	return n.pushover(ctx, appKey, userKey, subject, body)
+}
+
+// pushover sends a Pushover notification by application key. This operation can
+// block based on rate limiting.
+func (n *notify) pushover(ctx context.Context, appKey, userKey, subject,
+	body string) error {
+	po := pushover.New(appKey)
 	recipient := pushover.NewRecipient(userKey)
 
 	// Truncate to subject and body limits: https://pushover.net/api#limits
@@ -54,14 +77,14 @@ func (n *notify) Pushover(ctx context.Context, userKey, subject,
 
 	// Support modified Pushover rate limit of 2 per second, serially:
 	// https://pushover.net/api#friendly
-	ok, err := n.cache.SetIfNotExistTTL(ctx, appKey, 1, appRateDelay)
+	ok, err := n.cache.SetIfNotExistTTL(ctx, poKey, 1, poRateDelay)
 	if err != nil {
 		return err
 	}
 	for !ok {
-		time.Sleep(appRateDelay)
+		time.Sleep(poRateDelay)
 
-		ok, err = n.cache.SetIfNotExistTTL(ctx, appKey, 1, appRateDelay)
+		ok, err = n.cache.SetIfNotExistTTL(ctx, poKey, 1, poRateDelay)
 		if err != nil {
 			return err
 		}
@@ -70,7 +93,7 @@ func (n *notify) Pushover(ctx context.Context, userKey, subject,
 	resp, err := po.SendMessage(msg, recipient)
 	// Set remaining message limit if present, regardless of error.
 	if resp != nil && resp.Limit != nil {
-		metric.Set(appKey+".remaining", resp.Limit.Remaining, nil)
+		metric.Set(poKey+".remaining", resp.Limit.Remaining, nil)
 	}
 
 	return err
