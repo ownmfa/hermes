@@ -1425,6 +1425,16 @@
       },
       "description": "CreateKeyResponse is sent in response to an API key creation."
     },
+    "apiEmailMethod": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Email address."
+        }
+      },
+      "description": "EmailMethod configures an email passcode method."
+    },
     "apiGoogleAuthHOTPMethod": {
       "type": "object",
       "properties": {
@@ -1560,6 +1570,10 @@
         "pushoverMethod": {
           "$ref": "#/definitions/apiPushoverMethod",
           "description": "Pushover method configuration."
+        },
+        "emailMethod": {
+          "$ref": "#/definitions/apiEmailMethod",
+          "description": "Email method configuration."
         },
         "createdAt": {
           "type": "string",

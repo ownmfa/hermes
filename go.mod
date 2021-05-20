@@ -17,12 +17,12 @@ require (
 	github.com/jackc/pgx/v4 v4.11.0
 	github.com/mennanov/fmutils v0.1.1
 	github.com/nsqio/go-nsq v1.0.8
-	github.com/ownmfa/api/go v0.0.0-20210519151758-7813d28f093d
+	github.com/ownmfa/api/go v0.0.0-20210520161313-71ad48aff9d4
 	github.com/rs/zerolog v1.22.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/smira/go-statsd v1.3.2
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
-	google.golang.org/grpc v1.37.1
+	google.golang.org/grpc v1.38.0
 	google.golang.org/protobuf v1.26.0
 )

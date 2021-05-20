@@ -80,7 +80,7 @@ github.com/mennanov/fmutils
 # github.com/nsqio/go-nsq v1.0.8
 ## explicit
 github.com/nsqio/go-nsq
-# github.com/ownmfa/api/go v0.0.0-20210519151758-7813d28f093d
+# github.com/ownmfa/api/go v0.0.0-20210520161313-71ad48aff9d4
 ## explicit
 github.com/ownmfa/api/go/api
 github.com/ownmfa/api/go/common
@@ -154,7 +154,7 @@ google.golang.org/genproto/googleapis/api/annotations
 google.golang.org/genproto/googleapis/api/httpbody
 google.golang.org/genproto/googleapis/rpc/status
 google.golang.org/genproto/protobuf/field_mask
-# google.golang.org/grpc v1.37.1
+# google.golang.org/grpc v1.38.0
 ## explicit
 google.golang.org/grpc
 google.golang.org/grpc/attributes

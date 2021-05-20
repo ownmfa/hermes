@@ -15,6 +15,16 @@ const (
 	errUnknownMethodOneof consterr.Error = "unknown identity.MethodOneof"
 )
 
+// otpMeta represents OTP metadata.
+type otpMeta struct {
+	phone       string
+	pushoverKey string
+	email       string
+
+	// retSecret indicates whether the OTP secret and QR should be returned.
+	retSecret bool
+}
+
 // hashAPIToCrypto maps an api.Hash to a crypto.Hash.
 var hashAPIToCrypto = map[api.Hash]crypto.Hash{
 	api.Hash_SHA512: crypto.SHA512,
@@ -29,20 +39,15 @@ var hashCryptoToAPI = map[crypto.Hash]api.Hash{
 	crypto.SHA1:   api.Hash_SHA1,
 }
 
-// methodToOTP converts an Identity MethodOneof into an OTP, phone number,
-// Pushover user key, and bool representing whether the OTP secret and QR should
-// be returned.
-func methodToOTP(identity *api.Identity) (*oath.OTP, string, string, bool,
-	error) {
+// methodToOTP converts an Identity MethodOneof into an OTP and otpMeta.
+func methodToOTP(identity *api.Identity) (*oath.OTP, *otpMeta, error) {
 	secret := make([]byte, 32)
 	if _, err := rand.Read(secret); err != nil {
-		return nil, "", "", false, err
+		return nil, nil, err
 	}
 
 	otp := &oath.OTP{Algorithm: oath.HOTP, Key: secret}
-	var phone string
-	var pushoverKey string
-	retSecret := true
+	meta := &otpMeta{retSecret: true}
 
 	switch m := identity.MethodOneof.(type) {
 	case *api.Identity_SoftwareHotpMethod:
@@ -78,7 +83,7 @@ func methodToOTP(identity *api.Identity) (*oath.OTP, string, string, bool,
 		otp.Key = m.HardwareHotpMethod.Secret
 		m.HardwareHotpMethod.Secret = nil
 
-		retSecret = false
+		meta.retSecret = false
 	case *api.Identity_HardwareTotpMethod:
 		otp.Algorithm = oath.TOTP
 		otp.Hash = hashAPIToCrypto[m.HardwareTotpMethod.Hash]
@@ -87,57 +92,68 @@ func methodToOTP(identity *api.Identity) (*oath.OTP, string, string, bool,
 		otp.Key = m.HardwareTotpMethod.Secret
 		m.HardwareTotpMethod.Secret = nil
 
-		retSecret = false
+		meta.retSecret = false
 	case *api.Identity_SmsMethod:
 		otp.Hash = crypto.SHA512
 		otp.Digits = defaultDigits
 
-		phone = m.SmsMethod.Phone
-		retSecret = false
+		meta.phone = m.SmsMethod.Phone
+		meta.retSecret = false
 	case *api.Identity_PushoverMethod:
 		otp.Hash = crypto.SHA512
 		otp.Digits = defaultDigits
 
-		pushoverKey = m.PushoverMethod.PushoverKey
-		retSecret = false
+		meta.pushoverKey = m.PushoverMethod.PushoverKey
+		meta.retSecret = false
+	case *api.Identity_EmailMethod:
+		otp.Hash = crypto.SHA512
+		otp.Digits = defaultDigits
+
+		meta.email = m.EmailMethod.Email
+		meta.retSecret = false
 	default:
-		return nil, "", "", false, errUnknownMethodOneof
+		return nil, nil, errUnknownMethodOneof
 	}
 
-	return otp, phone, pushoverKey, retSecret, nil
+	return otp, meta, nil
 }
 
-// otpToMethod modifies an Identity MethodOneof in-place based on a phone
-// number, algorithm, api.Hash, and digits.
-func otpToMethod(identity *api.Identity, phone, pushoverKey, algorithm string,
-	hash api.Hash, digits int32) {
+// otpToMethod modifies an Identity MethodOneof in-place based on an OTP and
+// otpMeta.
+func otpToMethod(identity *api.Identity, otp *oath.OTP, meta *otpMeta) {
 	switch {
-	case pushoverKey != "":
+	case meta.email != "":
+		identity.MethodOneof = &api.Identity_EmailMethod{
+			EmailMethod: &api.EmailMethod{Email: meta.email},
+		}
+	case meta.pushoverKey != "":
 		identity.MethodOneof = &api.Identity_PushoverMethod{
-			PushoverMethod: &api.PushoverMethod{PushoverKey: pushoverKey},
+			PushoverMethod: &api.PushoverMethod{PushoverKey: meta.pushoverKey},
 		}
-	case phone != "":
+	case meta.phone != "":
 		identity.MethodOneof = &api.Identity_SmsMethod{
-			SmsMethod: &api.SMSMethod{Phone: phone},
+			SmsMethod: &api.SMSMethod{Phone: meta.phone},
 		}
-	case algorithm == oath.HOTP && hash == api.Hash_SHA1 && digits == 6:
+	case otp.Algorithm == oath.HOTP && otp.Hash == crypto.SHA1 &&
+		otp.Digits == 6:
 		identity.MethodOneof = &api.Identity_GoogleAuthHotpMethod{
 			GoogleAuthHotpMethod: &api.GoogleAuthHOTPMethod{},
 		}
-	case algorithm == oath.TOTP && hash == api.Hash_SHA1 && digits == 6:
+	case otp.Algorithm == oath.TOTP && otp.Hash == crypto.SHA1 &&
+		otp.Digits == 6:
 		identity.MethodOneof = &api.Identity_GoogleAuthTotpMethod{
 			GoogleAuthTotpMethod: &api.GoogleAuthTOTPMethod{},
 		}
-	case algorithm == oath.HOTP:
+	case otp.Algorithm == oath.HOTP:
 		identity.MethodOneof = &api.Identity_SoftwareHotpMethod{
 			SoftwareHotpMethod: &api.SoftwareHOTPMethod{
-				Hash: hash, Digits: digits,
+				Hash: hashCryptoToAPI[otp.Hash], Digits: int32(otp.Digits),
 			},
 		}
-	case algorithm == oath.TOTP:
+	case otp.Algorithm == oath.TOTP:
 		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{
 			SoftwareTotpMethod: &api.SoftwareTOTPMethod{
-				Hash: hash, Digits: digits,
+				Hash: hashCryptoToAPI[otp.Hash], Digits: int32(otp.Digits),
 			},
 		}
 	}

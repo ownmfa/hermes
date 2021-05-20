@@ -117,3 +117,20 @@ func PushoverIdentity(prefix, orgID, appID string) *api.Identity {
 		},
 	}
 }
+
+// EmailIdentity generates a random email identity with prefixed identifiers.
+func EmailIdentity(prefix, orgID, appID string) *api.Identity {
+	return &api.Identity{
+		Id:      uuid.NewString(),
+		OrgId:   orgID,
+		AppId:   appID,
+		Comment: prefix + "-" + String(10),
+		Status: []api.IdentityStatus{
+			api.IdentityStatus_UNVERIFIED,
+			api.IdentityStatus_ACTIVATED,
+		}[Intn(2)],
+		MethodOneof: &api.Identity_EmailMethod{
+			EmailMethod: &api.EmailMethod{Email: prefix + "-" + Email()},
+		},
+	}
+}
