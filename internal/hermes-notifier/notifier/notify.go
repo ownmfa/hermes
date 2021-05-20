@@ -16,7 +16,10 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-const expire = 2 * time.Minute
+const (
+	smsExpire   = 2 * time.Minute
+	emailExpire = 5 * time.Minute
+)
 
 // notifyMessages receives notification metadata, formats messages from
 // application templates, and sends notifications.
@@ -108,7 +111,7 @@ func (not *Notifier) notifyMessages() {
 		logger.Debugf("notifyMessages app: %+v", app)
 
 		// Generate templates.
-		subj, body, _, err := genTemplates(app, passcode)
+		subj, body, htmlBody, err := genTemplates(app, passcode)
 		if err != nil {
 			msg.Ack()
 			logger.Errorf("notifyMessages genTemplates: %v", err)
@@ -118,6 +121,11 @@ func (not *Notifier) notifyMessages() {
 
 		// Set the passcode expiration. It is not necessary to check for
 		// collisions here, but if one was found, that would be notable.
+		expire := smsExpire
+		if _, ok := identity.MethodOneof.(*api.Identity_EmailMethod); ok {
+			expire = emailExpire
+		}
+
 		ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
 		ok, err := not.cache.SetIfNotExistTTL(ctx, key.Expire(identity.OrgId,
 			identity.AppId, identity.Id, passcode), 1, expire)
@@ -159,6 +167,18 @@ func (not *Notifier) notifyMessages() {
 				msg.Ack()
 				metric.Incr("error", map[string]string{"func": "sms"})
 				logger.Errorf("notifyMessages not.notify.SMS: %v", err)
+
+				continue
+			}
+		case *api.Identity_EmailMethod:
+			ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
+			err = not.notify.Email(ctx, app.DisplayName, app.Email,
+				m.EmailMethod.Email, subj, body, htmlBody)
+			cancel()
+			if err != nil {
+				msg.Ack()
+				metric.Incr("error", map[string]string{"func": "email"})
+				logger.Errorf("notifyMessages not.notify.Email: %v", err)
 
 				continue
 			}

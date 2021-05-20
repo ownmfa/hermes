@@ -34,6 +34,7 @@ func TestNotifyMessages(t *testing.T) {
 	app.PushoverKey = ""
 	smsIdentity := random.SMSIdentity("not", app.OrgId, app.Id)
 	pushoverIdentity := random.PushoverIdentity("not", app.OrgId, app.Id)
+	emailIdentity := random.EmailIdentity("not", app.OrgId, app.Id)
 	traceID := uuid.New()
 
 	appByKey := random.App("not", uuid.NewString())
@@ -52,24 +53,31 @@ func TestNotifyMessages(t *testing.T) {
 		inpSMSTimes           int
 		inpPushoverTimes      int
 		inpPushoverByAppTimes int
+		inpEmailTimes         int
 	}{
 		{
 			&message.NotifierIn{
 				OrgId: app.OrgId, AppId: app.Id, IdentityId: smsIdentity.Id,
 				TraceId: traceID[:],
-			}, app, smsIdentity, expire, 1, 0, 0,
+			}, app, smsIdentity, smsExpire, 1, 0, 0, 0,
 		},
 		{
 			&message.NotifierIn{
 				OrgId: app.OrgId, AppId: app.Id,
 				IdentityId: pushoverIdentity.Id, TraceId: traceID[:],
-			}, app, pushoverIdentity, expire, 0, 1, 0,
+			}, app, pushoverIdentity, smsExpire, 0, 1, 0, 0,
 		},
 		{
 			&message.NotifierIn{
 				OrgId: appByKey.OrgId, AppId: appByKey.Id,
 				IdentityId: identityByKey.Id, TraceId: traceID[:],
-			}, appByKey, identityByKey, expire, 0, 0, 1,
+			}, appByKey, identityByKey, smsExpire, 0, 0, 1, 0,
+		},
+		{
+			&message.NotifierIn{
+				OrgId: app.OrgId, AppId: app.Id, IdentityId: emailIdentity.Id,
+				TraceId: traceID[:],
+			}, app, emailIdentity, emailExpire, 0, 0, 0, 1,
 		},
 	}
 
@@ -133,6 +141,14 @@ func TestNotifyMessages(t *testing.T) {
 
 				return nil
 			}).Times(lTest.inpPushoverByAppTimes)
+			notifier.EXPECT().Email(gomock.Any(), lTest.inpApp.DisplayName,
+				lTest.inpApp.Email, emailIdentity.GetEmailMethod().Email,
+				gomock.Any(), gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ ...interface{}) error {
+					defer wg.Done()
+
+					return nil
+				}).Times(lTest.inpEmailTimes)
 
 			not := Notifier{
 				appDAO:      apper,
@@ -165,6 +181,7 @@ func TestNotifyMessagesError(t *testing.T) {
 	app.PushoverKey = ""
 	smsIdentity := random.SMSIdentity("not", app.OrgId, app.Id)
 	pushoverIdentity := random.PushoverIdentity("not", app.OrgId, app.Id)
+	emailIdentity := random.EmailIdentity("not", app.OrgId, app.Id)
 
 	badTemplApp := random.App("not", uuid.NewString())
 	badTemplApp.SubjectTemplate = `{{if`
@@ -196,58 +213,65 @@ func TestNotifyMessagesError(t *testing.T) {
 		inpSMSTimes              int
 		inpPushoverErr           error
 		inpPushoverTimes         int
+		inpEmailErr              error
+		inpEmailTimes            int
 		inpNotifyTimes           int
 	}{
 		// Bad payload.
 		{
 			nil, nil, nil, 0, nil, 0, nil, nil, nil, 0, -1, nil, 0, nil, 0, nil,
-			0, 0,
+			0, nil, 0, 0,
 		},
 		// Identityer error.
 		{
 			&message.NotifierIn{}, smsIdentity, errTestProc, 1, nil, 0, nil,
-			nil, nil, 0, -1, nil, 0, nil, 0, nil, 0, 0,
+			nil, nil, 0, -1, nil, 0, nil, 0, nil, 0, nil, 0, 0,
 		},
 		// Cacher Incr error.
 		{
 			&message.NotifierIn{}, smsIdentity, nil, 1, errTestProc, 1, nil,
-			nil, nil, 0, -1, nil, 0, nil, 0, nil, 0, 0,
+			nil, nil, 0, -1, nil, 0, nil, 0, nil, 0, nil, 0, 0,
 		},
 		// OTP error.
 		{
 			&message.NotifierIn{}, smsIdentity, nil, 1, nil, 1, &oath.OTP{},
-			nil, nil, 0, -1, nil, 0, nil, 0, nil, 0, 0,
+			nil, nil, 0, -1, nil, 0, nil, 0, nil, 0, nil, 0, 0,
 		},
 		// Apper error.
 		{
 			&message.NotifierIn{}, smsIdentity, nil, 1, nil, 1, otp, nil,
-			errTestProc, 1, -1, nil, 0, nil, 0, nil, 0, 0,
+			errTestProc, 1, -1, nil, 0, nil, 0, nil, 0, nil, 0, 0,
 		},
 		// Templates error.
 		{
 			&message.NotifierIn{}, pushoverIdentity, nil, 1, nil, 1, otp,
-			badTemplApp, nil, 1, -1, nil, 0, nil, 0, nil, 0, 0,
+			badTemplApp, nil, 1, -1, nil, 0, nil, 0, nil, 0, nil, 0, 0,
 		},
 		// Cacher SetIfNotExistTTL error.
 		{
 			&message.NotifierIn{}, smsIdentity, nil, 1, nil, 1, otp, app, nil,
-			1, expire, errTestProc, 1, nil, 0, nil, 0, 0,
+			1, smsExpire, errTestProc, 1, nil, 0, nil, 0, nil, 0, 0,
 		},
 		// Notifier SMS error.
 		{
 			&message.NotifierIn{}, smsIdentity, nil, 1, nil, 1, otp, app, nil,
-			1, expire, nil, 1, errTestProc, 1, nil, 0, 1,
+			1, smsExpire, nil, 1, errTestProc, 1, nil, 0, nil, 0, 1,
 		},
 		// Notifier Pushover error.
 		{
 			&message.NotifierIn{}, pushoverIdentity, nil, 1, nil, 1, otp, app,
-			nil, 1, expire, nil, 1, nil, 0, errTestProc, 1, 1,
+			nil, 1, smsExpire, nil, 1, nil, 0, errTestProc, 1, nil, 0, 1,
+		},
+		// Notifier email error.
+		{
+			&message.NotifierIn{}, emailIdentity, nil, 1, nil, 1, otp, app, nil,
+			1, emailExpire, nil, 1, nil, 0, nil, 0, errTestProc, 1, 1,
 		},
 		// Unsupported identity.MethodOneof.
 		{
 			&message.NotifierIn{}, random.HOTPIdentity("not", app.OrgId,
-				app.Id), nil, 1, nil, 1, otp, app, nil, 1, expire, nil, 1, nil,
-			0, nil, 0, 0,
+				app.Id), nil, 1, nil, 1, otp, app, nil, 1, smsExpire, nil, 1, nil,
+			0, nil, 0, nil, 0, 0,
 		},
 	}
 
@@ -297,6 +321,14 @@ func TestNotifyMessagesError(t *testing.T) {
 
 					return lTest.inpPushoverErr
 				}).Times(lTest.inpPushoverTimes)
+			notifier.EXPECT().Email(gomock.Any(), app.DisplayName, app.Email,
+				emailIdentity.GetEmailMethod().Email, gomock.Any(),
+				gomock.Any(), gomock.Any()).
+				DoAndReturn(func(_ ...interface{}) error {
+					defer wg.Done()
+
+					return lTest.inpEmailErr
+				}).Times(lTest.inpEmailTimes)
 
 			not := Notifier{
 				appDAO:      apper,
