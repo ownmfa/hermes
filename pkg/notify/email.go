@@ -13,8 +13,8 @@ const (
 
 // Email sends an email notification. This operation can block based on rate
 // limiting.
-func (n *notify) Email(ctx context.Context, displayName, appEmail, userEmail,
-	subject, body, htmlBody string) error {
+func (n *notify) Email(ctx context.Context, displayName, from, to, subject,
+	body, htmlBody string) error {
 	// Mailgun does not employ a rate limit, so default to 3 per second,
 	// serially.
 	ok, err := n.cache.SetIfNotExistTTL(ctx, emailKey, 1, emailRateDelay)
@@ -30,7 +30,7 @@ func (n *notify) Email(ctx context.Context, displayName, appEmail, userEmail,
 		}
 	}
 
-	sender := fmt.Sprintf("%s <%s>", displayName, appEmail)
+	sender := fmt.Sprintf("%s <%s>", displayName, from)
 
-	return n.mailgun.sendEmail(ctx, sender, userEmail, subject, body, htmlBody)
+	return n.mailgun.sendEmail(ctx, sender, to, subject, body, htmlBody)
 }

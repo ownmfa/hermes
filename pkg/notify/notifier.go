@@ -24,6 +24,6 @@ type Notifier interface {
 		body string) error
 	// Email sends an email notification. This operation can block based on rate
 	// limiting.
-	Email(ctx context.Context, displayName, appEmail, userEmail, subject,
-		body, htmlBody string) error
+	Email(ctx context.Context, displayName, from, to, subject, body,
+		htmlBody string) error
 }

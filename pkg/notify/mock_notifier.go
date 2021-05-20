@@ -35,17 +35,17 @@ func (m *MockNotifier) EXPECT() *MockNotifierMockRecorder {
 }
 
 // Email mocks base method.
-func (m *MockNotifier) Email(ctx context.Context, displayName, appEmail, userEmail, subject, body, htmlBody string) error {
+func (m *MockNotifier) Email(ctx context.Context, displayName, from, to, subject, body, htmlBody string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Email", ctx, displayName, appEmail, userEmail, subject, body, htmlBody)
+	ret := m.ctrl.Call(m, "Email", ctx, displayName, from, to, subject, body, htmlBody)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Email indicates an expected call of Email.
-func (mr *MockNotifierMockRecorder) Email(ctx, displayName, appEmail, userEmail, subject, body, htmlBody interface{}) *gomock.Call {
+func (mr *MockNotifierMockRecorder) Email(ctx, displayName, from, to, subject, body, htmlBody interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Email", reflect.TypeOf((*MockNotifier)(nil).Email), ctx, displayName, appEmail, userEmail, subject, body, htmlBody)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Email", reflect.TypeOf((*MockNotifier)(nil).Email), ctx, displayName, from, to, subject, body, htmlBody)
 }
 
 // Pushover mocks base method.

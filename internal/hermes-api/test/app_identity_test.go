@@ -643,8 +643,6 @@ func TestChallengeIdentity(t *testing.T) {
 	})
 
 	t.Run("Challenge SMS identity by valid ID", func(t *testing.T) {
-		t.Parallel()
-
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
@@ -744,8 +742,6 @@ func TestChallengeIdentity(t *testing.T) {
 	})
 
 	t.Run("Challenge SMS identity by invalid rate", func(t *testing.T) {
-		t.Parallel()
-
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 

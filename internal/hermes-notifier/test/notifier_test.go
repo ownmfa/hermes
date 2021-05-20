@@ -47,6 +47,11 @@ func TestNotifyMessages(t *testing.T) {
 	t.Logf("createPushoverIdentity, err: %+v, %v", createPushoverIdentity, err)
 	require.NoError(t, err)
 
+	createEmailIdentity, _, _, err := globalIdentityDAO.Create(ctx,
+		random.EmailIdentity("not", createOrg.Id, createApp.Id))
+	t.Logf("createEmailIdentity, err: %+v, %v", createEmailIdentity, err)
+	require.NoError(t, err)
+
 	appByKey := random.App("not", createOrg.Id)
 	appByKey.PushoverKey = random.String(30)
 	createAppByKey, err := globalAppDAO.Create(ctx, appByKey)
@@ -77,6 +82,12 @@ func TestNotifyMessages(t *testing.T) {
 			&message.NotifierIn{
 				OrgId: createOrg.Id, AppId: createAppByKey.Id,
 				IdentityId: createIdentityByKey.Id, TraceId: traceID[:],
+			},
+		},
+		{
+			&message.NotifierIn{
+				OrgId: createOrg.Id, AppId: createApp.Id,
+				IdentityId: createEmailIdentity.Id, TraceId: traceID[:],
 			},
 		},
 	}
