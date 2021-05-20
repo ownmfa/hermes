@@ -110,6 +110,32 @@ func TestCreate(t *testing.T) {
 		require.False(t, retSecret)
 	})
 
+	t.Run("Create valid email identity", func(t *testing.T) {
+		t.Parallel()
+
+		identity := random.EmailIdentity("dao-identity", createOrg.Id,
+			createApp.Id)
+		createIdentity, _ := proto.Clone(identity).(*api.Identity)
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createIdentity, createOTP, retSecret, err := globalIdentityDAO.Create(
+			ctx, createIdentity)
+		t.Logf("identity, createIdentity, createOTP, retSecret, err: %+v, "+
+			"%+v, %#v, %v, %v", identity, createIdentity, createOTP, retSecret,
+			err)
+		require.NoError(t, err)
+		require.NotEqual(t, identity.Id, createIdentity.Id)
+		require.Equal(t, api.IdentityStatus_UNVERIFIED, createIdentity.Status)
+		require.WithinDuration(t, time.Now(), createIdentity.CreatedAt.AsTime(),
+			2*time.Second)
+		require.WithinDuration(t, time.Now(), createIdentity.UpdatedAt.AsTime(),
+			2*time.Second)
+		require.NotNil(t, createOTP)
+		require.False(t, retSecret)
+	})
+
 	t.Run("Create invalid identity", func(t *testing.T) {
 		t.Parallel()
 
@@ -231,6 +257,34 @@ func TestRead(t *testing.T) {
 
 		createIdentity, createOTP, _, err := globalIdentityDAO.Create(ctx,
 			random.PushoverIdentity("dao-identity", createOrg.Id, createApp.Id))
+		t.Logf("createIdentity, createOTP, err: %+v, %#v, %v", createIdentity,
+			createOTP, err)
+		require.NoError(t, err)
+
+		readIdentity, readOTP, err := globalIdentityDAO.Read(ctx,
+			createIdentity.Id, createIdentity.OrgId, createIdentity.AppId)
+		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
+			readOTP, err)
+		require.NoError(t, err)
+		require.NotNil(t, readOTP)
+
+		// Testify does not currently support protobuf equality:
+		// https://github.com/stretchr/testify/issues/758
+		if !proto.Equal(createIdentity, readIdentity) {
+			t.Fatalf("\nExpect: %+v\nActual: %+v", createIdentity, readIdentity)
+		}
+
+		require.Equal(t, createOTP, readOTP)
+	})
+
+	t.Run("Read email identity by valid ID", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createIdentity, createOTP, _, err := globalIdentityDAO.Create(ctx,
+			random.EmailIdentity("dao-identity", createOrg.Id, createApp.Id))
 		t.Logf("createIdentity, createOTP, err: %+v, %#v, %v", createIdentity,
 			createOTP, err)
 		require.NoError(t, err)
@@ -522,6 +576,15 @@ func TestList(t *testing.T) {
 		identityIDs = append(identityIDs, createIdentity.Id)
 		identityComments = append(identityComments, createIdentity.Comment)
 		identityTSes = append(identityTSes, createIdentity.CreatedAt.AsTime())
+
+		createIdentity, _, _, err = globalIdentityDAO.Create(ctx,
+			random.EmailIdentity("dao-identity", createOrg.Id, createApp.Id))
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+
+		identityIDs = append(identityIDs, createIdentity.Id)
+		identityComments = append(identityComments, createIdentity.Comment)
+		identityTSes = append(identityTSes, createIdentity.CreatedAt.AsTime())
 	}
 
 	t.Run("List identities by valid org ID", func(t *testing.T) {
@@ -535,8 +598,8 @@ func TestList(t *testing.T) {
 		t.Logf("listIdentities, listCount, err: %+v, %v, %v", listIdentities,
 			listCount, err)
 		require.NoError(t, err)
-		require.Len(t, listIdentities, 9)
-		require.Equal(t, int32(9), listCount)
+		require.Len(t, listIdentities, 12)
+		require.Equal(t, int32(12), listCount)
 
 		var found bool
 		for _, identity := range listIdentities {
@@ -555,12 +618,12 @@ func TestList(t *testing.T) {
 		defer cancel()
 
 		listIdentities, listCount, err := globalIdentityDAO.List(ctx,
-			createOrg.Id, identityTSes[0], identityIDs[0], 10, "")
+			createOrg.Id, identityTSes[0], identityIDs[0], 15, "")
 		t.Logf("listIdentities, listCount, err: %+v, %v, %v", listIdentities,
 			listCount, err)
 		require.NoError(t, err)
-		require.Len(t, listIdentities, 8)
-		require.Equal(t, int32(9), listCount)
+		require.Len(t, listIdentities, 11)
+		require.Equal(t, int32(12), listCount)
 
 		var found bool
 		for _, identity := range listIdentities {
@@ -584,7 +647,7 @@ func TestList(t *testing.T) {
 			listCount, err)
 		require.NoError(t, err)
 		require.Len(t, listIdentities, 1)
-		require.Equal(t, int32(9), listCount)
+		require.Equal(t, int32(12), listCount)
 	})
 
 	t.Run("List identities with app filter", func(t *testing.T) {
@@ -598,8 +661,8 @@ func TestList(t *testing.T) {
 		t.Logf("listIdentities, listCount, err: %+v, %v, %v", listIdentities,
 			listCount, err)
 		require.NoError(t, err)
-		require.Len(t, listIdentities, 9)
-		require.Equal(t, int32(9), listCount)
+		require.Len(t, listIdentities, 12)
+		require.Equal(t, int32(12), listCount)
 
 		var found bool
 		for _, identity := range listIdentities {
@@ -618,12 +681,12 @@ func TestList(t *testing.T) {
 		defer cancel()
 
 		listIdentities, listCount, err := globalIdentityDAO.List(ctx,
-			createOrg.Id, identityTSes[0], identityIDs[0], 10, createApp.Id)
+			createOrg.Id, identityTSes[0], identityIDs[0], 15, createApp.Id)
 		t.Logf("listIdentities, listCount, err: %+v, %v, %v", listIdentities,
 			listCount, err)
 		require.NoError(t, err)
-		require.Len(t, listIdentities, 8)
-		require.Equal(t, int32(9), listCount)
+		require.Len(t, listIdentities, 11)
+		require.Equal(t, int32(12), listCount)
 
 		var found bool
 		for _, identity := range listIdentities {

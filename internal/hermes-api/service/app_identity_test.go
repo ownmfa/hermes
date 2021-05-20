@@ -228,6 +228,40 @@ func TestCreateIdentity(t *testing.T) {
 		}
 	})
 
+	t.Run("Create valid email identity", func(t *testing.T) {
+		t.Parallel()
+
+		identity := random.EmailIdentity("api-identity", uuid.NewString(),
+			uuid.NewString())
+		retIdentity, _ := proto.Clone(identity).(*api.Identity)
+
+		identityer := NewMockIdentityer(gomock.NewController(t))
+		identityer.EXPECT().Create(gomock.Any(), identity).Return(retIdentity,
+			nil, false, nil).Times(1)
+
+		ctx, cancel := context.WithTimeout(session.NewContext(
+			context.Background(), &session.Session{
+				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+			}), testTimeout)
+		defer cancel()
+
+		aiSvc := NewAppIdentity(nil, identityer, nil, nil, nil, "")
+		createIdentity, err := aiSvc.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{Identity: identity})
+		t.Logf("identity, createIdentity, err: %+v, %+v, %v", identity,
+			createIdentity, err)
+		require.NoError(t, err)
+
+		// Testify does not currently support protobuf equality:
+		// https://github.com/stretchr/testify/issues/758
+		if !proto.Equal(&api.CreateIdentityResponse{Identity: identity},
+			createIdentity) {
+			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.CreateIdentityResponse{
+				Identity: identity,
+			}, createIdentity)
+		}
+	})
+
 	t.Run("Create valid HOTP identity with OTP", func(t *testing.T) {
 		t.Parallel()
 
@@ -2233,9 +2267,12 @@ func TestListIdentities(t *testing.T) {
 		orgID := uuid.NewString()
 
 		identities := []*api.Identity{
-			random.HOTPIdentity("api-identity", uuid.NewString(), uuid.NewString()),
-			random.HOTPIdentity("api-identity", uuid.NewString(), uuid.NewString()),
-			random.HOTPIdentity("api-identity", uuid.NewString(), uuid.NewString()),
+			random.HOTPIdentity("api-identity", uuid.NewString(),
+				uuid.NewString()),
+			random.HOTPIdentity("api-identity", uuid.NewString(),
+				uuid.NewString()),
+			random.HOTPIdentity("api-identity", uuid.NewString(),
+				uuid.NewString()),
 		}
 
 		identityer := NewMockIdentityer(gomock.NewController(t))
@@ -2272,9 +2309,12 @@ func TestListIdentities(t *testing.T) {
 		orgID := uuid.NewString()
 
 		identities := []*api.Identity{
-			random.HOTPIdentity("api-identity", uuid.NewString(), uuid.NewString()),
-			random.HOTPIdentity("api-identity", uuid.NewString(), uuid.NewString()),
-			random.HOTPIdentity("api-identity", uuid.NewString(), uuid.NewString()),
+			random.HOTPIdentity("api-identity", uuid.NewString(),
+				uuid.NewString()),
+			random.HOTPIdentity("api-identity", uuid.NewString(),
+				uuid.NewString()),
+			random.HOTPIdentity("api-identity", uuid.NewString(),
+				uuid.NewString()),
 		}
 
 		next, err := session.GeneratePageToken(identities[1].CreatedAt.AsTime(),

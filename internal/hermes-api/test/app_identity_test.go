@@ -167,6 +167,30 @@ func TestCreateIdentity(t *testing.T) {
 		require.Empty(t, createIdentity.Qr)
 	})
 
+	t.Run("Create valid email identity", func(t *testing.T) {
+		t.Parallel()
+
+		identity := random.EmailIdentity("api-identity", uuid.NewString(),
+			createApp.Id)
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{Identity: identity})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+		require.NotEqual(t, identity.Id, createIdentity.Identity.Id)
+		require.Equal(t, api.IdentityStatus_UNVERIFIED,
+			createIdentity.Identity.Status)
+		require.WithinDuration(t, time.Now(),
+			createIdentity.Identity.CreatedAt.AsTime(), 2*time.Second)
+		require.WithinDuration(t, time.Now(),
+			createIdentity.Identity.UpdatedAt.AsTime(), 2*time.Second)
+		require.Empty(t, createIdentity.Secret)
+		require.Empty(t, createIdentity.Qr)
+	})
+
 	t.Run("Create valid identity with insufficient role", func(t *testing.T) {
 		t.Parallel()
 

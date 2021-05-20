@@ -192,7 +192,8 @@ func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
 	// Check passcode expiration for methods that utilize it. Continue to
 	// verification, even if found, to keep HOTP counters in sync.
 	switch identity.MethodOneof.(type) {
-	case *api.Identity_SmsMethod, *api.Identity_PushoverMethod:
+	case *api.Identity_SmsMethod, *api.Identity_PushoverMethod,
+		*api.Identity_EmailMethod:
 		ok, _, err := ai.cache.GetI(ctx, key.Expire(identity.OrgId,
 			identity.AppId, identity.Id, passcode))
 		if err != nil {
@@ -225,7 +226,7 @@ func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
 	switch identity.MethodOneof.(type) {
 	case *api.Identity_SoftwareHotpMethod, *api.Identity_GoogleAuthHotpMethod,
 		*api.Identity_HardwareHotpMethod, *api.Identity_SmsMethod,
-		*api.Identity_PushoverMethod:
+		*api.Identity_PushoverMethod, *api.Identity_EmailMethod:
 		// Retrieve current HOTP counter. If not found, use the zero value.
 		var curr int64
 		_, curr, err = ai.cache.GetI(ctx, key.HOTPCounter(identity.OrgId,
@@ -322,7 +323,8 @@ func (ai *AppIdentity) ChallengeIdentity(ctx context.Context,
 
 	// Build and publish NotifierIn message for methods that utilize it.
 	switch identity.MethodOneof.(type) {
-	case *api.Identity_SmsMethod, *api.Identity_PushoverMethod:
+	case *api.Identity_SmsMethod, *api.Identity_PushoverMethod,
+		*api.Identity_EmailMethod:
 		// Rate limit.
 		notifyKey := ikey.Challenge(identity.OrgId, identity.AppId, identity.Id)
 		ok, err := ai.cache.SetIfNotExistTTL(ctx, notifyKey, 1, notifyRate)
