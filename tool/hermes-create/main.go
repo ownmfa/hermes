@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/base64"
 	"flag"
 	"fmt"
@@ -20,6 +21,7 @@ import (
 	"github.com/ownmfa/hermes/pkg/dao/user"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/encoding/gzip"
 )
 
@@ -75,20 +77,24 @@ func main() {
 			grpc.WithBlock(),
 			grpc.WithDefaultCallOptions(grpc.UseCompressor(gzip.Name)),
 		}
-		if !*grpcTLS {
+
+		switch *grpcTLS {
+		case false:
 			opts = append(opts, grpc.WithInsecure())
+		case true:
+			opts = append(opts, grpc.WithTransportCredentials(
+				credentials.NewTLS(&tls.Config{MinVersion: tls.VersionTLS12})))
 		}
 
 		conn, err := grpc.Dial(*grpcURI, opts...)
 		checkErr(err)
 
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		defer cancel()
-
 		cli := api.NewSessionServiceClient(conn)
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		resp, err := cli.Login(ctx, &api.LoginRequest{
 			Email: flag.Arg(2), OrgName: flag.Arg(1), Password: flag.Arg(3),
 		})
+		cancel()
 		checkErr(err)
 		checkErr(conn.Close())
 
@@ -113,11 +119,10 @@ func main() {
 			os.Exit(1)
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		defer cancel()
-
 		orgDAO := org.NewDAO(pg)
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		createOrg, err := orgDAO.Create(ctx, &api.Org{Name: flag.Arg(1)})
+		cancel()
 		checkErr(err)
 
 		orgID = createOrg.Id
