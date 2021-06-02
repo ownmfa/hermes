@@ -3,7 +3,7 @@ services:
   postgres:
     image: postgres:12-alpine
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     environment:
       - POSTGRES_PASSWORD=notasecurepassword
       - POSTGRES_DB=hermes
@@ -25,7 +25,7 @@ services:
     depends_on:
       - nsqlookupd
     ports:
-      - "4171:4171"
+      - "127.0.0.1:4171:4171"
   redis:
     image: redis:6-alpine
     command: redis-server --save 300 1 --save 60 100 --appendonly no
@@ -44,6 +44,19 @@ services:
       - 'SYSLOG_STRUCTURED_DATA=notasecurekey@41058 tag="dev"'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+  traefik:
+    image: traefik:v2.4
+    ports:
+      - "80:80"
+      - "50051:50051"
+    environment:
+      - TRAEFIK_LOG_LEVEL=INFO
+      - TRAEFIK_PROVIDERS_DOCKER=true
+      - TRAEFIK_PROVIDERS_DOCKER_EXPOSEDBYDEFAULT=false
+      - TRAEFIK_ENTRYPOINTS_HTTP_ADDRESS=:80
+      - TRAEFIK_ENTRYPOINTS_GRPC_ADDRESS=:50051
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
 networks:
   default:
     name: deps
