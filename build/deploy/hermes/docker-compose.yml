@@ -6,8 +6,8 @@ services:
     depends_on:
       - hermes-notifier
     ports:
-      - "8000:8000"
-      - "50051:50051"
+      - "127.0.0.1:8000:8000"
+      - "127.0.0.1:5005:50051"
     environment:
       - API_STATSD_ADDR=dogstatsd:8125
       - API_PG_URI=postgres://postgres:notasecurepassword@postgres/hermes
@@ -17,6 +17,14 @@ services:
       - API_NSQ_PUB_ADDR=nsqd:4150
       - API_SMS_KEY_SECRET=notasecurekey
       - API_PUSHOVER_APP_KEY=notasecurekey
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hermes-api.rule=Host(`hermes.example.com`)"
+      - "traefik.http.routers.hermes-api.entrypoints=http"
+      - "traefik.http.services.hermes-api.loadbalancer.server.port=8000"
+      - "traefik.tcp.routers.hermes-api.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.hermes-api.entrypoints=grpc"
+      - "traefik.tcp.services.hermes-api.loadbalancer.server.port=50051"
   hermes-notifier:
     image: ghcr.io/ownmfa/hermes:29309f1d
     command: hermes-notifier

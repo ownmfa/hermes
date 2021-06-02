@@ -19,6 +19,8 @@ import (
 	"github.com/ownmfa/hermes/pkg/dao/org"
 	"github.com/ownmfa/hermes/pkg/dao/user"
 	"github.com/ownmfa/hermes/pkg/test/random"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/encoding/gzip"
 )
 
 const usage = `Usage:
@@ -26,6 +28,7 @@ const usage = `Usage:
 %[1]s uniqid
 %[1]s [options] org <org name> <admin email> <admin password>
 %[1]s [options] user <org ID> <admin email> <admin password>
+%[1]s [options] login <org name> <admin email> <admin password>
 %[1]s [options] qr <base64 identity key> <org ID> <app ID> <identity ID>
 `
 
@@ -37,10 +40,12 @@ func main() {
 
 	pgURI := flag.String("pgURI",
 		"postgres://postgres:postgres@127.0.0.1/hermes_test", "PostgreSQL URI")
+	grpcURI := flag.String("grpcURI", "127.0.0.1:50051", "gRPC URI")
+	grpcTLS := flag.Bool("grpcTLS", false, "gRPC TLS")
 	flag.Parse()
 
 	if _, ok := map[string]struct{}{
-		"uuid": {}, "uniqid": {}, "org": {}, "user": {}, "qr": {},
+		"uuid": {}, "uniqid": {}, "org": {}, "user": {}, "login": {}, "qr": {},
 	}[flag.Arg(0)]; !ok {
 		flag.Usage()
 		os.Exit(2)
@@ -62,6 +67,32 @@ func main() {
 	// Generate UniqID and return.
 	case "uniqid":
 		fmt.Fprintln(os.Stdout, random.String(16))
+
+		return
+	// Log in user.
+	case "login":
+		opts := []grpc.DialOption{
+			grpc.WithBlock(),
+			grpc.WithDefaultCallOptions(grpc.UseCompressor(gzip.Name)),
+		}
+		if !*grpcTLS {
+			opts = append(opts, grpc.WithInsecure())
+		}
+
+		conn, err := grpc.Dial(*grpcURI, opts...)
+		checkErr(err)
+
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+
+		cli := api.NewSessionServiceClient(conn)
+		resp, err := cli.Login(ctx, &api.LoginRequest{
+			Email: flag.Arg(2), OrgName: flag.Arg(1), Password: flag.Arg(3),
+		})
+		checkErr(err)
+		checkErr(conn.Close())
+
+		fmt.Fprintf(os.Stdout, "Login: %+v\n", resp)
 
 		return
 	}
