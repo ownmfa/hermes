@@ -19,29 +19,29 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AppIdentityServiceClient interface {
-	// Create an application.
+	// Create an application. Applications contain external user identities and common settings for authentication methods.
 	CreateApp(ctx context.Context, in *CreateAppRequest, opts ...grpc.CallOption) (*App, error)
-	// Create an identity.
+	// Create an identity. Identities are used to challenge, activate, and verify external users.
 	CreateIdentity(ctx context.Context, in *CreateIdentityRequest, opts ...grpc.CallOption) (*CreateIdentityResponse, error)
-	// Activate an identity.
+	// Activate an identity following a challenge.
 	ActivateIdentity(ctx context.Context, in *ActivateIdentityRequest, opts ...grpc.CallOption) (*Identity, error)
 	// Issue a challenge to an identity.
 	ChallengeIdentity(ctx context.Context, in *ChallengeIdentityRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	// Verify an identity.
+	// Verify an identity following a challenge.
 	VerifyIdentity(ctx context.Context, in *VerifyIdentityRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	// Get an application by ID.
+	// Get an application by ID. Applications contain external user identities and common settings for authentication methods.
 	GetApp(ctx context.Context, in *GetAppRequest, opts ...grpc.CallOption) (*App, error)
-	// Get an identity by ID.
+	// Get an identity by ID. Identities are used to challenge, activate, and verify external users.
 	GetIdentity(ctx context.Context, in *GetIdentityRequest, opts ...grpc.CallOption) (*Identity, error)
-	// Update an application.
+	// Update an application. Applications contain external user identities and common settings for authentication methods.
 	UpdateApp(ctx context.Context, in *UpdateAppRequest, opts ...grpc.CallOption) (*App, error)
-	// Delete an application by ID.
+	// Delete an application by ID. Applications contain external user identities and common settings for authentication methods.
 	DeleteApp(ctx context.Context, in *DeleteAppRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	// Delete an identity by ID.
+	// Delete an identity by ID. Identities are used to challenge, activate, and verify external users.
 	DeleteIdentity(ctx context.Context, in *DeleteIdentityRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	// List all applications.
+	// List all applications. Applications contain external user identities and common settings for authentication methods.
 	ListApps(ctx context.Context, in *ListAppsRequest, opts ...grpc.CallOption) (*ListAppsResponse, error)
-	// List identities.
+	// List identities. Identities are used to challenge, activate, and verify external users.
 	ListIdentities(ctx context.Context, in *ListIdentitiesRequest, opts ...grpc.CallOption) (*ListIdentitiesResponse, error)
 }
 
@@ -165,29 +165,29 @@ func (c *appIdentityServiceClient) ListIdentities(ctx context.Context, in *ListI
 // All implementations must embed UnimplementedAppIdentityServiceServer
 // for forward compatibility
 type AppIdentityServiceServer interface {
-	// Create an application.
+	// Create an application. Applications contain external user identities and common settings for authentication methods.
 	CreateApp(context.Context, *CreateAppRequest) (*App, error)
-	// Create an identity.
+	// Create an identity. Identities are used to challenge, activate, and verify external users.
 	CreateIdentity(context.Context, *CreateIdentityRequest) (*CreateIdentityResponse, error)
-	// Activate an identity.
+	// Activate an identity following a challenge.
 	ActivateIdentity(context.Context, *ActivateIdentityRequest) (*Identity, error)
 	// Issue a challenge to an identity.
 	ChallengeIdentity(context.Context, *ChallengeIdentityRequest) (*empty.Empty, error)
-	// Verify an identity.
+	// Verify an identity following a challenge.
 	VerifyIdentity(context.Context, *VerifyIdentityRequest) (*empty.Empty, error)
-	// Get an application by ID.
+	// Get an application by ID. Applications contain external user identities and common settings for authentication methods.
 	GetApp(context.Context, *GetAppRequest) (*App, error)
-	// Get an identity by ID.
+	// Get an identity by ID. Identities are used to challenge, activate, and verify external users.
 	GetIdentity(context.Context, *GetIdentityRequest) (*Identity, error)
-	// Update an application.
+	// Update an application. Applications contain external user identities and common settings for authentication methods.
 	UpdateApp(context.Context, *UpdateAppRequest) (*App, error)
-	// Delete an application by ID.
+	// Delete an application by ID. Applications contain external user identities and common settings for authentication methods.
 	DeleteApp(context.Context, *DeleteAppRequest) (*empty.Empty, error)
-	// Delete an identity by ID.
+	// Delete an identity by ID. Identities are used to challenge, activate, and verify external users.
 	DeleteIdentity(context.Context, *DeleteIdentityRequest) (*empty.Empty, error)
-	// List all applications.
+	// List all applications. Applications contain external user identities and common settings for authentication methods.
 	ListApps(context.Context, *ListAppsRequest) (*ListAppsResponse, error)
-	// List identities.
+	// List identities. Identities are used to challenge, activate, and verify external users.
 	ListIdentities(context.Context, *ListIdentitiesRequest) (*ListIdentitiesResponse, error)
 	mustEmbedUnimplementedAppIdentityServiceServer()
 }

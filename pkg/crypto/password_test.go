@@ -20,7 +20,8 @@ func TestCheckPass(t *testing.T) {
 	}{
 		{random.String(20), nil},
 		{random.String(5), ErrWeakPass},
-		{"0wnMF4", ErrWeakPass},
+		{"0wnMFA1234", ErrWeakPass},
+		{"own2fa1234", ErrWeakPass},
 		{"1234567890", ErrWeakPass},
 	}
 
