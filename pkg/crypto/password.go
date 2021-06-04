@@ -14,7 +14,8 @@ const ErrWeakPass consterr.Error = "weak password, see NIST password guidelines"
 // CheckPass checks whether a password is weak or disallowed.
 func CheckPass(pass string) error {
 	if len(pass) < 10 ||
-		strings.Contains(strings.ToLower(pass), "wnmf") ||
+		strings.Contains(strings.ToLower(pass), "wnmfa") ||
+		strings.Contains(strings.ToLower(pass), "wn2fa") ||
 		strings.Contains(weakPasswords, strings.ToLower(pass)) {
 		return ErrWeakPass
 	}
