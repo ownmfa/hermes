@@ -67,9 +67,9 @@ type Identityer interface {
 type AppIdentity struct {
 	api.UnimplementedAppIdentityServiceServer
 
-	appDAO      Apper
-	identityDAO Identityer
-	cache       cache.Cacher
+	appDAO   Apper
+	identDAO Identityer
+	cache    cache.Cacher
 
 	notify notify.Notifier
 
@@ -78,13 +78,13 @@ type AppIdentity struct {
 }
 
 // NewAppIdentity instantiates and returns a new AppIdentity service.
-func NewAppIdentity(appDAO Apper, identityDAO Identityer, cache cache.Cacher,
+func NewAppIdentity(appDAO Apper, identDAO Identityer, cache cache.Cacher,
 	notify notify.Notifier, pubQueue queue.Queuer,
 	pubTopic string) *AppIdentity {
 	return &AppIdentity{
-		appDAO:      appDAO,
-		identityDAO: identityDAO,
-		cache:       cache,
+		appDAO:   appDAO,
+		identDAO: identDAO,
+		cache:    cache,
 
 		notify: notify,
 
@@ -146,7 +146,7 @@ func (ai *AppIdentity) CreateIdentity(ctx context.Context,
 
 	req.Identity.OrgId = sess.OrgID
 
-	identity, otp, retSecret, err := ai.identityDAO.Create(ctx, req.Identity)
+	identity, otp, retSecret, err := ai.identDAO.Create(ctx, req.Identity)
 	if err != nil {
 		return nil, errToStatus(err)
 	}
@@ -178,7 +178,7 @@ func (ai *AppIdentity) CreateIdentity(ctx context.Context,
 func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
 	appID string, expStatus api.IdentityStatus, passcode string, hotpLookAhead,
 	softTOTPLookAhead, hardTOTPLookAhead int) error {
-	identity, otp, err := ai.identityDAO.Read(ctx, identityID, orgID, appID)
+	identity, otp, err := ai.identDAO.Read(ctx, identityID, orgID, appID)
 	if err != nil {
 		return err
 	}
@@ -296,7 +296,7 @@ func (ai *AppIdentity) ActivateIdentity(ctx context.Context,
 		return nil, errToStatus(err)
 	}
 
-	identity, err := ai.identityDAO.UpdateStatus(ctx, req.Id, sess.OrgID,
+	identity, err := ai.identDAO.UpdateStatus(ctx, req.Id, sess.OrgID,
 		req.AppId, api.IdentityStatus_ACTIVATED)
 	if err != nil {
 		return nil, errToStatus(err)
@@ -315,7 +315,7 @@ func (ai *AppIdentity) ChallengeIdentity(ctx context.Context,
 	}
 
 	// Verify an identity exists, even in cases where no challenge is sent.
-	identity, _, err := ai.identityDAO.Read(ctx, req.Id, sess.OrgID,
+	identity, _, err := ai.identDAO.Read(ctx, req.Id, sess.OrgID,
 		req.AppId)
 	if err != nil {
 		return nil, errToStatus(err)
@@ -427,7 +427,7 @@ func (ai *AppIdentity) GetIdentity(ctx context.Context,
 		return nil, errPerm(common.Role_VIEWER)
 	}
 
-	identity, _, err := ai.identityDAO.Read(ctx, req.Id, sess.OrgID, req.AppId)
+	identity, _, err := ai.identDAO.Read(ctx, req.Id, sess.OrgID, req.AppId)
 	if err != nil {
 		return nil, errToStatus(err)
 	}
@@ -512,7 +512,7 @@ func (ai *AppIdentity) DeleteIdentity(ctx context.Context,
 		return nil, errPerm(common.Role_AUTHENTICATOR)
 	}
 
-	if err := ai.identityDAO.Delete(ctx, req.Id, sess.OrgID,
+	if err := ai.identDAO.Delete(ctx, req.Id, sess.OrgID,
 		req.AppId); err != nil {
 		return nil, errToStatus(err)
 	}
@@ -588,7 +588,7 @@ func (ai *AppIdentity) ListIdentities(ctx context.Context,
 	}
 
 	// Retrieve PageSize+1 entries to find last page.
-	identities, count, err := ai.identityDAO.List(ctx, sess.OrgID, lBoundTS,
+	identities, count, err := ai.identDAO.List(ctx, sess.OrgID, lBoundTS,
 		prevID, req.PageSize+1, req.AppId)
 	if err != nil {
 		return nil, errToStatus(err)

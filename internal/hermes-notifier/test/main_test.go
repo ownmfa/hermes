@@ -24,10 +24,10 @@ var (
 	globalNInSubTopic string
 	globalNotQueue    queue.Queuer
 
-	globalOrgDAO      *org.DAO
-	globalAppDAO      *app.DAO
-	globalIdentityDAO *identity.DAO
-	globalCache       cache.Cacher
+	globalOrgDAO   *org.DAO
+	globalAppDAO   *app.DAO
+	globalIdentDAO *identity.DAO
+	globalCache    cache.Cacher
 )
 
 func TestMain(m *testing.M) {
@@ -78,7 +78,7 @@ func TestMain(m *testing.M) {
 	}
 	globalOrgDAO = org.NewDAO(pg)
 	globalAppDAO = app.NewDAO(pg)
-	globalIdentityDAO = identity.NewDAO(pg, key)
+	globalIdentDAO = identity.NewDAO(pg, key)
 
 	// Set up cache connection.
 	globalCache, err = cache.NewRedis(cfg.RedisHost + ":6379")

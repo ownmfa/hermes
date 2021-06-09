@@ -42,7 +42,7 @@ func TestCreate(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		createIdentity, createOTP, retSecret, err := globalIdentityDAO.Create(
+		createIdentity, createOTP, retSecret, err := globalIdentDAO.Create(
 			ctx, createIdentity)
 		t.Logf("identity, createIdentity, createOTP, retSecret, err: %+v, "+
 			"%+v, %#v, %v, %v", identity, createIdentity, createOTP, retSecret,
@@ -68,7 +68,7 @@ func TestCreate(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		createIdentity, createOTP, retSecret, err := globalIdentityDAO.Create(
+		createIdentity, createOTP, retSecret, err := globalIdentDAO.Create(
 			ctx, createIdentity)
 		t.Logf("identity, createIdentity, createOTP, retSecret, err: %+v, "+
 			"%+v, %#v, %v, %v", identity, createIdentity, createOTP, retSecret,
@@ -94,7 +94,7 @@ func TestCreate(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		createIdentity, createOTP, retSecret, err := globalIdentityDAO.Create(
+		createIdentity, createOTP, retSecret, err := globalIdentDAO.Create(
 			ctx, createIdentity)
 		t.Logf("identity, createIdentity, createOTP, retSecret, err: %+v, "+
 			"%+v, %#v, %v, %v", identity, createIdentity, createOTP, retSecret,
@@ -120,7 +120,7 @@ func TestCreate(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		createIdentity, createOTP, retSecret, err := globalIdentityDAO.Create(
+		createIdentity, createOTP, retSecret, err := globalIdentDAO.Create(
 			ctx, createIdentity)
 		t.Logf("identity, createIdentity, createOTP, retSecret, err: %+v, "+
 			"%+v, %#v, %v, %v", identity, createIdentity, createOTP, retSecret,
@@ -146,7 +146,7 @@ func TestCreate(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		createIdentity, createOTP, retSecret, err := globalIdentityDAO.Create(
+		createIdentity, createOTP, retSecret, err := globalIdentDAO.Create(
 			ctx, identity)
 		t.Logf("identity, createIdentity, createOTP, retSecret, err: %+v, "+
 			"%+v, %#v, %v, %v", identity, createIdentity, createOTP, retSecret,
@@ -163,7 +163,7 @@ func TestCreate(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		createIdentity, createOTP, retSecret, err := globalIdentityDAO.Create(
+		createIdentity, createOTP, retSecret, err := globalIdentDAO.Create(
 			ctx, random.HOTPIdentity("dao-identity", createOrg.Id,
 				uuid.NewString()))
 		t.Logf("createIdentity, createOTP, retSecret, err: %+v, %#v, %v, %v",
@@ -190,7 +190,7 @@ func TestRead(t *testing.T) {
 	t.Logf("createApp, err: %+v, %v", createApp, err)
 	require.NoError(t, err)
 
-	createIdentity, createOTP, _, err := globalIdentityDAO.Create(ctx,
+	createIdentity, createOTP, _, err := globalIdentDAO.Create(ctx,
 		random.HOTPIdentity("dao-identity", createOrg.Id, createApp.Id))
 	t.Logf("createIdentity, createOTP, err: %+v, %#v, %v", createIdentity,
 		createOTP, err)
@@ -202,7 +202,7 @@ func TestRead(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		readIdentity, readOTP, err := globalIdentityDAO.Read(ctx,
+		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
 			createIdentity.Id, createIdentity.OrgId, createIdentity.AppId)
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
@@ -227,13 +227,13 @@ func TestRead(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		createIdentity, createOTP, _, err := globalIdentityDAO.Create(ctx,
+		createIdentity, createOTP, _, err := globalIdentDAO.Create(ctx,
 			random.SMSIdentity("dao-identity", createOrg.Id, createApp.Id))
 		t.Logf("createIdentity, createOTP, err: %+v, %#v, %v", createIdentity,
 			createOTP, err)
 		require.NoError(t, err)
 
-		readIdentity, readOTP, err := globalIdentityDAO.Read(ctx,
+		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
 			createIdentity.Id, createIdentity.OrgId, createIdentity.AppId)
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
@@ -255,13 +255,13 @@ func TestRead(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		createIdentity, createOTP, _, err := globalIdentityDAO.Create(ctx,
+		createIdentity, createOTP, _, err := globalIdentDAO.Create(ctx,
 			random.PushoverIdentity("dao-identity", createOrg.Id, createApp.Id))
 		t.Logf("createIdentity, createOTP, err: %+v, %#v, %v", createIdentity,
 			createOTP, err)
 		require.NoError(t, err)
 
-		readIdentity, readOTP, err := globalIdentityDAO.Read(ctx,
+		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
 			createIdentity.Id, createIdentity.OrgId, createIdentity.AppId)
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
@@ -283,13 +283,13 @@ func TestRead(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		createIdentity, createOTP, _, err := globalIdentityDAO.Create(ctx,
+		createIdentity, createOTP, _, err := globalIdentDAO.Create(ctx,
 			random.EmailIdentity("dao-identity", createOrg.Id, createApp.Id))
 		t.Logf("createIdentity, createOTP, err: %+v, %#v, %v", createIdentity,
 			createOTP, err)
 		require.NoError(t, err)
 
-		readIdentity, readOTP, err := globalIdentityDAO.Read(ctx,
+		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
 			createIdentity.Id, createIdentity.OrgId, createIdentity.AppId)
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
@@ -311,7 +311,7 @@ func TestRead(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		readIdentity, readOTP, err := globalIdentityDAO.Read(ctx,
+		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
 			uuid.NewString(), createIdentity.OrgId, createIdentity.AppId)
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
@@ -326,7 +326,7 @@ func TestRead(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		readIdentity, readOTP, err := globalIdentityDAO.Read(ctx,
+		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
 			createIdentity.Id, createIdentity.OrgId, uuid.NewString())
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
@@ -341,7 +341,7 @@ func TestRead(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		readIdentity, readOTP, err := globalIdentityDAO.Read(ctx,
+		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
 			createIdentity.Id, uuid.NewString(), createIdentity.AppId)
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
@@ -356,7 +356,7 @@ func TestRead(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		readIdentity, readOTP, err := globalIdentityDAO.Read(ctx,
+		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
 			random.String(10), createIdentity.OrgId, createIdentity.AppId)
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
@@ -387,12 +387,12 @@ func TestUpdateStatus(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		createIdentity, _, _, err := globalIdentityDAO.Create(ctx,
+		createIdentity, _, _, err := globalIdentDAO.Create(ctx,
 			random.HOTPIdentity("dao-identity", createOrg.Id, createApp.Id))
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
-		updateIdentity, err := globalIdentityDAO.UpdateStatus(ctx,
+		updateIdentity, err := globalIdentDAO.UpdateStatus(ctx,
 			createIdentity.Id, createOrg.Id, createApp.Id,
 			api.IdentityStatus_ACTIVATED)
 		t.Logf("updateIdentity, err: %+v, %v", updateIdentity, err)
@@ -408,7 +408,7 @@ func TestUpdateStatus(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		updateIdentity, err := globalIdentityDAO.UpdateStatus(ctx,
+		updateIdentity, err := globalIdentDAO.UpdateStatus(ctx,
 			uuid.NewString(), createOrg.Id, createApp.Id,
 			api.IdentityStatus_ACTIVATED)
 		t.Logf("updateIdentity, err: %+v, %v", updateIdentity, err)
@@ -422,12 +422,12 @@ func TestUpdateStatus(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		createIdentity, _, _, err := globalIdentityDAO.Create(ctx,
+		createIdentity, _, _, err := globalIdentDAO.Create(ctx,
 			random.HOTPIdentity("dao-identity", createOrg.Id, createApp.Id))
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
-		updateIdentity, err := globalIdentityDAO.UpdateStatus(ctx,
+		updateIdentity, err := globalIdentDAO.UpdateStatus(ctx,
 			createIdentity.Id, uuid.NewString(), createApp.Id,
 			api.IdentityStatus_ACTIVATED)
 		t.Logf("updateIdentity, err: %+v, %v", updateIdentity, err)
@@ -457,12 +457,12 @@ func TestDelete(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		createIdentity, _, _, err := globalIdentityDAO.Create(ctx,
+		createIdentity, _, _, err := globalIdentDAO.Create(ctx,
 			random.HOTPIdentity("dao-identity", createOrg.Id, createApp.Id))
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
-		err = globalIdentityDAO.Delete(ctx, createIdentity.Id, createOrg.Id,
+		err = globalIdentDAO.Delete(ctx, createIdentity.Id, createOrg.Id,
 			createIdentity.AppId)
 		t.Logf("err: %v", err)
 		require.NoError(t, err)
@@ -474,7 +474,7 @@ func TestDelete(t *testing.T) {
 				testTimeout)
 			defer cancel()
 
-			readIdentity, readOTP, err := globalIdentityDAO.Read(ctx,
+			readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
 				createIdentity.Id, createOrg.Id, createIdentity.AppId)
 			t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 				readOTP, err)
@@ -490,7 +490,7 @@ func TestDelete(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		err := globalIdentityDAO.Delete(ctx, uuid.NewString(), createOrg.Id,
+		err := globalIdentDAO.Delete(ctx, uuid.NewString(), createOrg.Id,
 			createApp.Id)
 		t.Logf("err: %v", err)
 		require.Equal(t, dao.ErrNotFound, err)
@@ -502,12 +502,12 @@ func TestDelete(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		createIdentity, _, _, err := globalIdentityDAO.Create(ctx,
+		createIdentity, _, _, err := globalIdentDAO.Create(ctx,
 			random.HOTPIdentity("dao-identity", createOrg.Id, createApp.Id))
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
-		err = globalIdentityDAO.Delete(ctx, createIdentity.Id, createOrg.Id,
+		err = globalIdentDAO.Delete(ctx, createIdentity.Id, createOrg.Id,
 			uuid.NewString())
 		t.Logf("err: %v", err)
 		require.Equal(t, dao.ErrNotFound, err)
@@ -519,12 +519,12 @@ func TestDelete(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		createIdentity, _, _, err := globalIdentityDAO.Create(ctx,
+		createIdentity, _, _, err := globalIdentDAO.Create(ctx,
 			random.HOTPIdentity("dao-identity", createOrg.Id, createApp.Id))
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
-		err = globalIdentityDAO.Delete(ctx, createIdentity.Id, uuid.NewString(),
+		err = globalIdentDAO.Delete(ctx, createIdentity.Id, uuid.NewString(),
 			createApp.Id)
 		t.Logf("err: %v", err)
 		require.Equal(t, dao.ErrNotFound, err)
@@ -550,7 +550,7 @@ func TestList(t *testing.T) {
 	identityComments := []string{}
 	identityTSes := []time.Time{}
 	for i := 0; i < 3; i++ {
-		createIdentity, _, _, err := globalIdentityDAO.Create(ctx,
+		createIdentity, _, _, err := globalIdentDAO.Create(ctx,
 			random.HOTPIdentity("dao-identity", createOrg.Id, createApp.Id))
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -559,7 +559,7 @@ func TestList(t *testing.T) {
 		identityComments = append(identityComments, createIdentity.Comment)
 		identityTSes = append(identityTSes, createIdentity.CreatedAt.AsTime())
 
-		createIdentity, _, _, err = globalIdentityDAO.Create(ctx,
+		createIdentity, _, _, err = globalIdentDAO.Create(ctx,
 			random.SMSIdentity("dao-identity", createOrg.Id, createApp.Id))
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -568,7 +568,7 @@ func TestList(t *testing.T) {
 		identityComments = append(identityComments, createIdentity.Comment)
 		identityTSes = append(identityTSes, createIdentity.CreatedAt.AsTime())
 
-		createIdentity, _, _, err = globalIdentityDAO.Create(ctx,
+		createIdentity, _, _, err = globalIdentDAO.Create(ctx,
 			random.PushoverIdentity("dao-identity", createOrg.Id, createApp.Id))
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -577,7 +577,7 @@ func TestList(t *testing.T) {
 		identityComments = append(identityComments, createIdentity.Comment)
 		identityTSes = append(identityTSes, createIdentity.CreatedAt.AsTime())
 
-		createIdentity, _, _, err = globalIdentityDAO.Create(ctx,
+		createIdentity, _, _, err = globalIdentDAO.Create(ctx,
 			random.EmailIdentity("dao-identity", createOrg.Id, createApp.Id))
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -593,7 +593,7 @@ func TestList(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		listIdentities, listCount, err := globalIdentityDAO.List(ctx,
+		listIdentities, listCount, err := globalIdentDAO.List(ctx,
 			createOrg.Id, time.Time{}, "", 0, "")
 		t.Logf("listIdentities, listCount, err: %+v, %v, %v", listIdentities,
 			listCount, err)
@@ -617,7 +617,7 @@ func TestList(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		listIdentities, listCount, err := globalIdentityDAO.List(ctx,
+		listIdentities, listCount, err := globalIdentDAO.List(ctx,
 			createOrg.Id, identityTSes[0], identityIDs[0], 15, "")
 		t.Logf("listIdentities, listCount, err: %+v, %v, %v", listIdentities,
 			listCount, err)
@@ -641,7 +641,7 @@ func TestList(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		listIdentities, listCount, err := globalIdentityDAO.List(ctx,
+		listIdentities, listCount, err := globalIdentDAO.List(ctx,
 			createOrg.Id, time.Time{}, "", 1, "")
 		t.Logf("listIdentities, listCount, err: %+v, %v, %v", listIdentities,
 			listCount, err)
@@ -656,7 +656,7 @@ func TestList(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		listIdentities, listCount, err := globalIdentityDAO.List(ctx,
+		listIdentities, listCount, err := globalIdentDAO.List(ctx,
 			createOrg.Id, time.Time{}, "", 0, createApp.Id)
 		t.Logf("listIdentities, listCount, err: %+v, %v, %v", listIdentities,
 			listCount, err)
@@ -680,7 +680,7 @@ func TestList(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		listIdentities, listCount, err := globalIdentityDAO.List(ctx,
+		listIdentities, listCount, err := globalIdentDAO.List(ctx,
 			createOrg.Id, identityTSes[0], identityIDs[0], 15, createApp.Id)
 		t.Logf("listIdentities, listCount, err: %+v, %v, %v", listIdentities,
 			listCount, err)
@@ -704,7 +704,7 @@ func TestList(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		listIdentities, listCount, err := globalIdentityDAO.List(ctx,
+		listIdentities, listCount, err := globalIdentDAO.List(ctx,
 			uuid.NewString(), time.Time{}, "", 0, uuid.NewString())
 		t.Logf("listIdentities, listCount, err: %+v, %v, %v", listIdentities,
 			listCount, err)
@@ -719,7 +719,7 @@ func TestList(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		listIdentities, listCount, err := globalIdentityDAO.List(ctx,
+		listIdentities, listCount, err := globalIdentDAO.List(ctx,
 			uuid.NewString(), time.Time{}, "", 0, "")
 		t.Logf("listIdentities, listCount, err: %+v, %v, %v", listIdentities,
 			listCount, err)
@@ -734,7 +734,7 @@ func TestList(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		listIdentities, listCount, err := globalIdentityDAO.List(ctx,
+		listIdentities, listCount, err := globalIdentDAO.List(ctx,
 			random.String(10), time.Time{}, "", 0, "")
 		t.Logf("listIdentities, listCount, err: %+v, %v, %v", listIdentities,
 			listCount, err)

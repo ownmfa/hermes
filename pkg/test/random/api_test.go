@@ -203,3 +203,30 @@ func TestEmailIdentity(t *testing.T) {
 		})
 	}
 }
+
+func TestEvent(t *testing.T) {
+	t.Parallel()
+
+	for i := 0; i < 5; i++ {
+		lTest := i
+
+		t.Run(fmt.Sprintf("Can generate %v", lTest), func(t *testing.T) {
+			t.Parallel()
+
+			prefix := String(10)
+			orgID := uuid.NewString()
+
+			e1 := Event(prefix, orgID)
+			e2 := Event(prefix, orgID)
+			t.Logf("e1, e2: %+v, %+v", e1, e2)
+
+			require.NotEqual(t, e1, e2)
+			if e1.Error != "" {
+				require.True(t, strings.HasPrefix(e1.Error, prefix))
+			}
+			if e2.Error != "" {
+				require.True(t, strings.HasPrefix(e2.Error, prefix))
+			}
+		})
+	}
+}

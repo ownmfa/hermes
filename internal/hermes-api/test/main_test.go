@@ -31,10 +31,10 @@ const (
 )
 
 var (
-	globalOrgDAO      *org.DAO
-	globalUserDAO     *user.DAO
-	globalIdentityDAO *identity.DAO
-	globalCache       cache.Cacher
+	globalOrgDAO   *org.DAO
+	globalUserDAO  *user.DAO
+	globalIdentDAO *identity.DAO
+	globalCache    cache.Cacher
 
 	globalPass string
 	// globalHash is stored globally for test performance under -race.
@@ -91,7 +91,7 @@ func TestMain(m *testing.M) {
 	}
 	globalOrgDAO = org.NewDAO(pg)
 	globalUserDAO = user.NewDAO(pg)
-	globalIdentityDAO = identity.NewDAO(pg, key)
+	globalIdentDAO = identity.NewDAO(pg, key)
 
 	// Set up cache connection.
 	globalCache, err = cache.NewRedis(cfg.RedisHost + ":6379")

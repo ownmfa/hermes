@@ -416,7 +416,7 @@ func TestActivateIdentity(t *testing.T) {
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
-		_, otp, err := globalIdentityDAO.Read(ctx, createIdentity.Identity.Id,
+		_, otp, err := globalIdentDAO.Read(ctx, createIdentity.Identity.Id,
 			createIdentity.Identity.OrgId, createIdentity.Identity.AppId)
 		require.NoError(t, err)
 
@@ -966,7 +966,7 @@ func TestVerifyIdentity(t *testing.T) {
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
-		_, otp, err := globalIdentityDAO.Read(ctx, createIdentity.Identity.Id,
+		_, otp, err := globalIdentDAO.Read(ctx, createIdentity.Identity.Id,
 			createIdentity.Identity.OrgId, createIdentity.Identity.AppId)
 		require.NoError(t, err)
 
@@ -1110,7 +1110,7 @@ func TestVerifyIdentity(t *testing.T) {
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
-		_, otp, err := globalIdentityDAO.Read(ctx, createIdentity.Identity.Id,
+		_, otp, err := globalIdentDAO.Read(ctx, createIdentity.Identity.Id,
 			createIdentity.Identity.OrgId, createIdentity.Identity.AppId)
 		require.NoError(t, err)
 

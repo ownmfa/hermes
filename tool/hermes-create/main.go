@@ -152,7 +152,7 @@ func main() {
 		fmt.Fprintf(os.Stdout, "User: %+v\n", createUser)
 	// Generate QR code.
 	case "qr":
-		identityKey, err := base64.StdEncoding.DecodeString(flag.Arg(1))
+		identKey, err := base64.StdEncoding.DecodeString(flag.Arg(1))
 		checkErr(err)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
@@ -162,8 +162,8 @@ func main() {
 		app, err := appDAO.Read(ctx, flag.Arg(3), flag.Arg(2))
 		checkErr(err)
 
-		identityDAO := identity.NewDAO(pg, identityKey)
-		_, otp, err := identityDAO.Read(ctx, flag.Arg(4), flag.Arg(2),
+		identDAO := identity.NewDAO(pg, identKey)
+		_, otp, err := identDAO.Read(ctx, flag.Arg(4), flag.Arg(2),
 			flag.Arg(3))
 		checkErr(err)
 
