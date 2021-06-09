@@ -151,9 +151,9 @@ func TestNotifyMessages(t *testing.T) {
 				}).Times(lTest.inpEmailTimes)
 
 			not := Notifier{
-				appDAO:      apper,
-				identityDAO: identityer,
-				cache:       cacher,
+				appDAO:   apper,
+				identDAO: identityer,
+				cache:    cacher,
 
 				notQueue: nInQueue,
 				nInSub:   nInSub,
@@ -331,9 +331,9 @@ func TestNotifyMessagesError(t *testing.T) {
 				}).Times(lTest.inpEmailTimes)
 
 			not := Notifier{
-				appDAO:      apper,
-				identityDAO: identityer,
-				cache:       cacher,
+				appDAO:   apper,
+				identDAO: identityer,
+				cache:    cacher,
 
 				notQueue: nInQueue,
 				nInSub:   nInSub,

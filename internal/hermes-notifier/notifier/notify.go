@@ -59,13 +59,13 @@ func (not *Notifier) notifyMessages() {
 
 		// Retrieve identity.
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		identity, otp, err := not.identityDAO.Read(ctx, nIn.IdentityId,
+		identity, otp, err := not.identDAO.Read(ctx, nIn.IdentityId,
 			nIn.OrgId, nIn.AppId)
 		cancel()
 		if err != nil {
 			msg.Requeue()
 			metric.Incr("error", map[string]string{"func": "readidentity"})
-			logger.Errorf("notifyMessages not.identityDAO.Read: %v", err)
+			logger.Errorf("notifyMessages not.identDAO.Read: %v", err)
 
 			continue
 		}

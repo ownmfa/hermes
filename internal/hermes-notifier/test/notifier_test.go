@@ -37,17 +37,17 @@ func TestNotifyMessages(t *testing.T) {
 	t.Logf("createApp, err: %+v, %v", createApp, err)
 	require.NoError(t, err)
 
-	createSMSIdentity, _, _, err := globalIdentityDAO.Create(ctx,
+	createSMSIdentity, _, _, err := globalIdentDAO.Create(ctx,
 		random.SMSIdentity("not", createOrg.Id, createApp.Id))
 	t.Logf("createSMSIdentity, err: %+v, %v", createSMSIdentity, err)
 	require.NoError(t, err)
 
-	createPushoverIdentity, _, _, err := globalIdentityDAO.Create(ctx,
+	createPushoverIdentity, _, _, err := globalIdentDAO.Create(ctx,
 		random.PushoverIdentity("not", createOrg.Id, createApp.Id))
 	t.Logf("createPushoverIdentity, err: %+v, %v", createPushoverIdentity, err)
 	require.NoError(t, err)
 
-	createEmailIdentity, _, _, err := globalIdentityDAO.Create(ctx,
+	createEmailIdentity, _, _, err := globalIdentDAO.Create(ctx,
 		random.EmailIdentity("not", createOrg.Id, createApp.Id))
 	t.Logf("createEmailIdentity, err: %+v, %v", createEmailIdentity, err)
 	require.NoError(t, err)
@@ -58,7 +58,7 @@ func TestNotifyMessages(t *testing.T) {
 	t.Logf("createAppByKey, err: %+v, %v", createAppByKey, err)
 	require.NoError(t, err)
 
-	createIdentityByKey, _, _, err := globalIdentityDAO.Create(ctx,
+	createIdentityByKey, _, _, err := globalIdentDAO.Create(ctx,
 		random.PushoverIdentity("not", createOrg.Id, createAppByKey.Id))
 	t.Logf("createIdentityByKey, err: %+v, %v", createIdentityByKey, err)
 	require.NoError(t, err)
@@ -128,11 +128,11 @@ func TestNotifyMessagesError(t *testing.T) {
 	badOTPIdentity.MethodOneof = &api.Identity_HardwareHotpMethod{
 		HardwareHotpMethod: &api.HardwareHOTPMethod{},
 	}
-	createBadOTPIdentity, _, _, err := globalIdentityDAO.Create(ctx,
+	createBadOTPIdentity, _, _, err := globalIdentDAO.Create(ctx,
 		badOTPIdentity)
 	require.NoError(t, err)
 
-	createExpIdentity, otp, _, err := globalIdentityDAO.Create(ctx,
+	createExpIdentity, otp, _, err := globalIdentDAO.Create(ctx,
 		random.SMSIdentity("not", createOrg.Id, createApp.Id))
 	t.Logf("createExpIdentity, otp, err: %+v, %#v, %v", createExpIdentity, otp,
 		err)
@@ -152,12 +152,12 @@ func TestNotifyMessagesError(t *testing.T) {
 	t.Logf("createBadTemplApp, err: %+v, %v", createBadTemplApp, err)
 	require.NoError(t, err)
 
-	createBadTemplIdentity, _, _, err := globalIdentityDAO.Create(ctx,
+	createBadTemplIdentity, _, _, err := globalIdentDAO.Create(ctx,
 		random.PushoverIdentity("not", createOrg.Id, createBadTemplApp.Id))
 	t.Logf("createBadTemplIdentity, err: %+v, %v", createBadTemplIdentity, err)
 	require.NoError(t, err)
 
-	createUnsupIdentity, _, _, err := globalIdentityDAO.Create(ctx,
+	createUnsupIdentity, _, _, err := globalIdentDAO.Create(ctx,
 		random.HOTPIdentity("not", createOrg.Id, createApp.Id))
 	t.Logf("createUnsupIdentity, err: %+v, %v", createUnsupIdentity, err)
 	require.NoError(t, err)

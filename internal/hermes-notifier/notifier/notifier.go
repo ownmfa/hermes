@@ -41,9 +41,9 @@ type identityer interface {
 
 // Notifier holds references to the database and message broker connections.
 type Notifier struct {
-	appDAO      apper
-	identityDAO identityer
-	cache       cache.Cacher
+	appDAO   apper
+	identDAO identityer
+	cache    cache.Cacher
 
 	notQueue queue.Queuer
 	nInSub   queue.Subber
@@ -100,9 +100,9 @@ func New(cfg *config.Config) (*Notifier, error) {
 	}
 
 	return &Notifier{
-		appDAO:      app.NewDAO(pg),
-		identityDAO: identity.NewDAO(pg, cfg.IdentityKey),
-		cache:       redis,
+		appDAO:   app.NewDAO(pg),
+		identDAO: identity.NewDAO(pg, cfg.IdentityKey),
+		cache:    redis,
 
 		notQueue: nsq,
 		nInSub:   nInSub,

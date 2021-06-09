@@ -134,3 +134,25 @@ func EmailIdentity(prefix, orgID, appID string) *api.Identity {
 		},
 	}
 }
+
+// Event generates a random event with prefixed identifiers.
+func Event(prefix, orgID string) *api.Event {
+	return &api.Event{
+		OrgId:      orgID,
+		AppId:      uuid.NewString(),
+		IdentityId: uuid.NewString(),
+		Status: []api.EventStatus{
+			api.EventStatus_IDENTITY_CREATED,
+			api.EventStatus_CHALLENGE_SENT,
+			api.EventStatus_CHALLENGE_NOOP,
+			api.EventStatus_CHALLENGE_FAIL,
+			api.EventStatus_ACTIVATE_SUCCESS,
+			api.EventStatus_ACTIVATE_FAIL,
+			api.EventStatus_VERIFY_SUCCESS,
+			api.EventStatus_VERIFY_FAIL,
+			api.EventStatus_IDENTITY_DELETED,
+		}[Intn(9)],
+		Error:   []string{"", prefix + "-" + String(10)}[Intn(2)],
+		TraceId: uuid.NewString(),
+	}
+}
