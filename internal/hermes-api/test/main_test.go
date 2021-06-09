@@ -15,6 +15,7 @@ import (
 	"github.com/ownmfa/hermes/pkg/cache"
 	"github.com/ownmfa/hermes/pkg/crypto"
 	"github.com/ownmfa/hermes/pkg/dao"
+	"github.com/ownmfa/hermes/pkg/dao/event"
 	"github.com/ownmfa/hermes/pkg/dao/identity"
 	"github.com/ownmfa/hermes/pkg/dao/org"
 	"github.com/ownmfa/hermes/pkg/dao/user"
@@ -34,6 +35,7 @@ var (
 	globalOrgDAO   *org.DAO
 	globalUserDAO  *user.DAO
 	globalIdentDAO *identity.DAO
+	globalEvDAO    *event.DAO
 	globalCache    cache.Cacher
 
 	globalPass string
@@ -92,6 +94,7 @@ func TestMain(m *testing.M) {
 	globalOrgDAO = org.NewDAO(pg)
 	globalUserDAO = user.NewDAO(pg)
 	globalIdentDAO = identity.NewDAO(pg, key)
+	globalEvDAO = event.NewDAO(pg)
 
 	// Set up cache connection.
 	globalCache, err = cache.NewRedis(cfg.RedisHost + ":6379")

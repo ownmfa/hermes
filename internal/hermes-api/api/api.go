@@ -19,6 +19,7 @@ import (
 	"github.com/ownmfa/hermes/pkg/consterr"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/dao/app"
+	"github.com/ownmfa/hermes/pkg/dao/event"
 	"github.com/ownmfa/hermes/pkg/dao/identity"
 	"github.com/ownmfa/hermes/pkg/dao/key"
 	"github.com/ownmfa/hermes/pkg/dao/org"
@@ -113,6 +114,7 @@ func New(cfg *config.Config) (*API, error) {
 	api.RegisterAppIdentityServiceServer(srv,
 		service.NewAppIdentity(app.NewDAO(pg), identity.NewDAO(pg,
 			cfg.IdentityKey), redis, n, nsq, cfg.NSQPubTopic))
+	api.RegisterEventServiceServer(srv, service.NewEvent(event.NewDAO(pg)))
 	api.RegisterOrgServiceServer(srv, service.NewOrg(org.NewDAO(pg)))
 	api.RegisterSessionServiceServer(srv, service.NewSession(user.NewDAO(pg),
 		key.NewDAO(pg), redis, cfg.PWTKey))
@@ -127,6 +129,14 @@ func New(cfg *config.Config) (*API, error) {
 
 	// App and Identity.
 	if err := api.RegisterAppIdentityServiceHandlerFromEndpoint(ctx, gwMux,
+		GRPCHost+GRPCPort, opts); err != nil {
+		cancel()
+
+		return nil, err
+	}
+
+	// Event.
+	if err := api.RegisterEventServiceHandlerFromEndpoint(ctx, gwMux,
 		GRPCHost+GRPCPort, opts); err != nil {
 		cancel()
 
