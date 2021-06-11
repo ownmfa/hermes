@@ -117,42 +117,35 @@ func TestNotifyMessages(t *testing.T) {
 			apper.EXPECT().Read(gomock.Any(), lTest.inpNIn.AppId,
 				lTest.inpNIn.OrgId).Return(lTest.inpApp, nil).Times(1)
 
-			notifier := notify.NewMockNotifier(gomock.NewController(t))
+			notifier := notify.NewMockNotifier(ctrl)
 			notifier.EXPECT().SMS(gomock.Any(), "+15125551212",
-				lTest.inpApp.DisplayName, "861821").
-				DoAndReturn(func(_ ...interface{}) error {
-					defer wg.Done()
-
-					return nil
-				}).Times(lTest.inpSMSTimes)
+				lTest.inpApp.DisplayName, "861821").Return(nil).
+				Times(lTest.inpSMSTimes)
 			notifier.EXPECT().Pushover(gomock.Any(),
 				pushoverIdentity.GetPushoverMethod().PushoverKey,
-				lTest.inpApp.DisplayName, "861821").
-				DoAndReturn(func(_ ...interface{}) error {
-					defer wg.Done()
-
-					return nil
-				}).Times(lTest.inpPushoverTimes)
+				lTest.inpApp.DisplayName, "861821").Return(nil).
+				Times(lTest.inpPushoverTimes)
 			notifier.EXPECT().PushoverByApp(gomock.Any(),
 				lTest.inpApp.PushoverKey,
 				identityByKey.GetPushoverMethod().PushoverKey, gomock.Any(),
-				gomock.Any()).DoAndReturn(func(_ ...interface{}) error {
-				defer wg.Done()
-
-				return nil
-			}).Times(lTest.inpPushoverByAppTimes)
+				gomock.Any()).Return(nil).Times(lTest.inpPushoverByAppTimes)
 			notifier.EXPECT().Email(gomock.Any(), lTest.inpApp.DisplayName,
 				lTest.inpApp.Email, emailIdentity.GetEmailMethod().Email,
-				gomock.Any(), gomock.Any(), gomock.Any()).
+				gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).
+				Times(lTest.inpEmailTimes)
+
+			eventer := NewMockeventer(ctrl)
+			eventer.EXPECT().Create(gomock.Any(), gomock.Any()).
 				DoAndReturn(func(_ ...interface{}) error {
 					defer wg.Done()
 
 					return nil
-				}).Times(lTest.inpEmailTimes)
+				}).Times(1)
 
 			not := Notifier{
 				appDAO:   apper,
 				identDAO: identityer,
+				evDAO:    eventer,
 				cache:    cacher,
 
 				notQueue: nInQueue,
@@ -267,12 +260,6 @@ func TestNotifyMessagesError(t *testing.T) {
 			&message.NotifierIn{}, emailIdentity, nil, 1, nil, 1, otp, app, nil,
 			1, emailExpire, nil, 1, nil, 0, nil, 0, errTestProc, 1, 1,
 		},
-		// Unsupported identity.MethodOneof.
-		{
-			&message.NotifierIn{}, random.HOTPIdentity("not", app.OrgId,
-				app.Id), nil, 1, nil, 1, otp, app, nil, 1, smsExpire, nil, 1, nil,
-			0, nil, 0, nil, 0, 0,
-		},
 	}
 
 	for _, test := range tests {
@@ -306,7 +293,7 @@ func TestNotifyMessagesError(t *testing.T) {
 				lTest.inpExpire).Return(true, lTest.inpSetIfNotExistTTLErr).
 				Times(lTest.inpSetIfNotExistTTLTimes)
 
-			notifier := notify.NewMockNotifier(gomock.NewController(t))
+			notifier := notify.NewMockNotifier(ctrl)
 			notifier.EXPECT().SMS(gomock.Any(), "+15125551212", app.DisplayName,
 				"861821").DoAndReturn(func(_ ...interface{}) error {
 				defer wg.Done()
@@ -330,9 +317,14 @@ func TestNotifyMessagesError(t *testing.T) {
 					return lTest.inpEmailErr
 				}).Times(lTest.inpEmailTimes)
 
+			eventer := NewMockeventer(ctrl)
+			eventer.EXPECT().Create(gomock.Any(), gomock.Any()).
+				Return(errTestProc).AnyTimes()
+
 			not := Notifier{
 				appDAO:   apper,
 				identDAO: identityer,
+				evDAO:    eventer,
 				cache:    cacher,
 
 				notQueue: nInQueue,
@@ -363,7 +355,7 @@ func TestNotifyMessagesError(t *testing.T) {
 	}
 }
 
-func TestGnTemplates(t *testing.T) {
+func TestGenTemplates(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

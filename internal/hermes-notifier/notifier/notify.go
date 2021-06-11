@@ -110,10 +110,32 @@ func (not *Notifier) notifyMessages() {
 		}
 		logger.Debugf("notifyMessages app: %+v", app)
 
+		// Build event skeleton and function to write it. Failure to write an
+		// event is non-fatal, but should be logged for investigation.
+		writeEvent := func(status api.EventStatus, err string) {
+			event := &api.Event{
+				OrgId:      nIn.OrgId,
+				AppId:      nIn.AppId,
+				IdentityId: nIn.IdentityId,
+				Status:     status,
+				Error:      err,
+				TraceId:    traceID.String(),
+			}
+
+			ctx, cancel = context.WithTimeout(context.Background(),
+				5*time.Second)
+			wErr := not.evDAO.Create(ctx, event)
+			cancel()
+			if wErr != nil {
+				logger.Errorf("notifyMessages writeEvent: %v", wErr)
+			}
+		}
+
 		// Generate templates.
 		subj, body, htmlBody, err := genTemplates(app, passcode)
 		if err != nil {
 			msg.Ack()
+			writeEvent(api.EventStatus_CHALLENGE_FAIL, err.Error())
 			logger.Errorf("notifyMessages genTemplates: %v", err)
 
 			continue
@@ -140,21 +162,12 @@ func (not *Notifier) notifyMessages() {
 		}
 
 		// Send notification.
+		ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
 		switch m := identity.MethodOneof.(type) {
 		case *api.Identity_SmsMethod:
-			ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
 			err = not.notify.SMS(ctx, m.SmsMethod.Phone, app.DisplayName,
 				passcode)
-			cancel()
-			if err != nil {
-				msg.Ack()
-				metric.Incr("error", map[string]string{"func": "sms"})
-				logger.Errorf("notifyMessages not.notify.SMS: %v", err)
-
-				continue
-			}
 		case *api.Identity_PushoverMethod:
-			ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
 			if app.PushoverKey == "" {
 				err = not.notify.Pushover(ctx, m.PushoverMethod.PushoverKey,
 					app.DisplayName, passcode)
@@ -162,36 +175,22 @@ func (not *Notifier) notifyMessages() {
 				err = not.notify.PushoverByApp(ctx, app.PushoverKey,
 					m.PushoverMethod.PushoverKey, subj, body)
 			}
-			cancel()
-			if err != nil {
-				msg.Ack()
-				metric.Incr("error", map[string]string{"func": "sms"})
-				logger.Errorf("notifyMessages not.notify.SMS: %v", err)
-
-				continue
-			}
 		case *api.Identity_EmailMethod:
-			ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
 			err = not.notify.Email(ctx, app.DisplayName, app.Email,
 				m.EmailMethod.Email, subj, body, htmlBody)
-			cancel()
-			if err != nil {
-				msg.Ack()
-				metric.Incr("error", map[string]string{"func": "email"})
-				logger.Errorf("notifyMessages not.notify.Email: %v", err)
-
-				continue
-			}
-		default:
+		}
+		cancel()
+		if err != nil {
 			msg.Ack()
-			metric.Incr("error", map[string]string{"func": "methodoneof"})
-			logger.Errorf("notifyMessages unsupported identity.MethodOneof: "+
-				"%+v", identity)
+			writeEvent(api.EventStatus_CHALLENGE_FAIL, err.Error())
+			metric.Incr("error", map[string]string{"func": "send"})
+			logger.Errorf("notifyMessages send: %v", err)
 
 			continue
 		}
 
 		msg.Ack()
+		writeEvent(api.EventStatus_CHALLENGE_SENT, "")
 		metric.Incr("processed", nil)
 		logger.Debugf("notifyMessages processed: %+v", identity)
 

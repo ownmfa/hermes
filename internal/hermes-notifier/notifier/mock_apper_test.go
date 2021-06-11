@@ -89,3 +89,40 @@ func (mr *MockidentityerMockRecorder) Read(ctx, identityID, orgID, appID interfa
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*Mockidentityer)(nil).Read), ctx, identityID, orgID, appID)
 }
+
+// Mockeventer is a mock of eventer interface.
+type Mockeventer struct {
+	ctrl     *gomock.Controller
+	recorder *MockeventerMockRecorder
+}
+
+// MockeventerMockRecorder is the mock recorder for Mockeventer.
+type MockeventerMockRecorder struct {
+	mock *Mockeventer
+}
+
+// NewMockeventer creates a new mock instance.
+func NewMockeventer(ctrl *gomock.Controller) *Mockeventer {
+	mock := &Mockeventer{ctrl: ctrl}
+	mock.recorder = &MockeventerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *Mockeventer) EXPECT() *MockeventerMockRecorder {
+	return m.recorder
+}
+
+// Create mocks base method.
+func (m *Mockeventer) Create(ctx context.Context, event *api.Event) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, event)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockeventerMockRecorder) Create(ctx, event interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*Mockeventer)(nil).Create), ctx, event)
+}
