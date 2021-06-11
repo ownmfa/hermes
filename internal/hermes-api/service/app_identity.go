@@ -96,7 +96,6 @@ func NewAppIdentity(appDAO Apper, identDAO Identityer, cache cache.Cacher,
 // CreateApp creates an application.
 func (ai *AppIdentity) CreateApp(ctx context.Context,
 	req *api.CreateAppRequest) (*api.App, error) {
-	logger := hlog.FromContext(ctx)
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < common.Role_ADMIN {
 		return nil, errPerm(common.Role_ADMIN)
@@ -111,6 +110,7 @@ func (ai *AppIdentity) CreateApp(ctx context.Context,
 
 	if err := grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
 		"201")); err != nil {
+		logger := hlog.FromContext(ctx)
 		logger.Errorf("CreateApp grpc.SetHeader: %v", err)
 	}
 
@@ -120,7 +120,6 @@ func (ai *AppIdentity) CreateApp(ctx context.Context,
 // CreateIdentity creates an identity.
 func (ai *AppIdentity) CreateIdentity(ctx context.Context,
 	req *api.CreateIdentityRequest) (*api.CreateIdentityResponse, error) {
-	logger := hlog.FromContext(ctx)
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < common.Role_AUTHENTICATOR {
 		return nil, errPerm(common.Role_AUTHENTICATOR)
@@ -168,6 +167,7 @@ func (ai *AppIdentity) CreateIdentity(ctx context.Context,
 
 	if err := grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
 		"201")); err != nil {
+		logger := hlog.FromContext(ctx)
 		logger.Errorf("CreateIdentity grpc.SetHeader: %v", err)
 	}
 
@@ -485,7 +485,6 @@ func (ai *AppIdentity) UpdateApp(ctx context.Context,
 // DeleteApp deletes an application by ID.
 func (ai *AppIdentity) DeleteApp(ctx context.Context,
 	req *api.DeleteAppRequest) (*emptypb.Empty, error) {
-	logger := hlog.FromContext(ctx)
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < common.Role_ADMIN {
 		return nil, errPerm(common.Role_ADMIN)
@@ -497,6 +496,7 @@ func (ai *AppIdentity) DeleteApp(ctx context.Context,
 
 	if err := grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
 		"204")); err != nil {
+		logger := hlog.FromContext(ctx)
 		logger.Errorf("DeleteApp grpc.SetHeader: %v", err)
 	}
 
@@ -506,7 +506,6 @@ func (ai *AppIdentity) DeleteApp(ctx context.Context,
 // DeleteIdentity deletes an identity by ID.
 func (ai *AppIdentity) DeleteIdentity(ctx context.Context,
 	req *api.DeleteIdentityRequest) (*emptypb.Empty, error) {
-	logger := hlog.FromContext(ctx)
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < common.Role_AUTHENTICATOR {
 		return nil, errPerm(common.Role_AUTHENTICATOR)
@@ -519,6 +518,7 @@ func (ai *AppIdentity) DeleteIdentity(ctx context.Context,
 
 	if err := grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
 		"204")); err != nil {
+		logger := hlog.FromContext(ctx)
 		logger.Errorf("DeleteIdentity grpc.SetHeader: %v", err)
 	}
 
@@ -528,7 +528,6 @@ func (ai *AppIdentity) DeleteIdentity(ctx context.Context,
 // ListApps retrieves all applications.
 func (ai *AppIdentity) ListApps(ctx context.Context,
 	req *api.ListAppsRequest) (*api.ListAppsResponse, error) {
-	logger := hlog.FromContext(ctx)
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < common.Role_VIEWER {
 		return nil, errPerm(common.Role_VIEWER)
@@ -561,6 +560,7 @@ func (ai *AppIdentity) ListApps(ctx context.Context,
 			apps[len(apps)-2].Id); err != nil {
 			// GeneratePageToken should not error based on a DB-derived UUID.
 			// Log the error and include the usable empty token.
+			logger := hlog.FromContext(ctx)
 			logger.Errorf("ListApps session.GeneratePageToken app, err: "+
 				"%+v, %v", apps[len(apps)-2], err)
 		}
@@ -572,7 +572,6 @@ func (ai *AppIdentity) ListApps(ctx context.Context,
 // ListIdentities retrieves all identities.
 func (ai *AppIdentity) ListIdentities(ctx context.Context,
 	req *api.ListIdentitiesRequest) (*api.ListIdentitiesResponse, error) {
-	logger := hlog.FromContext(ctx)
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < common.Role_VIEWER {
 		return nil, errPerm(common.Role_VIEWER)
@@ -607,6 +606,7 @@ func (ai *AppIdentity) ListIdentities(ctx context.Context,
 			identities[len(identities)-2].Id); err != nil {
 			// GeneratePageToken should not error based on a DB-derived UUID.
 			// Log the error and include the usable empty token.
+			logger := hlog.FromContext(ctx)
 			logger.Errorf("ListIdentitys session.GeneratePageToken identity, "+
 				"err: %+v, %v", identities[len(identities)-2], err)
 		}

@@ -103,7 +103,37 @@ func TestNotifyMessages(t *testing.T) {
 			t.Logf("bNIn: %s", bNIn)
 
 			require.NoError(t, globalNotQueue.Publish(globalNInSubTopic, bNIn))
-			time.Sleep(time.Second)
+			time.Sleep(2 * time.Second)
+
+			// Verify event.
+			event := &api.Event{
+				OrgId:      lTest.inp.OrgId,
+				AppId:      lTest.inp.AppId,
+				IdentityId: lTest.inp.IdentityId,
+				Status:     api.EventStatus_CHALLENGE_SENT,
+				TraceId:    traceID.String(),
+			}
+
+			ctx, cancel := context.WithTimeout(context.Background(),
+				testTimeout)
+			defer cancel()
+
+			listEvents, err := globalEvDAO.List(ctx, lTest.inp.OrgId,
+				lTest.inp.IdentityId, time.Now(), time.Now().Add(-testTimeout))
+			t.Logf("listEvents, err: %+v, %v", listEvents, err)
+			require.NoError(t, err)
+			require.Len(t, listEvents, 1)
+
+			// Normalize timestamp.
+			require.WithinDuration(t, time.Now(),
+				listEvents[0].CreatedAt.AsTime(), testTimeout)
+			event.CreatedAt = listEvents[0].CreatedAt
+
+			// Testify does not currently support protobuf equality:
+			// https://github.com/stretchr/testify/issues/758
+			if !proto.Equal(event, listEvents[0]) {
+				t.Fatalf("\nExpect: %+v\nActual: %+v", event, listEvents[0])
+			}
 		})
 	}
 }
@@ -157,43 +187,33 @@ func TestNotifyMessagesError(t *testing.T) {
 	t.Logf("createBadTemplIdentity, err: %+v, %v", createBadTemplIdentity, err)
 	require.NoError(t, err)
 
-	createUnsupIdentity, _, _, err := globalIdentDAO.Create(ctx,
-		random.HOTPIdentity("not", createOrg.Id, createApp.Id))
-	t.Logf("createUnsupIdentity, err: %+v, %v", createUnsupIdentity, err)
-	require.NoError(t, err)
-
 	tests := []struct {
-		inp *message.NotifierIn
+		inpNIn      *message.NotifierIn
+		inpEvent    bool
+		inpEventErr string
 	}{
 		// Bad payload.
-		{nil},
+		{nil, false, ""},
 		// OTP error.
 		{
 			&message.NotifierIn{
 				OrgId: createOrg.Id, AppId: createApp.Id,
 				IdentityId: createBadOTPIdentity.Id, TraceId: traceID[:],
-			},
+			}, false, "",
 		},
 		// Expiration collision.
 		{
 			&message.NotifierIn{
 				OrgId: createOrg.Id, AppId: createApp.Id,
 				IdentityId: createExpIdentity.Id, TraceId: traceID[:],
-			},
+			}, false, "",
 		},
 		// Templates error.
 		{
 			&message.NotifierIn{
 				OrgId: createOrg.Id, AppId: createBadTemplApp.Id,
 				IdentityId: createBadTemplIdentity.Id, TraceId: traceID[:],
-			},
-		},
-		// Unsupported identity.MethodOneof.
-		{
-			&message.NotifierIn{
-				OrgId: createOrg.Id, AppId: createApp.Id,
-				IdentityId: createUnsupIdentity.Id, TraceId: traceID[:],
-			},
+			}, true, "template: template:1: unclosed action",
 		},
 	}
 
@@ -204,15 +224,50 @@ func TestNotifyMessagesError(t *testing.T) {
 			t.Parallel()
 
 			bNIn := []byte("not-aaa")
-			if lTest.inp != nil {
+			if lTest.inpNIn != nil {
 				var err error
-				bNIn, err = proto.Marshal(lTest.inp)
+				bNIn, err = proto.Marshal(lTest.inpNIn)
 				require.NoError(t, err)
 				t.Logf("bNIn: %s", bNIn)
 			}
 
 			require.NoError(t, globalNotQueue.Publish(globalNInSubTopic, bNIn))
-			time.Sleep(time.Second)
+
+			if lTest.inpEvent {
+				time.Sleep(2 * time.Second)
+
+				// Verify event.
+				event := &api.Event{
+					OrgId:      lTest.inpNIn.OrgId,
+					AppId:      lTest.inpNIn.AppId,
+					IdentityId: lTest.inpNIn.IdentityId,
+					Status:     api.EventStatus_CHALLENGE_FAIL,
+					Error:      lTest.inpEventErr,
+					TraceId:    traceID.String(),
+				}
+
+				ctx, cancel := context.WithTimeout(context.Background(),
+					testTimeout)
+				defer cancel()
+
+				listEvents, err := globalEvDAO.List(ctx, lTest.inpNIn.OrgId,
+					lTest.inpNIn.IdentityId, time.Now(),
+					time.Now().Add(-testTimeout))
+				t.Logf("listEvents, err: %+v, %v", listEvents, err)
+				require.NoError(t, err)
+				require.Len(t, listEvents, 1)
+
+				// Normalize timestamp.
+				require.WithinDuration(t, time.Now(),
+					listEvents[0].CreatedAt.AsTime(), testTimeout)
+				event.CreatedAt = listEvents[0].CreatedAt
+
+				// Testify does not currently support protobuf equality:
+				// https://github.com/stretchr/testify/issues/758
+				if !proto.Equal(event, listEvents[0]) {
+					t.Fatalf("\nExpect: %+v\nActual: %+v", event, listEvents[0])
+				}
+			}
 		})
 	}
 }

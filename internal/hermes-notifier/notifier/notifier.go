@@ -15,6 +15,7 @@ import (
 	"github.com/ownmfa/hermes/pkg/consterr"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/dao/app"
+	"github.com/ownmfa/hermes/pkg/dao/event"
 	"github.com/ownmfa/hermes/pkg/dao/identity"
 	"github.com/ownmfa/hermes/pkg/hlog"
 	"github.com/ownmfa/hermes/pkg/notify"
@@ -39,10 +40,16 @@ type identityer interface {
 		*oath.OTP, error)
 }
 
+// eventer defines the methods provided by a event.DAO.
+type eventer interface {
+	Create(ctx context.Context, event *api.Event) error
+}
+
 // Notifier holds references to the database and message broker connections.
 type Notifier struct {
 	appDAO   apper
 	identDAO identityer
+	evDAO    eventer
 	cache    cache.Cacher
 
 	notQueue queue.Queuer
@@ -102,6 +109,7 @@ func New(cfg *config.Config) (*Notifier, error) {
 	return &Notifier{
 		appDAO:   app.NewDAO(pg),
 		identDAO: identity.NewDAO(pg, cfg.IdentityKey),
+		evDAO:    event.NewDAO(pg),
 		cache:    redis,
 
 		notQueue: nsq,
