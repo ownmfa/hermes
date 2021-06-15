@@ -55,7 +55,6 @@ func TestListEvents(t *testing.T) {
 			err := globalEvDAO.Create(ctx, event)
 			t.Logf("err: %v", err)
 			require.NoError(t, err)
-			// time.Sleep(time.Millisecond)
 		}
 
 		sort.Slice(events, func(i, j int) bool {
@@ -72,7 +71,7 @@ func TestListEvents(t *testing.T) {
 			IdentityId: createIdentity.Identity.Id,
 			EndTime:    events[0].CreatedAt,
 			StartTime: timestamppb.New(events[len(events)-1].CreatedAt.
-				AsTime().Add(-time.Millisecond)),
+				AsTime().Add(-time.Microsecond)),
 		})
 		t.Logf("listEvents, err: %+v, %v", listEvents, err)
 		require.NoError(t, err)
@@ -183,7 +182,6 @@ func TestLatestEvents(t *testing.T) {
 			err := globalEvDAO.Create(ctx, event)
 			t.Logf("err: %v", err)
 			require.NoError(t, err)
-			time.Sleep(time.Millisecond)
 		}
 
 		sort.Slice(events, func(i, j int) bool {

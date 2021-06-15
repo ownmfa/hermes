@@ -15,6 +15,7 @@ import (
 
 // Eventer defines the methods provided by a event.DAO.
 type Eventer interface {
+	Create(ctx context.Context, event *api.Event) error
 	List(ctx context.Context, orgID, identityID string, end,
 		start time.Time) ([]*api.Event, error)
 	Latest(ctx context.Context, orgID, appID, identityID string) ([]*api.Event,

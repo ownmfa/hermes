@@ -30,6 +30,7 @@ var errToCode = map[error]codes.Code{
 	oath.ErrInvalidPasscode:   codes.InvalidArgument,
 	notify.ErrInvalidSMS:      codes.InvalidArgument,
 	notify.ErrInvalidPushover: codes.InvalidArgument,
+	errExpStatus:              codes.FailedPrecondition,
 }
 
 // errToStatus maps DAO errors to gRPC status errors. This function is

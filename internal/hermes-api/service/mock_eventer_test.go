@@ -36,6 +36,20 @@ func (m *MockEventer) EXPECT() *MockEventerMockRecorder {
 	return m.recorder
 }
 
+// Create mocks base method.
+func (m *MockEventer) Create(ctx context.Context, event *api.Event) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, event)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockEventerMockRecorder) Create(ctx, event interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockEventer)(nil).Create), ctx, event)
+}
+
 // Latest mocks base method.
 func (m *MockEventer) Latest(ctx context.Context, orgID, appID, identityID string) ([]*api.Event, error) {
 	m.ctrl.T.Helper()
