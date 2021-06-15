@@ -113,7 +113,7 @@ func New(cfg *config.Config) (*API, error) {
 	))
 	api.RegisterAppIdentityServiceServer(srv,
 		service.NewAppIdentity(app.NewDAO(pg), identity.NewDAO(pg,
-			cfg.IdentityKey), redis, n, nsq, cfg.NSQPubTopic))
+			cfg.IdentityKey), event.NewDAO(pg), redis, n, nsq, cfg.NSQPubTopic))
 	api.RegisterEventServiceServer(srv, service.NewEvent(event.NewDAO(pg)))
 	api.RegisterOrgServiceServer(srv, service.NewOrg(org.NewDAO(pg)))
 	api.RegisterSessionServiceServer(srv, service.NewSession(user.NewDAO(pg),

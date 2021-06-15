@@ -1,28 +1,25 @@
 package service
 
-//go:generate mockgen -source app_identity.go -destination mock_apper_test.go -package service
+//go:generate mockgen -source identity.go -destination mock_identityer_test.go -package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
-	"github.com/mennanov/fmutils"
 	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/api/go/message"
 	ikey "github.com/ownmfa/hermes/internal/hermes-api/key"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
-	"github.com/ownmfa/hermes/pkg/cache"
+	"github.com/ownmfa/hermes/pkg/consterr"
 	"github.com/ownmfa/hermes/pkg/hlog"
 	"github.com/ownmfa/hermes/pkg/key"
 	"github.com/ownmfa/hermes/pkg/metric"
-	"github.com/ownmfa/hermes/pkg/notify"
 	"github.com/ownmfa/hermes/pkg/oath"
-	"github.com/ownmfa/hermes/pkg/queue"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -34,20 +31,12 @@ import (
 const (
 	reuseRate  = 24 * time.Hour
 	notifyRate = 30 * time.Second
+
+	errExpStatus consterr.Error = "identity is not"
 )
 
 // E.164 format: https://www.twilio.com/docs/glossary/what-e164
 var rePhone = regexp.MustCompile(`^\+[1-9]\d{1,14}$`)
-
-// Apper defines the methods provided by an app.DAO.
-type Apper interface {
-	Create(ctx context.Context, app *api.App) (*api.App, error)
-	Read(ctx context.Context, appID, orgID string) (*api.App, error)
-	Update(ctx context.Context, app *api.App) (*api.App, error)
-	Delete(ctx context.Context, appID, orgID string) error
-	List(ctx context.Context, orgID string, lBoundTS time.Time, prevID string,
-		limit int32) ([]*api.App, int32, error)
-}
 
 // Identityer defines the methods provided by an identity.DAO.
 type Identityer interface {
@@ -62,64 +51,10 @@ type Identityer interface {
 		limit int32, appID string) ([]*api.Identity, int32, error)
 }
 
-// AppIdentity service contains functions to query and modify applications and
-// identities.
-type AppIdentity struct {
-	api.UnimplementedAppIdentityServiceServer
-
-	appDAO   Apper
-	identDAO Identityer
-	cache    cache.Cacher
-
-	notify notify.Notifier
-
-	aiQueue     queue.Queuer
-	nInPubTopic string
-}
-
-// NewAppIdentity instantiates and returns a new AppIdentity service.
-func NewAppIdentity(appDAO Apper, identDAO Identityer, cache cache.Cacher,
-	notify notify.Notifier, pubQueue queue.Queuer,
-	pubTopic string) *AppIdentity {
-	return &AppIdentity{
-		appDAO:   appDAO,
-		identDAO: identDAO,
-		cache:    cache,
-
-		notify: notify,
-
-		aiQueue:     pubQueue,
-		nInPubTopic: pubTopic,
-	}
-}
-
-// CreateApp creates an application.
-func (ai *AppIdentity) CreateApp(ctx context.Context,
-	req *api.CreateAppRequest) (*api.App, error) {
-	sess, ok := session.FromContext(ctx)
-	if !ok || sess.Role < common.Role_ADMIN {
-		return nil, errPerm(common.Role_ADMIN)
-	}
-
-	req.App.OrgId = sess.OrgID
-
-	app, err := ai.appDAO.Create(ctx, req.App)
-	if err != nil {
-		return nil, errToStatus(err)
-	}
-
-	if err := grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
-		"201")); err != nil {
-		logger := hlog.FromContext(ctx)
-		logger.Errorf("CreateApp grpc.SetHeader: %v", err)
-	}
-
-	return app, nil
-}
-
 // CreateIdentity creates an identity.
 func (ai *AppIdentity) CreateIdentity(ctx context.Context,
 	req *api.CreateIdentityRequest) (*api.CreateIdentityResponse, error) {
+	logger := hlog.FromContext(ctx)
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < common.Role_AUTHENTICATOR {
 		return nil, errPerm(common.Role_AUTHENTICATOR)
@@ -154,7 +89,7 @@ func (ai *AppIdentity) CreateIdentity(ctx context.Context,
 	if retSecret {
 		resp.Secret = otp.Secret()
 
-		app, err := ai.appDAO.Read(ctx, req.Identity.AppId, sess.OrgID)
+		app, err := ai.appDAO.Read(ctx, identity.AppId, sess.OrgID)
 		if err != nil {
 			return nil, errToStatus(err)
 		}
@@ -165,9 +100,21 @@ func (ai *AppIdentity) CreateIdentity(ctx context.Context,
 		}
 	}
 
-	if err := grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
+	// Failure to write an event is non-fatal, but should be logged for
+	// investigation.
+	event := &api.Event{
+		OrgId:      identity.OrgId,
+		AppId:      identity.AppId,
+		IdentityId: identity.Id,
+		Status:     api.EventStatus_IDENTITY_CREATED,
+		TraceId:    sess.TraceID.String(),
+	}
+	if err = ai.evDAO.Create(ctx, event); err != nil {
+		logger.Errorf("CreateIdentity ai.evDAO.Create: %v", err)
+	}
+
+	if err = grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
 		"201")); err != nil {
-		logger := hlog.FromContext(ctx)
 		logger.Errorf("CreateIdentity grpc.SetHeader: %v", err)
 	}
 
@@ -184,9 +131,8 @@ func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
 	}
 
 	if identity.Status != expStatus {
-		return status.Error(codes.FailedPrecondition,
-			fmt.Sprintf("identity is not %s",
-				strings.ToLower(expStatus.String())))
+		return fmt.Errorf("%w %s", errExpStatus,
+			strings.ToLower(expStatus.String()))
 	}
 
 	// Check passcode expiration for methods that utilize it. Continue to
@@ -286,13 +232,36 @@ func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
 // ActivateIdentity activates an identity by ID.
 func (ai *AppIdentity) ActivateIdentity(ctx context.Context,
 	req *api.ActivateIdentityRequest) (*api.Identity, error) {
+	logger := hlog.FromContext(ctx)
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < common.Role_AUTHENTICATOR {
 		return nil, errPerm(common.Role_AUTHENTICATOR)
 	}
 
+	// Build event skeleton and function to write it. Failure to write an event
+	// is non-fatal, but should be logged for investigation.
+	writeEvent := func(status api.EventStatus, err string) {
+		event := &api.Event{
+			OrgId:      sess.OrgID,
+			AppId:      req.AppId,
+			IdentityId: req.Id,
+			Status:     status,
+			Error:      err,
+			TraceId:    sess.TraceID.String(),
+		}
+
+		if wErr := ai.evDAO.Create(ctx, event); wErr != nil {
+			logger.Errorf("ActivateIdentity writeEvent: %v", wErr)
+		}
+	}
+
 	if err := ai.verify(ctx, req.Id, sess.OrgID, req.AppId,
 		api.IdentityStatus_UNVERIFIED, req.Passcode, 1000, 6, 20); err != nil {
+		if errors.Is(err, errExpStatus) ||
+			errors.Is(err, oath.ErrInvalidPasscode) {
+			writeEvent(api.EventStatus_ACTIVATE_FAIL, err.Error())
+		}
+
 		return nil, errToStatus(err)
 	}
 
@@ -301,6 +270,8 @@ func (ai *AppIdentity) ActivateIdentity(ctx context.Context,
 	if err != nil {
 		return nil, errToStatus(err)
 	}
+
+	writeEvent(api.EventStatus_ACTIVATE_SUCCESS, "")
 
 	return identity, nil
 }
@@ -314,11 +285,27 @@ func (ai *AppIdentity) ChallengeIdentity(ctx context.Context,
 		return nil, errPerm(common.Role_AUTHENTICATOR)
 	}
 
-	// Verify an identity exists, even in cases where no challenge is sent.
 	identity, _, err := ai.identDAO.Read(ctx, req.Id, sess.OrgID,
 		req.AppId)
 	if err != nil {
 		return nil, errToStatus(err)
+	}
+
+	// Build event skeleton and function to write it. Failure to write an event
+	// is non-fatal, but should be logged for investigation.
+	writeEvent := func(status api.EventStatus, err string) {
+		event := &api.Event{
+			OrgId:      identity.OrgId,
+			AppId:      identity.AppId,
+			IdentityId: identity.Id,
+			Status:     status,
+			Error:      err,
+			TraceId:    sess.TraceID.String(),
+		}
+
+		if wErr := ai.evDAO.Create(ctx, event); wErr != nil {
+			logger.Errorf("ChallengeIdentity writeEvent: %v", wErr)
+		}
 	}
 
 	// Build and publish NotifierIn message for methods that utilize it.
@@ -332,6 +319,8 @@ func (ai *AppIdentity) ChallengeIdentity(ctx context.Context,
 			return nil, errToStatus(err)
 		}
 		if !ok {
+			writeEvent(api.EventStatus_CHALLENGE_FAIL, "rate limit exceeded")
+
 			if err := grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
 				"429")); err != nil {
 				logger.Errorf("ChallengeIdentity grpc.SetHeader: %v", err)
@@ -341,8 +330,6 @@ func (ai *AppIdentity) ChallengeIdentity(ctx context.Context,
 		}
 
 		// Add logging fields.
-		traceID := uuid.New()
-		logger.Logger = logger.WithStr("traceID", traceID.String())
 		logger.Logger = logger.WithStr("appID", identity.AppId)
 		logger.Logger = logger.WithStr("identityID", identity.Id)
 
@@ -350,7 +337,7 @@ func (ai *AppIdentity) ChallengeIdentity(ctx context.Context,
 			OrgId:      identity.OrgId,
 			AppId:      identity.AppId,
 			IdentityId: identity.Id,
-			TraceId:    traceID[:],
+			TraceId:    sess.TraceID[:],
 		}
 
 		// Build and publish NotifierIn message.
@@ -378,6 +365,8 @@ func (ai *AppIdentity) ChallengeIdentity(ctx context.Context,
 		return &emptypb.Empty{}, nil
 	}
 
+	writeEvent(api.EventStatus_CHALLENGE_NOOP, "")
+
 	if err := grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
 		"204")); err != nil {
 		logger.Errorf("ChallengeIdentity grpc.SetHeader: %v", err)
@@ -389,34 +378,43 @@ func (ai *AppIdentity) ChallengeIdentity(ctx context.Context,
 // VerifyIdentity verifies an identity by ID.
 func (ai *AppIdentity) VerifyIdentity(ctx context.Context,
 	req *api.VerifyIdentityRequest) (*emptypb.Empty, error) {
+	logger := hlog.FromContext(ctx)
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < common.Role_AUTHENTICATOR {
 		return nil, errPerm(common.Role_AUTHENTICATOR)
 	}
 
+	// Build event skeleton and function to write it. Failure to write an event
+	// is non-fatal, but should be logged for investigation.
+	writeEvent := func(status api.EventStatus, err string) {
+		event := &api.Event{
+			OrgId:      sess.OrgID,
+			AppId:      req.AppId,
+			IdentityId: req.Id,
+			Status:     status,
+			Error:      err,
+			TraceId:    sess.TraceID.String(),
+		}
+
+		if wErr := ai.evDAO.Create(ctx, event); wErr != nil {
+			logger.Errorf("VerifyIdentity writeEvent: %v", wErr)
+		}
+	}
+
 	if err := ai.verify(ctx, req.Id, sess.OrgID, req.AppId,
 		api.IdentityStatus_ACTIVATED, req.Passcode, oath.DefaultHOTPLookAhead,
 		oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead); err != nil {
+		if errors.Is(err, errExpStatus) ||
+			errors.Is(err, oath.ErrInvalidPasscode) {
+			writeEvent(api.EventStatus_VERIFY_FAIL, err.Error())
+		}
+
 		return nil, errToStatus(err)
 	}
+
+	writeEvent(api.EventStatus_VERIFY_SUCCESS, "")
 
 	return &emptypb.Empty{}, nil
-}
-
-// GetApp retrieves an application by ID.
-func (ai *AppIdentity) GetApp(ctx context.Context,
-	req *api.GetAppRequest) (*api.App, error) {
-	sess, ok := session.FromContext(ctx)
-	if !ok || sess.Role < common.Role_VIEWER {
-		return nil, errPerm(common.Role_VIEWER)
-	}
-
-	app, err := ai.appDAO.Read(ctx, req.Id, sess.OrgID)
-	if err != nil {
-		return nil, errToStatus(err)
-	}
-
-	return app, nil
 }
 
 // GetIdentity retrieves an identity by ID.
@@ -435,77 +433,10 @@ func (ai *AppIdentity) GetIdentity(ctx context.Context,
 	return identity, nil
 }
 
-// UpdateApp updates an application. Update actions validate after merge to
-// support partial updates.
-func (ai *AppIdentity) UpdateApp(ctx context.Context,
-	req *api.UpdateAppRequest) (*api.App, error) {
-	sess, ok := session.FromContext(ctx)
-	if !ok || sess.Role < common.Role_ADMIN {
-		return nil, errPerm(common.Role_ADMIN)
-	}
-
-	if req.App == nil {
-		return nil, status.Error(codes.InvalidArgument,
-			req.Validate().Error())
-	}
-	req.App.OrgId = sess.OrgID
-
-	// Perform partial update if directed.
-	if req.UpdateMask != nil && len(req.UpdateMask.Paths) > 0 {
-		// Normalize and validate field mask.
-		req.UpdateMask.Normalize()
-		if !req.UpdateMask.IsValid(req.App) {
-			return nil, status.Error(codes.InvalidArgument,
-				"invalid field mask")
-		}
-
-		app, err := ai.appDAO.Read(ctx, req.App.Id, sess.OrgID)
-		if err != nil {
-			return nil, errToStatus(err)
-		}
-
-		fmutils.Filter(req.App, req.UpdateMask.Paths)
-		proto.Merge(app, req.App)
-		req.App = app
-	}
-
-	// Validate after merge to support partial updates.
-	if err := req.Validate(); err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-
-	app, err := ai.appDAO.Update(ctx, req.App)
-	if err != nil {
-		return nil, errToStatus(err)
-	}
-
-	return app, nil
-}
-
-// DeleteApp deletes an application by ID.
-func (ai *AppIdentity) DeleteApp(ctx context.Context,
-	req *api.DeleteAppRequest) (*emptypb.Empty, error) {
-	sess, ok := session.FromContext(ctx)
-	if !ok || sess.Role < common.Role_ADMIN {
-		return nil, errPerm(common.Role_ADMIN)
-	}
-
-	if err := ai.appDAO.Delete(ctx, req.Id, sess.OrgID); err != nil {
-		return nil, errToStatus(err)
-	}
-
-	if err := grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
-		"204")); err != nil {
-		logger := hlog.FromContext(ctx)
-		logger.Errorf("DeleteApp grpc.SetHeader: %v", err)
-	}
-
-	return &emptypb.Empty{}, nil
-}
-
 // DeleteIdentity deletes an identity by ID.
 func (ai *AppIdentity) DeleteIdentity(ctx context.Context,
 	req *api.DeleteIdentityRequest) (*emptypb.Empty, error) {
+	logger := hlog.FromContext(ctx)
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < common.Role_AUTHENTICATOR {
 		return nil, errPerm(common.Role_AUTHENTICATOR)
@@ -516,57 +447,25 @@ func (ai *AppIdentity) DeleteIdentity(ctx context.Context,
 		return nil, errToStatus(err)
 	}
 
+	// Failure to write an event is non-fatal, but should be logged for
+	// investigation.
+	event := &api.Event{
+		OrgId:      sess.OrgID,
+		AppId:      req.AppId,
+		IdentityId: req.Id,
+		Status:     api.EventStatus_IDENTITY_DELETED,
+		TraceId:    sess.TraceID.String(),
+	}
+	if err := ai.evDAO.Create(ctx, event); err != nil {
+		logger.Errorf("DeleteIdentity ai.evDAO.Create: %v", err)
+	}
+
 	if err := grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
 		"204")); err != nil {
-		logger := hlog.FromContext(ctx)
 		logger.Errorf("DeleteIdentity grpc.SetHeader: %v", err)
 	}
 
 	return &emptypb.Empty{}, nil
-}
-
-// ListApps retrieves all applications.
-func (ai *AppIdentity) ListApps(ctx context.Context,
-	req *api.ListAppsRequest) (*api.ListAppsResponse, error) {
-	sess, ok := session.FromContext(ctx)
-	if !ok || sess.Role < common.Role_VIEWER {
-		return nil, errPerm(common.Role_VIEWER)
-	}
-
-	if req.PageSize == 0 {
-		req.PageSize = defaultPageSize
-	}
-
-	lBoundTS, prevID, err := session.ParsePageToken(req.PageToken)
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "invalid page token")
-	}
-
-	// Retrieve PageSize+1 entries to find last page.
-	apps, count, err := ai.appDAO.List(ctx, sess.OrgID, lBoundTS, prevID,
-		req.PageSize+1)
-	if err != nil {
-		return nil, errToStatus(err)
-	}
-
-	resp := &api.ListAppsResponse{Apps: apps, TotalSize: count}
-
-	// Populate next page token.
-	if len(apps) == int(req.PageSize+1) {
-		resp.Apps = apps[:len(apps)-1]
-
-		if resp.NextPageToken, err = session.GeneratePageToken(
-			apps[len(apps)-2].CreatedAt.AsTime(),
-			apps[len(apps)-2].Id); err != nil {
-			// GeneratePageToken should not error based on a DB-derived UUID.
-			// Log the error and include the usable empty token.
-			logger := hlog.FromContext(ctx)
-			logger.Errorf("ListApps session.GeneratePageToken app, err: "+
-				"%+v, %v", apps[len(apps)-2], err)
-		}
-	}
-
-	return resp, nil
 }
 
 // ListIdentities retrieves all identities.
