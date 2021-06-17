@@ -280,6 +280,65 @@ func TestCreateIdentity(t *testing.T) {
 		}
 	})
 
+	t.Run("Create valid backup codes identity with OTP", func(t *testing.T) {
+		t.Parallel()
+
+		key, err := hex.DecodeString("b76c5da0d71b5646ed38b483532cded2622d072" +
+			"a5d175030b6540169b7380d58")
+		require.NoError(t, err)
+
+		otp := &oath.OTP{
+			Algorithm: oath.HOTP, Hash: crypto.SHA512, Digits: 7, Key: key,
+		}
+
+		identity := random.BackupCodesIdentity("api-identity", uuid.NewString(),
+			uuid.NewString())
+		identity.Status = api.IdentityStatus_ACTIVATED
+		retIdentity, _ := proto.Clone(identity).(*api.Identity)
+		traceID := uuid.New()
+		event := &api.Event{
+			OrgId: identity.OrgId, AppId: identity.AppId,
+			IdentityId: identity.Id, Status: api.EventStatus_IDENTITY_CREATED,
+			TraceId: traceID.String(),
+		}
+
+		ctrl := gomock.NewController(t)
+		identityer := NewMockIdentityer(ctrl)
+		identityer.EXPECT().Create(gomock.Any(), identity).Return(retIdentity,
+			otp, false, nil).Times(1)
+		eventer := NewMockEventer(ctrl)
+		eventer.EXPECT().Create(gomock.Any(), event).Return(dao.ErrNotFound).
+			Times(1)
+
+		ctx, cancel := context.WithTimeout(session.NewContext(
+			context.Background(), &session.Session{
+				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+				TraceID: traceID,
+			}), testTimeout)
+		defer cancel()
+
+		aiSvc := NewAppIdentity(nil, identityer, eventer, nil, nil, nil, "")
+		createIdentity, err := aiSvc.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{Identity: identity})
+		t.Logf("identity, createIdentity, err: %+v, %+v, %v", identity,
+			createIdentity, err)
+		require.NoError(t, err)
+
+		// Normalize backup codes.
+		require.Len(t, createIdentity.Passcodes,
+			int(identity.GetBackupCodesMethod().Passcodes))
+
+		// Testify does not currently support protobuf equality:
+		// https://github.com/stretchr/testify/issues/758
+		if !proto.Equal(&api.CreateIdentityResponse{
+			Identity: identity, Passcodes: createIdentity.Passcodes,
+		}, createIdentity) {
+			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.CreateIdentityResponse{
+				Identity: identity,
+			}, createIdentity)
+		}
+	})
+
 	t.Run("Create identity with invalid session", func(t *testing.T) {
 		t.Parallel()
 
@@ -448,6 +507,34 @@ func TestCreateIdentity(t *testing.T) {
 		require.Equal(t, status.Error(codes.InvalidArgument, "invalid format"),
 			err)
 	})
+
+	t.Run("Create backup codes identity with invalid OTP", func(t *testing.T) {
+		t.Parallel()
+
+		identity := random.BackupCodesIdentity("api-identity", uuid.NewString(),
+			uuid.NewString())
+		identity.Status = api.IdentityStatus_ACTIVATED
+		retIdentity, _ := proto.Clone(identity).(*api.Identity)
+
+		identityer := NewMockIdentityer(gomock.NewController(t))
+		identityer.EXPECT().Create(gomock.Any(), identity).Return(retIdentity,
+			&oath.OTP{}, false, nil).Times(1)
+
+		ctx, cancel := context.WithTimeout(session.NewContext(
+			context.Background(), &session.Session{
+				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+			}), testTimeout)
+		defer cancel()
+
+		aiSvc := NewAppIdentity(nil, identityer, nil, nil, nil, nil, "")
+		createIdentity, err := aiSvc.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{Identity: identity})
+		t.Logf("identity, createIdentity, err: %+v, %+v, %v", identity,
+			createIdentity, err)
+		require.Nil(t, createIdentity)
+		require.Equal(t, status.Error(codes.Unknown,
+			"oath: unknown OATH algorithm"), err)
+	})
 }
 
 func TestVerify(t *testing.T) {
@@ -474,9 +561,9 @@ func TestVerify(t *testing.T) {
 		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
 			identity.AppId).Return(retIdentity, otp, nil).Times(1)
 		cacher := cache.NewMockCacher(ctrl)
-		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(),
-			ikey.Reuse(identity.OrgId, identity.AppId, identity.Id, "861821"),
-			1, 24*time.Hour).Return(true, nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.OrgId,
+			identity.AppId, identity.Id, "861821"), 1).Return(true, nil).
+			Times(1)
 		cacher.EXPECT().GetI(gomock.Any(), key.HOTPCounter(identity.OrgId,
 			identity.AppId, identity.Id)).Return(false, int64(0), nil).Times(1)
 		cacher.EXPECT().Set(gomock.Any(), key.HOTPCounter(identity.OrgId,
@@ -513,9 +600,9 @@ func TestVerify(t *testing.T) {
 		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
 			identity.AppId).Return(retIdentity, otp, nil).Times(1)
 		cacher := cache.NewMockCacher(ctrl)
-		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(), ikey.Reuse(identity.OrgId,
-			identity.AppId, identity.Id, passcode), 1, 24*time.Hour).
-			Return(true, nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.OrgId,
+			identity.AppId, identity.Id, passcode), 1).Return(true, nil).
+			Times(1)
 		cacher.EXPECT().GetI(gomock.Any(), ikey.TOTPOffset(identity.OrgId,
 			identity.AppId, identity.Id)).Return(false, int64(0), nil).Times(1)
 		cacher.EXPECT().Set(gomock.Any(), ikey.TOTPOffset(identity.OrgId,
@@ -552,9 +639,9 @@ func TestVerify(t *testing.T) {
 		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
 			identity.AppId).Return(retIdentity, otp, nil).Times(1)
 		cacher := cache.NewMockCacher(ctrl)
-		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(),
-			ikey.Reuse(identity.OrgId, identity.AppId, identity.Id, passcode),
-			1, 24*time.Hour).Return(true, nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.OrgId,
+			identity.AppId, identity.Id, passcode), 1).Return(true, nil).
+			Times(1)
 		cacher.EXPECT().GetI(gomock.Any(), ikey.TOTPOffset(identity.OrgId,
 			identity.AppId, identity.Id)).Return(false, int64(0), nil).Times(1)
 		cacher.EXPECT().Set(gomock.Any(), ikey.TOTPOffset(identity.OrgId,
@@ -591,9 +678,9 @@ func TestVerify(t *testing.T) {
 		cacher.EXPECT().GetI(gomock.Any(), key.Expire(identity.OrgId,
 			identity.AppId, identity.Id, "861821")).Return(true, int64(0), nil).
 			Times(1)
-		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(),
-			ikey.Reuse(identity.OrgId, identity.AppId, identity.Id, "861821"),
-			1, 24*time.Hour).Return(true, nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.OrgId,
+			identity.AppId, identity.Id, "861821"), 1).Return(true, nil).
+			Times(1)
 		cacher.EXPECT().GetI(gomock.Any(), key.HOTPCounter(identity.OrgId,
 			identity.AppId, identity.Id)).Return(false, int64(0), nil).Times(1)
 		cacher.EXPECT().Set(gomock.Any(), key.HOTPCounter(identity.OrgId,
@@ -605,6 +692,38 @@ func TestVerify(t *testing.T) {
 		aiSvc := NewAppIdentity(nil, identityer, nil, cacher, nil, nil, "")
 		err := aiSvc.verify(ctx, identity.Id, identity.OrgId, identity.AppId,
 			api.IdentityStatus_UNVERIFIED, "861821", oath.DefaultHOTPLookAhead,
+			oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead)
+		t.Logf("err: %v", err)
+		require.NoError(t, err)
+	})
+
+	t.Run("Verify backup codes identity by valid ID", func(t *testing.T) {
+		t.Parallel()
+
+		otp := &oath.OTP{
+			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6, Key: knownKey,
+		}
+
+		identity := random.BackupCodesIdentity("api-identity", uuid.NewString(),
+			uuid.NewString())
+		identity.Status = api.IdentityStatus_ACTIVATED
+		retIdentity, _ := proto.Clone(identity).(*api.Identity)
+
+		ctrl := gomock.NewController(t)
+		identityer := NewMockIdentityer(ctrl)
+		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
+			identity.AppId).Return(retIdentity, otp, nil).Times(1)
+		cacher := cache.NewMockCacher(ctrl)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.OrgId,
+			identity.AppId, identity.Id, "861821"), 1).Return(true, nil).
+			Times(1)
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		aiSvc := NewAppIdentity(nil, identityer, nil, cacher, nil, nil, "")
+		err := aiSvc.verify(ctx, identity.Id, identity.OrgId, identity.AppId,
+			api.IdentityStatus_ACTIVATED, "861821", oath.DefaultHOTPLookAhead,
 			oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead)
 		t.Logf("err: %v", err)
 		require.NoError(t, err)
@@ -721,9 +840,9 @@ func TestVerify(t *testing.T) {
 		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
 			identity.AppId).Return(retIdentity, nil, nil).Times(1)
 		cacher := cache.NewMockCacher(ctrl)
-		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(),
-			ikey.Reuse(identity.OrgId, identity.AppId, identity.Id, "861821"),
-			1, 24*time.Hour).Return(false, dao.ErrNotFound).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.OrgId,
+			identity.AppId, identity.Id, "861821"), 1).Return(false,
+			dao.ErrNotFound).Times(1)
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -753,9 +872,9 @@ func TestVerify(t *testing.T) {
 		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
 			identity.AppId).Return(retIdentity, otp, nil).Times(1)
 		cacher := cache.NewMockCacher(ctrl)
-		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(),
-			ikey.Reuse(identity.OrgId, identity.AppId, identity.Id, "861821"),
-			1, 24*time.Hour).Return(false, nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.OrgId,
+			identity.AppId, identity.Id, "861821"), 1).Return(false, nil).
+			Times(1)
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -785,9 +904,9 @@ func TestVerify(t *testing.T) {
 		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
 			identity.AppId).Return(retIdentity, otp, nil).Times(1)
 		cacher := cache.NewMockCacher(ctrl)
-		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(),
-			ikey.Reuse(identity.OrgId, identity.AppId, identity.Id, "0000000"),
-			1, 24*time.Hour).Return(true, nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.OrgId,
+			identity.AppId, identity.Id, "0000000"), 1).Return(true, nil).
+			Times(1)
 		cacher.EXPECT().GetI(gomock.Any(), key.HOTPCounter(identity.OrgId,
 			identity.AppId, identity.Id)).Return(false, int64(0),
 			dao.ErrNotFound).Times(1)
@@ -821,9 +940,9 @@ func TestVerify(t *testing.T) {
 		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
 			identity.AppId).Return(retIdentity, otp, nil).Times(1)
 		cacher := cache.NewMockCacher(ctrl)
-		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(),
-			ikey.Reuse(identity.OrgId, identity.AppId, identity.Id, "0000000"),
-			1, 24*time.Hour).Return(true, nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.OrgId,
+			identity.AppId, identity.Id, "0000000"), 1).Return(true, nil).
+			Times(1)
 		cacher.EXPECT().GetI(gomock.Any(), ikey.TOTPOffset(identity.OrgId,
 			identity.AppId, identity.Id)).Return(false, int64(0),
 			dao.ErrNotFound).Times(1)
@@ -857,9 +976,9 @@ func TestVerify(t *testing.T) {
 		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
 			identity.AppId).Return(retIdentity, otp, nil).Times(1)
 		cacher := cache.NewMockCacher(ctrl)
-		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(),
-			ikey.Reuse(identity.OrgId, identity.AppId, identity.Id, "0000000"),
-			1, 24*time.Hour).Return(true, nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.OrgId,
+			identity.AppId, identity.Id, "0000000"), 1).Return(true, nil).
+			Times(1)
 		cacher.EXPECT().GetI(gomock.Any(), ikey.TOTPOffset(identity.OrgId,
 			identity.AppId, identity.Id)).Return(false, int64(0),
 			dao.ErrNotFound).Times(1)
@@ -889,9 +1008,9 @@ func TestVerify(t *testing.T) {
 		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
 			identity.AppId).Return(retIdentity, nil, nil).Times(1)
 		cacher := cache.NewMockCacher(ctrl)
-		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(),
-			ikey.Reuse(identity.OrgId, identity.AppId, identity.Id, "0000000"),
-			1, 24*time.Hour).Return(true, nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.OrgId,
+			identity.AppId, identity.Id, "0000000"), 1).Return(true, nil).
+			Times(1)
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -921,9 +1040,9 @@ func TestVerify(t *testing.T) {
 		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
 			identity.AppId).Return(retIdentity, otp, nil).Times(1)
 		cacher := cache.NewMockCacher(ctrl)
-		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(),
-			ikey.Reuse(identity.OrgId, identity.AppId, identity.Id, "0000000"),
-			1, 24*time.Hour).Return(true, nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.OrgId,
+			identity.AppId, identity.Id, "0000000"), 1).Return(true, nil).
+			Times(1)
 		cacher.EXPECT().GetI(gomock.Any(), key.HOTPCounter(identity.OrgId,
 			identity.AppId, identity.Id)).Return(false, int64(0), nil).Times(1)
 
@@ -955,9 +1074,9 @@ func TestVerify(t *testing.T) {
 		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
 			identity.AppId).Return(retIdentity, otp, nil).Times(1)
 		cacher := cache.NewMockCacher(ctrl)
-		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(),
-			ikey.Reuse(identity.OrgId, identity.AppId, identity.Id, "861821"),
-			1, 24*time.Hour).Return(true, nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.OrgId,
+			identity.AppId, identity.Id, "861821"), 1).Return(true, nil).
+			Times(1)
 		cacher.EXPECT().GetI(gomock.Any(), key.HOTPCounter(identity.OrgId,
 			identity.AppId, identity.Id)).Return(false, int64(0), nil).Times(1)
 		cacher.EXPECT().Set(gomock.Any(), key.HOTPCounter(identity.OrgId,
@@ -995,9 +1114,9 @@ func TestVerify(t *testing.T) {
 		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
 			identity.AppId).Return(retIdentity, otp, nil).Times(1)
 		cacher := cache.NewMockCacher(ctrl)
-		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(),
-			ikey.Reuse(identity.OrgId, identity.AppId, identity.Id, passcode),
-			1, 24*time.Hour).Return(true, nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.OrgId,
+			identity.AppId, identity.Id, passcode), 1).Return(true, nil).
+			Times(1)
 		cacher.EXPECT().GetI(gomock.Any(), ikey.TOTPOffset(identity.OrgId,
 			identity.AppId, identity.Id)).Return(false, int64(0), nil).Times(1)
 		cacher.EXPECT().Set(gomock.Any(), ikey.TOTPOffset(identity.OrgId,
@@ -1049,9 +1168,9 @@ func TestActivateIdentity(t *testing.T) {
 			identity.OrgId, identity.AppId, api.IdentityStatus_ACTIVATED).
 			Return(retIdentity, nil).Times(1)
 		cacher := cache.NewMockCacher(ctrl)
-		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(),
-			ikey.Reuse(identity.OrgId, identity.AppId, identity.Id, "861821"),
-			1, 24*time.Hour).Return(true, nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.OrgId,
+			identity.AppId, identity.Id, "861821"), 1).Return(true, nil).
+			Times(1)
 		cacher.EXPECT().GetI(gomock.Any(), key.HOTPCounter(identity.OrgId,
 			identity.AppId, identity.Id)).Return(false, int64(0), nil).Times(1)
 		cacher.EXPECT().Set(gomock.Any(), key.HOTPCounter(identity.OrgId,
@@ -1174,9 +1293,9 @@ func TestActivateIdentity(t *testing.T) {
 			identity.OrgId, identity.AppId, api.IdentityStatus_ACTIVATED).
 			Return(nil, dao.ErrNotFound).Times(1)
 		cacher := cache.NewMockCacher(ctrl)
-		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(),
-			ikey.Reuse(identity.OrgId, identity.AppId, identity.Id, "861821"),
-			1, 24*time.Hour).Return(true, nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.OrgId,
+			identity.AppId, identity.Id, "861821"), 1).Return(true, nil).
+			Times(1)
 		cacher.EXPECT().GetI(gomock.Any(), key.HOTPCounter(identity.OrgId,
 			identity.AppId, identity.Id)).Return(false, int64(0), nil).Times(1)
 		cacher.EXPECT().Set(gomock.Any(), key.HOTPCounter(identity.OrgId,
@@ -1481,9 +1600,9 @@ func TestVerifyIdentity(t *testing.T) {
 		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
 			identity.AppId).Return(retIdentity, otp, nil).Times(1)
 		cacher := cache.NewMockCacher(ctrl)
-		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(),
-			ikey.Reuse(identity.OrgId, identity.AppId, identity.Id, "861821"),
-			1, 24*time.Hour).Return(true, nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.OrgId,
+			identity.AppId, identity.Id, "861821"), 1).Return(true, nil).
+			Times(1)
 		cacher.EXPECT().GetI(gomock.Any(), key.HOTPCounter(identity.OrgId,
 			identity.AppId, identity.Id)).Return(false, int64(0), nil).Times(1)
 		cacher.EXPECT().Set(gomock.Any(), key.HOTPCounter(identity.OrgId,

@@ -29,7 +29,6 @@ import (
 )
 
 const (
-	reuseRate  = 24 * time.Hour
 	notifyRate = 30 * time.Second
 
 	errExpStatus consterr.Error = "identity is not"
@@ -100,6 +99,18 @@ func (ai *AppIdentity) CreateIdentity(ctx context.Context,
 		}
 	}
 
+	// Populate pregenerated backup codes.
+	if m, ok := identity.MethodOneof.(*api.Identity_BackupCodesMethod); ok {
+		for i := 0; i < int(m.BackupCodesMethod.Passcodes); i++ {
+			passcode, err := otp.HOTP(int64(i + 10))
+			if err != nil {
+				return nil, errToStatus(err)
+			}
+
+			resp.Passcodes = append(resp.Passcodes, passcode)
+		}
+	}
+
 	// Failure to write an event is non-fatal, but should be logged for
 	// investigation.
 	event := &api.Event{
@@ -150,9 +161,10 @@ func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
 		}
 	}
 
-	// Disallow passcode reuse, even when counter tracking would prevent it.
-	ok, err := ai.cache.SetIfNotExistTTL(ctx, ikey.Reuse(identity.OrgId,
-		identity.AppId, identity.Id, passcode), 1, reuseRate)
+	// Disallow passcode reuse, even when counter tracking would prevent it. Do
+	// not expire to support backup codes.
+	ok, err := ai.cache.SetIfNotExist(ctx, ikey.Reuse(identity.OrgId,
+		identity.AppId, identity.Id, passcode), 1)
 	if err != nil {
 		return err
 	}
@@ -202,6 +214,10 @@ func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
 		}
 
 		offset, err = otp.VerifyTOTP(hardTOTPLookAhead, int(off), passcode)
+	case *api.Identity_BackupCodesMethod:
+		// Backup codes may be used out of order, always use a zero value HOTP
+		// counter and do not store the new counter.
+		_, err = otp.VerifyHOTP(hotpLookAhead, 0, passcode)
 	default:
 		logger.Errorf("verify unknown identity.MethodOneof: %+v", identity)
 

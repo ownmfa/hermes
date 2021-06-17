@@ -20,6 +20,7 @@ type otpMeta struct {
 	phone       string
 	pushoverKey string
 	email       string
+	backupCodes int32
 
 	// retSecret indicates whether the OTP secret and QR should be returned.
 	retSecret bool
@@ -111,6 +112,12 @@ func methodToOTP(identity *api.Identity) (*oath.OTP, *otpMeta, error) {
 
 		meta.email = m.EmailMethod.Email
 		meta.retSecret = false
+	case *api.Identity_BackupCodesMethod:
+		otp.Hash = crypto.SHA512
+		otp.Digits = defaultDigits
+
+		meta.backupCodes = m.BackupCodesMethod.Passcodes
+		meta.retSecret = false
 	default:
 		return nil, nil, errUnknownMethodOneof
 	}
@@ -122,6 +129,12 @@ func methodToOTP(identity *api.Identity) (*oath.OTP, *otpMeta, error) {
 // otpMeta.
 func otpToMethod(identity *api.Identity, otp *oath.OTP, meta *otpMeta) {
 	switch {
+	case meta.backupCodes > 0:
+		identity.MethodOneof = &api.Identity_BackupCodesMethod{
+			BackupCodesMethod: &api.BackupsCodesMethod{
+				Passcodes: meta.backupCodes,
+			},
+		}
 	case meta.email != "":
 		identity.MethodOneof = &api.Identity_EmailMethod{
 			EmailMethod: &api.EmailMethod{Email: meta.email},

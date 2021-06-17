@@ -135,6 +135,26 @@ func EmailIdentity(prefix, orgID, appID string) *api.Identity {
 	}
 }
 
+// BackupCodesIdentity generates a random backup codes identity with prefixed
+// identifiers.
+func BackupCodesIdentity(prefix, orgID, appID string) *api.Identity {
+	return &api.Identity{
+		Id:      uuid.NewString(),
+		OrgId:   orgID,
+		AppId:   appID,
+		Comment: prefix + "-" + String(10),
+		Status: []api.IdentityStatus{
+			api.IdentityStatus_UNVERIFIED,
+			api.IdentityStatus_ACTIVATED,
+		}[Intn(2)],
+		MethodOneof: &api.Identity_BackupCodesMethod{
+			BackupCodesMethod: &api.BackupsCodesMethod{
+				Passcodes: int32(Intn(5) + 6),
+			},
+		},
+	}
+}
+
 // Event generates a random event with prefixed identifiers.
 func Event(prefix, orgID string) *api.Event {
 	return &api.Event{

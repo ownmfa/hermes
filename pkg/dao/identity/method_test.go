@@ -24,8 +24,9 @@ func TestMethodToOTP(t *testing.T) {
 	require.NoError(t, err)
 
 	email := random.Email()
-	inpPhone := random.String(10)
-	inpPushoverKey := random.String(10)
+	phone := random.String(10)
+	pushoverKey := random.String(10)
+	backupCodes := int32(random.Intn(5) + 6)
 
 	tests := []struct {
 		inp     *api.Identity
@@ -86,21 +87,21 @@ func TestMethodToOTP(t *testing.T) {
 		},
 		{
 			&api.Identity{MethodOneof: &api.Identity_SmsMethod{
-				SmsMethod: &api.SMSMethod{Phone: inpPhone},
+				SmsMethod: &api.SMSMethod{Phone: phone},
 			}}, &oath.OTP{
 				Algorithm: oath.HOTP, Hash: crypto.SHA512,
 				Digits: defaultDigits,
-			}, &otpMeta{phone: inpPhone}, nil,
+			}, &otpMeta{phone: phone}, nil,
 		},
 		{
 			&api.Identity{MethodOneof: &api.Identity_PushoverMethod{
 				PushoverMethod: &api.PushoverMethod{
-					PushoverKey: inpPushoverKey,
+					PushoverKey: pushoverKey,
 				},
 			}}, &oath.OTP{
 				Algorithm: oath.HOTP, Hash: crypto.SHA512,
 				Digits: defaultDigits,
-			}, &otpMeta{pushoverKey: inpPushoverKey}, nil,
+			}, &otpMeta{pushoverKey: pushoverKey}, nil,
 		},
 		{
 			&api.Identity{MethodOneof: &api.Identity_EmailMethod{
@@ -109,6 +110,16 @@ func TestMethodToOTP(t *testing.T) {
 				Algorithm: oath.HOTP, Hash: crypto.SHA512,
 				Digits: defaultDigits,
 			}, &otpMeta{email: email}, nil,
+		},
+		{
+			&api.Identity{MethodOneof: &api.Identity_BackupCodesMethod{
+				BackupCodesMethod: &api.BackupsCodesMethod{
+					Passcodes: backupCodes,
+				},
+			}}, &oath.OTP{
+				Algorithm: oath.HOTP, Hash: crypto.SHA512,
+				Digits: defaultDigits,
+			}, &otpMeta{backupCodes: backupCodes}, nil,
 		},
 		{
 			&api.Identity{MethodOneof: nil}, nil, nil, errUnknownMethodOneof,
@@ -144,14 +155,38 @@ func TestMethodToOTP(t *testing.T) {
 func TestOTPToMethod(t *testing.T) {
 	t.Parallel()
 
-	phone := random.String(10)
+	backupCodes := int32(random.Intn(5) + 6)
+	email := random.Email()
 	pushoverKey := random.String(30)
+	phone := random.String(10)
 
 	tests := []struct {
 		inpOTP  *oath.OTP
 		inpMeta *otpMeta
 		res     *api.Identity
 	}{
+		{
+			&oath.OTP{
+				Algorithm: oath.HOTP, Hash: crypto.SHA512,
+				Digits: defaultDigits,
+			}, &otpMeta{backupCodes: backupCodes}, &api.Identity{
+				MethodOneof: &api.Identity_BackupCodesMethod{
+					BackupCodesMethod: &api.BackupsCodesMethod{
+						Passcodes: backupCodes,
+					},
+				},
+			},
+		},
+		{
+			&oath.OTP{
+				Algorithm: oath.HOTP, Hash: crypto.SHA512,
+				Digits: defaultDigits,
+			}, &otpMeta{email: email}, &api.Identity{
+				MethodOneof: &api.Identity_EmailMethod{
+					EmailMethod: &api.EmailMethod{Email: email},
+				},
+			},
+		},
 		{
 			&oath.OTP{
 				Algorithm: oath.HOTP, Hash: crypto.SHA512,
