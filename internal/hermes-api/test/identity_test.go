@@ -56,6 +56,7 @@ func TestCreateIdentity(t *testing.T) {
 			createIdentity.Identity.UpdatedAt.AsTime(), 2*time.Second)
 		require.Greater(t, len(createIdentity.Secret), 50)
 		require.Greater(t, len(createIdentity.Qr), 800)
+		require.Empty(t, createIdentity.Passcodes)
 
 		// Verify event.
 		event := &api.Event{
@@ -108,6 +109,7 @@ func TestCreateIdentity(t *testing.T) {
 			createIdentity.Identity.UpdatedAt.AsTime(), 2*time.Second)
 		require.Empty(t, createIdentity.Secret)
 		require.Empty(t, createIdentity.Qr)
+		require.Empty(t, createIdentity.Passcodes)
 	})
 
 	t.Run("Create valid Pushover identity", func(t *testing.T) {
@@ -132,6 +134,7 @@ func TestCreateIdentity(t *testing.T) {
 			createIdentity.Identity.UpdatedAt.AsTime(), 2*time.Second)
 		require.Empty(t, createIdentity.Secret)
 		require.Empty(t, createIdentity.Qr)
+		require.Empty(t, createIdentity.Passcodes)
 	})
 
 	t.Run("Create valid email identity", func(t *testing.T) {
@@ -156,6 +159,33 @@ func TestCreateIdentity(t *testing.T) {
 			createIdentity.Identity.UpdatedAt.AsTime(), 2*time.Second)
 		require.Empty(t, createIdentity.Secret)
 		require.Empty(t, createIdentity.Qr)
+		require.Empty(t, createIdentity.Passcodes)
+	})
+
+	t.Run("Create valid backup codes identity", func(t *testing.T) {
+		t.Parallel()
+
+		identity := random.BackupCodesIdentity("api-identity", uuid.NewString(),
+			createApp.Id)
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{Identity: identity})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+		require.NotEqual(t, identity.Id, createIdentity.Identity.Id)
+		require.Equal(t, api.IdentityStatus_ACTIVATED,
+			createIdentity.Identity.Status)
+		require.WithinDuration(t, time.Now(),
+			createIdentity.Identity.CreatedAt.AsTime(), 2*time.Second)
+		require.WithinDuration(t, time.Now(),
+			createIdentity.Identity.UpdatedAt.AsTime(), 2*time.Second)
+		require.Empty(t, createIdentity.Secret)
+		require.Empty(t, createIdentity.Qr)
+		require.Len(t, createIdentity.Passcodes,
+			int(identity.GetBackupCodesMethod().Passcodes))
 	})
 
 	t.Run("Create valid identity with insufficient role", func(t *testing.T) {
@@ -514,37 +544,16 @@ func TestActivateIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
-					createApp.Id),
+				Identity: random.BackupCodesIdentity("api-identity",
+					uuid.NewString(), createApp.Id),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
-		require.NoError(t, err)
-
-		base32NoPad := base32.StdEncoding.WithPadding(base32.NoPadding)
-		secret, err := base32NoPad.DecodeString(createIdentity.Secret)
-		require.NoError(t, err)
-
-		otp := &oath.OTP{
-			Algorithm: oath.HOTP, Hash: crypto.SHA512, Digits: 6, Key: secret,
-		}
-		passcode, err := otp.HOTP(5)
 		require.NoError(t, err)
 
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
 				Id: createIdentity.Identity.Id, AppId: createApp.Id,
-				Passcode: passcode,
-			})
-		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
-		require.NoError(t, err)
-		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.Status)
-		require.WithinDuration(t, time.Now(),
-			activateIdentity.UpdatedAt.AsTime(), 2*time.Second)
-
-		activateIdentity, err = aiCli.ActivateIdentity(ctx,
-			&api.ActivateIdentityRequest{
-				Id: createIdentity.Identity.Id, AppId: createApp.Id,
-				Passcode: passcode,
+				Passcode: "000000",
 			})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
 		require.Nil(t, activateIdentity)
@@ -565,7 +574,7 @@ func TestActivateIdentity(t *testing.T) {
 			time.Now().Add(-testTimeout))
 		t.Logf("listEvents, err: %+v, %v", listEvents, err)
 		require.NoError(t, err)
-		require.Len(t, listEvents, 3)
+		require.Len(t, listEvents, 2)
 
 		// Normalize generated trace ID.
 		event.TraceId = listEvents[0].TraceId
@@ -581,7 +590,7 @@ func TestActivateIdentity(t *testing.T) {
 		}
 	})
 
-	t.Run("Activate identity by expired passcode", func(t *testing.T) {
+	t.Run("Activate identity by unknown/expired passcode", func(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
@@ -1116,6 +1125,31 @@ func TestVerifyIdentity(t *testing.T) {
 		require.NoError(t, err)
 	})
 
+	t.Run("Verify backup codes identity by valid ID", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{
+				Identity: random.BackupCodesIdentity("api-identity",
+					uuid.NewString(), createApp.Id),
+			})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+
+		// Verify out of order.
+		for i := len(createIdentity.Passcodes) - 1; i >= 0; i-- {
+			_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
+				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Passcode: createIdentity.Passcodes[i],
+			})
+			t.Logf("err: %v", err)
+			require.NoError(t, err)
+		}
+	})
+
 	t.Run("Verify identity with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
@@ -1287,52 +1321,27 @@ func TestVerifyIdentity(t *testing.T) {
 	t.Run("Verify identity by reused passcode", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			createApp.Id)
-		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{}
-
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
-			&api.CreateIdentityRequest{Identity: identity})
-		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
-		require.NoError(t, err)
-
-		base32NoPad := base32.StdEncoding.WithPadding(base32.NoPadding)
-		secret, err := base32NoPad.DecodeString(createIdentity.Secret)
-		require.NoError(t, err)
-
-		otp := &oath.OTP{
-			Algorithm: oath.HOTP, Hash: crypto.SHA512, Digits: 7, Key: secret,
-		}
-		passcode, err := otp.TOTP(time.Now().Add(-30 * time.Second))
-		require.NoError(t, err)
-
-		activateIdentity, err := aiCli.ActivateIdentity(ctx,
-			&api.ActivateIdentityRequest{
-				Id: createIdentity.Identity.Id, AppId: createApp.Id,
-				Passcode: passcode,
+			&api.CreateIdentityRequest{
+				Identity: random.BackupCodesIdentity("api-identity",
+					uuid.NewString(), createApp.Id),
 			})
-		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
-		require.NoError(t, err)
-		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.Status)
-		require.WithinDuration(t, time.Now(),
-			activateIdentity.UpdatedAt.AsTime(), 2*time.Second)
-
-		passcode, err = otp.TOTP(time.Now())
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
 			Id: createIdentity.Identity.Id, AppId: createApp.Id,
-			Passcode: passcode,
+			Passcode: createIdentity.Passcodes[0],
 		})
 		t.Logf("err: %v", err)
 		require.NoError(t, err)
 
 		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
 			Id: createIdentity.Identity.Id, AppId: createApp.Id,
-			Passcode: passcode,
+			Passcode: createIdentity.Passcodes[0],
 		})
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+

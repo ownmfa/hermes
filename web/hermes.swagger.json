@@ -535,7 +535,7 @@
                   ]
                 }
               },
-              "description": "VerifyIdentityRequest is sent to verify an identity.",
+              "description": "VerifyIdentityRequest is sent to verify an identity. If verification fails, the request does not automatically fall through to a backup codes method. Consuming applications should design a workflow that either explicitly verifies by backup codes or falls through on failure.",
               "required": [
                 "passcode"
               ]
@@ -1483,6 +1483,17 @@
       },
       "description": "App represents an application as stored in the database."
     },
+    "apiBackupsCodesMethod": {
+      "type": "object",
+      "properties": {
+        "passcodes": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Number of passcodes provided."
+        }
+      },
+      "description": "BackupsCodesMethod configures a backup codes method. Identities using this method are immediately activated and do not require activation."
+    },
     "apiCreateIdentityResponse": {
       "type": "object",
       "properties": {
@@ -1498,6 +1509,13 @@
           "type": "string",
           "format": "byte",
           "description": "Identity QR code, in Google Authenticator-compatible format, as a PNG image. For identity methods that provide secrets. Only returned once, upon identity creation. When used in JSON, the value will be represented as a base64 string."
+        },
+        "passcodes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Passcode array, for identity methods that provide pregenerated passcodes. Only returned once, upon identity creation."
         }
       },
       "description": "CreateIdentityResponse is sent in response to an identity creation."
@@ -1717,6 +1735,10 @@
         "emailMethod": {
           "$ref": "#/definitions/apiEmailMethod",
           "description": "Email method configuration."
+        },
+        "backupCodesMethod": {
+          "$ref": "#/definitions/apiBackupsCodesMethod",
+          "description": "Backups codes method configuration."
         },
         "createdAt": {
           "type": "string",

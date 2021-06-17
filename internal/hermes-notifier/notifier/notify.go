@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	smsExpire   = 2 * time.Minute
-	emailExpire = 5 * time.Minute
+	smsPushoverExpire = 3 * time.Minute
+	emailExpire       = 6 * time.Minute
 )
 
 // notifyMessages receives notification metadata, formats messages from
@@ -143,7 +143,7 @@ func (not *Notifier) notifyMessages() {
 
 		// Set the passcode expiration. It is not necessary to check for
 		// collisions here, but if one was found, that would be notable.
-		expire := smsExpire
+		expire := smsPushoverExpire
 		if _, ok := identity.MethodOneof.(*api.Identity_EmailMethod); ok {
 			expire = emailExpire
 		}

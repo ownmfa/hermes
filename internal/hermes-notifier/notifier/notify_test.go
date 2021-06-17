@@ -59,19 +59,19 @@ func TestNotifyMessages(t *testing.T) {
 			&message.NotifierIn{
 				OrgId: app.OrgId, AppId: app.Id, IdentityId: smsIdentity.Id,
 				TraceId: traceID[:],
-			}, app, smsIdentity, smsExpire, 1, 0, 0, 0,
+			}, app, smsIdentity, smsPushoverExpire, 1, 0, 0, 0,
 		},
 		{
 			&message.NotifierIn{
 				OrgId: app.OrgId, AppId: app.Id,
 				IdentityId: pushoverIdentity.Id, TraceId: traceID[:],
-			}, app, pushoverIdentity, smsExpire, 0, 1, 0, 0,
+			}, app, pushoverIdentity, smsPushoverExpire, 0, 1, 0, 0,
 		},
 		{
 			&message.NotifierIn{
 				OrgId: appByKey.OrgId, AppId: appByKey.Id,
 				IdentityId: identityByKey.Id, TraceId: traceID[:],
-			}, appByKey, identityByKey, smsExpire, 0, 0, 1, 0,
+			}, appByKey, identityByKey, smsPushoverExpire, 0, 0, 1, 0,
 		},
 		{
 			&message.NotifierIn{
@@ -243,17 +243,17 @@ func TestNotifyMessagesError(t *testing.T) {
 		// Cacher SetIfNotExistTTL error.
 		{
 			&message.NotifierIn{}, smsIdentity, nil, 1, nil, 1, otp, app, nil,
-			1, smsExpire, errTestProc, 1, nil, 0, nil, 0, nil, 0, 0,
+			1, smsPushoverExpire, errTestProc, 1, nil, 0, nil, 0, nil, 0, 0,
 		},
 		// Notifier SMS error.
 		{
 			&message.NotifierIn{}, smsIdentity, nil, 1, nil, 1, otp, app, nil,
-			1, smsExpire, nil, 1, errTestProc, 1, nil, 0, nil, 0, 1,
+			1, smsPushoverExpire, nil, 1, errTestProc, 1, nil, 0, nil, 0, 1,
 		},
 		// Notifier Pushover error.
 		{
 			&message.NotifierIn{}, pushoverIdentity, nil, 1, nil, 1, otp, app,
-			nil, 1, smsExpire, nil, 1, nil, 0, errTestProc, 1, nil, 0, 1,
+			nil, 1, smsPushoverExpire, nil, 1, nil, 0, errTestProc, 1, nil, 0, 1,
 		},
 		// Notifier email error.
 		{
