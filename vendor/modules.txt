@@ -79,7 +79,7 @@ github.com/mennanov/fmutils
 # github.com/nsqio/go-nsq v1.0.8
 ## explicit
 github.com/nsqio/go-nsq
-# github.com/ownmfa/api/go v0.0.0-20210617173240-9fc259a20aec
+# github.com/ownmfa/api/go v0.0.0-20210618170142-c4d9bb50d034
 ## explicit
 github.com/ownmfa/api/go/api
 github.com/ownmfa/api/go/common
@@ -102,22 +102,18 @@ github.com/smira/go-statsd
 ## explicit
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
-# go.opentelemetry.io/otel v0.20.0
+# go.opentelemetry.io/otel v1.0.0-RC1
 go.opentelemetry.io/otel/attribute
-go.opentelemetry.io/otel/codes
 go.opentelemetry.io/otel/internal
-go.opentelemetry.io/otel/internal/baggage
-go.opentelemetry.io/otel/internal/global
-go.opentelemetry.io/otel/internal/trace/noop
-go.opentelemetry.io/otel/propagation
-go.opentelemetry.io/otel/unit
-# go.opentelemetry.io/otel/metric v0.20.0
+# go.opentelemetry.io/otel/internal/metric v0.21.0
+## explicit
+go.opentelemetry.io/otel/internal/metric/global
+# go.opentelemetry.io/otel/metric v0.21.0
 go.opentelemetry.io/otel/metric
 go.opentelemetry.io/otel/metric/global
 go.opentelemetry.io/otel/metric/number
 go.opentelemetry.io/otel/metric/registry
-# go.opentelemetry.io/otel/trace v0.20.0
-go.opentelemetry.io/otel/trace
+go.opentelemetry.io/otel/metric/unit
 # golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
 ## explicit
 golang.org/x/crypto/bcrypt
@@ -149,7 +145,7 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# google.golang.org/genproto v0.0.0-20210614182748-5b3b54cad159
+# google.golang.org/genproto v0.0.0-20210617175327-b9e0b3197ced
 google.golang.org/genproto/googleapis/api/annotations
 google.golang.org/genproto/googleapis/api/httpbody
 google.golang.org/genproto/googleapis/rpc/status
