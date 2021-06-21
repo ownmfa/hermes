@@ -79,7 +79,7 @@ github.com/mennanov/fmutils
 # github.com/nsqio/go-nsq v1.0.8
 ## explicit
 github.com/nsqio/go-nsq
-# github.com/ownmfa/api/go v0.0.0-20210618170142-c4d9bb50d034
+# github.com/ownmfa/api/go v0.1.4
 ## explicit
 github.com/ownmfa/api/go/api
 github.com/ownmfa/api/go/common
