@@ -11,6 +11,16 @@ func Org(prefix string) *api.Org {
 	return &api.Org{
 		Id:   uuid.NewString(),
 		Name: prefix + "-" + String(10),
+		Status: []api.Status{
+			api.Status_ACTIVE,
+			api.Status_DISABLED,
+		}[Intn(2)],
+		Plan: []api.Plan{
+			api.Plan_PAYMENT_FAIL,
+			api.Plan_STARTER,
+			api.Plan_PRO,
+			api.Plan_ENTERPRISE,
+		}[Intn(4)],
 	}
 }
 

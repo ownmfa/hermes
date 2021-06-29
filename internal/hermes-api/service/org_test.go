@@ -221,8 +221,12 @@ func TestUpdateOrg(t *testing.T) {
 
 		org := random.Org("api-org")
 		retOrg, _ := proto.Clone(org).(*api.Org)
-		part := &api.Org{Id: org.Id, Name: random.String(10)}
-		merged := &api.Org{Id: org.Id, Name: part.Name}
+		part := &api.Org{
+			Id: org.Id, Name: random.String(10), Status: api.Status_DISABLED,
+		}
+		merged := &api.Org{
+			Id: org.Id, Name: part.Name, Status: part.Status, Plan: org.Plan,
+		}
 		retMerged, _ := proto.Clone(merged).(*api.Org)
 
 		orger := NewMockOrger(gomock.NewController(t))
@@ -238,8 +242,9 @@ func TestUpdateOrg(t *testing.T) {
 
 		orgSvc := NewOrg(orger)
 		updateOrg, err := orgSvc.UpdateOrg(ctx, &api.UpdateOrgRequest{
-			Org:        part,
-			UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"name"}},
+			Org: part, UpdateMask: &fieldmaskpb.FieldMask{
+				Paths: []string{"name", "status"},
+			},
 		})
 		t.Logf("merged, updateOrg, err: %+v, %+v, %v", merged, updateOrg, err)
 		require.NoError(t, err)

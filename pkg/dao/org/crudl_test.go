@@ -140,6 +140,8 @@ func TestUpdate(t *testing.T) {
 
 		// Update org fields.
 		createOrg.Name = "dao-org-" + random.String(10)
+		createOrg.Status = api.Status_DISABLED
+		createOrg.Plan = api.Plan_PRO
 		updateOrg, _ := proto.Clone(createOrg).(*api.Org)
 
 		updateOrg, err = globalOrgDAO.Update(ctx, updateOrg)
@@ -147,6 +149,8 @@ func TestUpdate(t *testing.T) {
 			err)
 		require.NoError(t, err)
 		require.Equal(t, createOrg.Name, updateOrg.Name)
+		require.Equal(t, createOrg.Status, updateOrg.Status)
+		require.Equal(t, createOrg.Plan, updateOrg.Plan)
 		require.True(t, updateOrg.UpdatedAt.AsTime().After(
 			updateOrg.CreatedAt.AsTime()))
 		require.WithinDuration(t, createOrg.CreatedAt.AsTime(),
@@ -243,6 +247,7 @@ func TestList(t *testing.T) {
 
 	orgIDs := []string{}
 	orgNames := []string{}
+	orgPlans := []api.Plan{}
 	orgTSes := []time.Time{}
 	for i := 0; i < 3; i++ {
 		createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-org"))
@@ -251,6 +256,7 @@ func TestList(t *testing.T) {
 
 		orgIDs = append(orgIDs, createOrg.Id)
 		orgNames = append(orgNames, createOrg.Name)
+		orgPlans = append(orgPlans, createOrg.Plan)
 		orgTSes = append(orgTSes, createOrg.CreatedAt.AsTime())
 	}
 
@@ -270,7 +276,8 @@ func TestList(t *testing.T) {
 		var found bool
 		for _, org := range listOrgs {
 			if org.Id == orgIDs[len(orgIDs)-1] &&
-				org.Name == orgNames[len(orgNames)-1] {
+				org.Name == orgNames[len(orgNames)-1] &&
+				org.Plan == orgPlans[len(orgPlans)-1] {
 				found = true
 			}
 		}

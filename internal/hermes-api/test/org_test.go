@@ -176,12 +176,16 @@ func TestUpdateOrg(t *testing.T) {
 
 		// Update org fields.
 		createOrg.Name = "api-org-" + random.String(10)
+		createOrg.Status = api.Status_DISABLED
+		createOrg.Plan = api.Plan_PRO
 
 		updateOrg, err := orgCli.UpdateOrg(ctx,
 			&api.UpdateOrgRequest{Org: createOrg})
 		t.Logf("updateOrg, err: %+v, %v", updateOrg, err)
 		require.NoError(t, err)
 		require.Equal(t, createOrg.Name, updateOrg.Name)
+		require.Equal(t, createOrg.Status, updateOrg.Status)
+		require.Equal(t, createOrg.Plan, updateOrg.Plan)
 		require.True(t, updateOrg.UpdatedAt.AsTime().After(
 			updateOrg.CreatedAt.AsTime()))
 		require.WithinDuration(t, createOrg.CreatedAt.AsTime(),
@@ -212,16 +216,20 @@ func TestUpdateOrg(t *testing.T) {
 		require.NoError(t, err)
 
 		// Update org fields.
-		part := &api.Org{Id: createOrg.Id, Name: "api-org-" + random.String(10)}
+		part := &api.Org{
+			Id: createOrg.Id, Name: "api-org-" + random.String(10),
+			Status: api.Status_DISABLED,
+		}
 
 		updateOrg, err := orgCli.UpdateOrg(ctx, &api.UpdateOrgRequest{
 			Org: part, UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{
-				"name",
+				"name", "status",
 			}},
 		})
 		t.Logf("updateOrg, err: %+v, %v", updateOrg, err)
 		require.NoError(t, err)
 		require.Equal(t, part.Name, updateOrg.Name)
+		require.Equal(t, part.Status, updateOrg.Status)
 		require.True(t, updateOrg.UpdatedAt.AsTime().After(
 			updateOrg.CreatedAt.AsTime()))
 		require.WithinDuration(t, createOrg.CreatedAt.AsTime(),
@@ -417,6 +425,7 @@ func TestListOrgs(t *testing.T) {
 
 	orgIDs := []string{}
 	orgNames := []string{}
+	orgPlans := []api.Plan{}
 	for i := 0; i < 3; i++ {
 		orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
 		createOrg, err := orgCli.CreateOrg(ctx,
@@ -426,6 +435,7 @@ func TestListOrgs(t *testing.T) {
 
 		orgIDs = append(orgIDs, createOrg.Id)
 		orgNames = append(orgNames, createOrg.Name)
+		orgPlans = append(orgPlans, createOrg.Plan)
 	}
 
 	t.Run("List orgs by valid org ID", func(t *testing.T) {
@@ -445,7 +455,8 @@ func TestListOrgs(t *testing.T) {
 		var found bool
 		for _, org := range listOrgs.Orgs {
 			if org.Id == orgIDs[len(orgIDs)-1] &&
-				org.Name == orgNames[len(orgNames)-1] {
+				org.Name == orgNames[len(orgNames)-1] &&
+				org.Plan == orgPlans[len(orgPlans)-1] {
 				found = true
 			}
 		}
