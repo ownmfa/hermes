@@ -81,18 +81,15 @@ func TestCreate(t *testing.T) {
 func TestRead(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
-	defer cancel()
-
-	createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-org"))
-	t.Logf("createOrg, err: %+v, %v", createOrg, err)
-	require.NoError(t, err)
-
 	t.Run("Read org by valid ID", func(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
+
+		createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-org"))
+		t.Logf("createOrg, err: %+v, %v", createOrg, err)
+		require.NoError(t, err)
 
 		readOrg, err := globalOrgDAO.Read(ctx, createOrg.Id)
 		t.Logf("readOrg, err: %+v, %v", readOrg, err)
@@ -119,6 +116,134 @@ func TestRead(t *testing.T) {
 		defer cancel()
 
 		readOrg, err := globalOrgDAO.Read(ctx, random.String(10))
+		t.Logf("readOrg, err: %+v, %v", readOrg, err)
+		require.Nil(t, readOrg)
+		require.ErrorIs(t, err, dao.ErrInvalidFormat)
+	})
+}
+
+func TestReadCache(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Read cached org by valid ID", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createOrg, err := globalOrgDAOCache.Create(ctx, random.Org("dao-org"))
+		t.Logf("createOrg, err: %+v, %v", createOrg, err)
+		require.NoError(t, err)
+
+		readOrg, err := globalOrgDAOCache.Read(ctx, createOrg.Id)
+		t.Logf("readOrg, err: %+v, %v", readOrg, err)
+		require.NoError(t, err)
+
+		// Testify does not currently support protobuf equality:
+		// https://github.com/stretchr/testify/issues/758
+		if !proto.Equal(createOrg, readOrg) {
+			t.Fatalf("\nExpect: %+v\nActual: %+v", createOrg, readOrg)
+		}
+
+		readOrg, err = globalOrgDAOCache.Read(ctx, createOrg.Id)
+		t.Logf("readOrg, err: %+v, %v", readOrg, err)
+		require.NoError(t, err)
+
+		// Testify does not currently support protobuf equality:
+		// https://github.com/stretchr/testify/issues/758
+		if !proto.Equal(createOrg, readOrg) {
+			t.Fatalf("\nExpect: %+v\nActual: %+v", createOrg, readOrg)
+		}
+	})
+
+	t.Run("Read updated org by valid ID", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createOrg, err := globalOrgDAOCache.Create(ctx, random.Org("dao-org"))
+		t.Logf("createOrg, err: %+v, %v", createOrg, err)
+		require.NoError(t, err)
+
+		// Update org fields.
+		createOrg.Name = "dao-org-" + random.String(10)
+		createOrg.Status = api.Status_DISABLED
+		createOrg.Plan = api.Plan_PRO
+		updateOrg, _ := proto.Clone(createOrg).(*api.Org)
+
+		updateOrg, err = globalOrgDAOCache.Update(ctx, updateOrg)
+		t.Logf("createOrg, updateOrg, err: %+v, %+v, %v", createOrg, updateOrg,
+			err)
+		require.NoError(t, err)
+		require.Equal(t, createOrg.Name, updateOrg.Name)
+		require.Equal(t, createOrg.Status, updateOrg.Status)
+		require.Equal(t, createOrg.Plan, updateOrg.Plan)
+		require.True(t, updateOrg.UpdatedAt.AsTime().After(
+			updateOrg.CreatedAt.AsTime()))
+		require.WithinDuration(t, createOrg.CreatedAt.AsTime(),
+			updateOrg.UpdatedAt.AsTime(), 2*time.Second)
+
+		readOrg, err := globalOrgDAOCache.Read(ctx, createOrg.Id)
+		t.Logf("readOrg, err: %+v, %v", readOrg, err)
+		require.NoError(t, err)
+
+		// Testify does not currently support protobuf equality:
+		// https://github.com/stretchr/testify/issues/758
+		if !proto.Equal(updateOrg, readOrg) {
+			t.Fatalf("\nExpect: %+v\nActual: %+v", updateOrg, readOrg)
+		}
+	})
+
+	t.Run("Read deleted org by valid ID", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createOrg, err := globalOrgDAOCache.Create(ctx, random.Org("dao-org"))
+		t.Logf("createOrg, err: %+v, %v", createOrg, err)
+		require.NoError(t, err)
+
+		readOrg, err := globalOrgDAOCache.Read(ctx, createOrg.Id)
+		t.Logf("readOrg, err: %+v, %v", readOrg, err)
+		require.NoError(t, err)
+
+		// Testify does not currently support protobuf equality:
+		// https://github.com/stretchr/testify/issues/758
+		if !proto.Equal(createOrg, readOrg) {
+			t.Fatalf("\nExpect: %+v\nActual: %+v", createOrg, readOrg)
+		}
+
+		err = globalOrgDAOCache.Delete(ctx, createOrg.Id)
+		t.Logf("err: %v", err)
+		require.NoError(t, err)
+
+		readOrg, err = globalOrgDAOCache.Read(ctx, createOrg.Id)
+		t.Logf("readOrg, err: %+v, %v", readOrg, err)
+		require.Nil(t, readOrg)
+		require.Equal(t, dao.ErrNotFound, err)
+	})
+
+	t.Run("Read org by unknown ID", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		readOrg, err := globalOrgDAOCache.Read(ctx, uuid.NewString())
+		t.Logf("readOrg, err: %+v, %v", readOrg, err)
+		require.Nil(t, readOrg)
+		require.Equal(t, dao.ErrNotFound, err)
+	})
+
+	t.Run("Read org by invalid ID", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		readOrg, err := globalOrgDAOCache.Read(ctx, random.String(10))
 		t.Logf("readOrg, err: %+v, %v", readOrg, err)
 		require.Nil(t, readOrg)
 		require.ErrorIs(t, err, dao.ErrInvalidFormat)

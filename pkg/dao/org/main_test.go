@@ -6,12 +6,17 @@ import (
 	"log"
 	"os"
 	"testing"
+	"time"
 
+	"github.com/ownmfa/hermes/pkg/cache"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/test/config"
 )
 
-var globalOrgDAO *DAO
+var (
+	globalOrgDAO      *DAO
+	globalOrgDAOCache *DAO
+)
 
 func TestMain(m *testing.M) {
 	// Set up Config.
@@ -22,7 +27,8 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalf("TestMain dao.NewPgDB: %v", err)
 	}
-	globalOrgDAO = NewDAO(pg)
+	globalOrgDAO = NewDAO(pg, nil, 0)
+	globalOrgDAOCache = NewDAO(pg, cache.NewMemory(), time.Minute)
 
 	os.Exit(m.Run())
 }
