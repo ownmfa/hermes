@@ -119,9 +119,15 @@ func main() {
 			os.Exit(1)
 		}
 
-		orgDAO := org.NewDAO(pg)
+		o := &api.Org{
+			Name:   flag.Arg(1),
+			Status: api.Status_ACTIVE,
+			Plan:   api.Plan_STARTER,
+		}
+
+		orgDAO := org.NewDAO(pg, nil, 0)
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		createOrg, err := orgDAO.Create(ctx, &api.Org{Name: flag.Arg(1)})
+		createOrg, err := orgDAO.Create(ctx, o)
 		cancel()
 		checkErr(err)
 

@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -41,6 +42,7 @@ const (
 	GRPCHost = "127.0.0.1"
 	GRPCPort = ":50051"
 	httpPort = ":8000"
+	orgExp   = 15 * time.Minute
 )
 
 // Errors returned due to insufficient key length.
@@ -106,16 +108,18 @@ func New(cfg *config.Config) (*API, error) {
 		"/ownmfa.api.UserService/UpdateUser":       {},
 	}
 
+	orgDAO := org.NewDAO(pg, redis, orgExp)
 	srv := grpc.NewServer(grpc.ChainUnaryInterceptor(
 		interceptor.Log(nil),
 		interceptor.Auth(skipAuth, cfg.PWTKey, redis),
 		interceptor.Validate(skipValidate),
 	))
+
 	api.RegisterAppIdentityServiceServer(srv,
 		service.NewAppIdentity(app.NewDAO(pg), identity.NewDAO(pg,
 			cfg.IdentityKey), event.NewDAO(pg), redis, n, nsq, cfg.NSQPubTopic))
 	api.RegisterEventServiceServer(srv, service.NewEvent(event.NewDAO(pg)))
-	api.RegisterOrgServiceServer(srv, service.NewOrg(org.NewDAO(pg)))
+	api.RegisterOrgServiceServer(srv, service.NewOrg(orgDAO))
 	api.RegisterSessionServiceServer(srv, service.NewSession(user.NewDAO(pg),
 		key.NewDAO(pg), redis, cfg.PWTKey))
 	api.RegisterUserServiceServer(srv, service.NewUser(user.NewDAO(pg)))

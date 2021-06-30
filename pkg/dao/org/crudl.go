@@ -9,6 +9,7 @@ import (
 	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/hlog"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -42,6 +43,22 @@ WHERE id = $1
 // Read retrieves an organization by ID.
 func (d *DAO) Read(ctx context.Context, orgID string) (*api.Org, error) {
 	org := &api.Org{}
+
+	if d.cache != nil {
+		ok, bOrg, err := d.cache.GetB(ctx, orgKey(orgID))
+		if err != nil {
+			return nil, dao.DBToSentinel(err)
+		}
+
+		if ok {
+			if err := proto.Unmarshal(bOrg, org); err != nil {
+				return nil, dao.DBToSentinel(err)
+			}
+
+			return org, nil
+		}
+	}
+
 	var status, plan string
 	var createdAt, updatedAt time.Time
 
@@ -54,6 +71,21 @@ func (d *DAO) Read(ctx context.Context, orgID string) (*api.Org, error) {
 	org.Plan = api.Plan(api.Plan_value[plan])
 	org.CreatedAt = timestamppb.New(createdAt)
 	org.UpdatedAt = timestamppb.New(updatedAt)
+
+	if d.cache != nil {
+		logger := hlog.FromContext(ctx)
+
+		bOrg, err := proto.Marshal(org)
+		if err != nil {
+			logger.Errorf("Read proto.Marshal: %v", err)
+
+			return org, nil
+		}
+
+		if err = d.cache.SetTTL(ctx, orgKey(orgID), bOrg, d.exp); err != nil {
+			logger.Errorf("Read d.cache.SetTTL: %v", err)
+		}
+	}
 
 	return org, nil
 }
@@ -81,6 +113,14 @@ func (d *DAO) Update(ctx context.Context, org *api.Org) (*api.Org, error) {
 
 	org.CreatedAt = timestamppb.New(createdAt)
 
+	// Invalidate cache on update.
+	if d.cache != nil {
+		if err := d.cache.Del(ctx, orgKey(org.Id)); err != nil {
+			logger := hlog.FromContext(ctx)
+			logger.Errorf("Update d.cache.Del: %v", err)
+		}
+	}
+
 	return org, nil
 }
 
@@ -98,6 +138,14 @@ func (d *DAO) Delete(ctx context.Context, orgID string) error {
 	}
 
 	_, err := d.pg.ExecContext(ctx, deleteOrg, orgID)
+
+	// Invalidate cache on delete.
+	if d.cache != nil {
+		if err := d.cache.Del(ctx, orgKey(orgID)); err != nil {
+			logger := hlog.FromContext(ctx)
+			logger.Errorf("Delete d.cache.Del: %v", err)
+		}
+	}
 
 	return dao.DBToSentinel(err)
 }
