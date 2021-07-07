@@ -135,17 +135,20 @@ func TestRead(t *testing.T) {
 func TestReadByEmail(t *testing.T) {
 	t.Parallel()
 
+	org := random.Org("dao-user")
+	org.Status = api.Status_ACTIVE
 	hash := random.Bytes(60)
 
 	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 	defer cancel()
 
-	createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-user"))
+	createOrg, err := globalOrgDAO.Create(ctx, org)
 	t.Logf("createOrg, err: %+v, %v", createOrg, err)
 	require.NoError(t, err)
 
-	createUser, err := globalUserDAO.Create(ctx, random.User("dao-user",
-		createOrg.Id))
+	user := random.User("dao-user", createOrg.Id)
+	user.Status = api.Status_ACTIVE
+	createUser, err := globalUserDAO.Create(ctx, user)
 	t.Logf("createUser, err: %+v, %v", createUser, err)
 	require.NoError(t, err)
 
@@ -178,6 +181,52 @@ func TestReadByEmail(t *testing.T) {
 		if !proto.Equal(createUser, readUser) {
 			t.Fatalf("\nExpect: %+v\nActual: %+v", createUser, readUser)
 		}
+	})
+
+	t.Run("Read user by disabled user", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		user := random.User("dao-user", createOrg.Id)
+		user.Status = api.Status_DISABLED
+		createUser, err := globalUserDAO.Create(ctx, user)
+		t.Logf("createUser, err: %+v, %v", createUser, err)
+		require.NoError(t, err)
+
+		readUser, readHash, err := globalUserDAO.ReadByEmail(ctx,
+			random.Email(), random.String(10))
+		t.Logf("readUser, readHash, err: %+v, %s, %v", readUser, readHash, err)
+		require.Nil(t, readUser)
+		require.Nil(t, readHash)
+		require.Equal(t, dao.ErrNotFound, err)
+	})
+
+	t.Run("Read user by disabled org", func(t *testing.T) {
+		t.Parallel()
+
+		org := random.Org("dao-user")
+		org.Status = api.Status_DISABLED
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createOrg, err := globalOrgDAO.Create(ctx, org)
+		t.Logf("createOrg, err: %+v, %v", createOrg, err)
+		require.NoError(t, err)
+
+		createUser, err := globalUserDAO.Create(ctx, random.User("dao-user",
+			createOrg.Id))
+		t.Logf("createUser, err: %+v, %v", createUser, err)
+		require.NoError(t, err)
+
+		readUser, readHash, err := globalUserDAO.ReadByEmail(ctx,
+			random.Email(), random.String(10))
+		t.Logf("readUser, readHash, err: %+v, %s, %v", readUser, readHash, err)
+		require.Nil(t, readUser)
+		require.Nil(t, readHash)
+		require.Equal(t, dao.ErrNotFound, err)
 	})
 
 	t.Run("Read user by unknown email", func(t *testing.T) {

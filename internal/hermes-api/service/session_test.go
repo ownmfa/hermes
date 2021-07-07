@@ -31,7 +31,6 @@ func TestLogin(t *testing.T) {
 		org := random.Org("api-session")
 		user := random.User("api-session", org.Id)
 		user.Role = common.Role_ADMIN
-		user.Status = api.Status_ACTIVE
 
 		userer := NewMockUserer(gomock.NewController(t))
 		userer.EXPECT().ReadByEmail(gomock.Any(), user.Email, org.Name).
@@ -61,7 +60,6 @@ func TestLogin(t *testing.T) {
 
 		org := random.Org("api-session")
 		user := random.User("api-session", org.Id)
-		user.Status = api.Status_ACTIVE
 
 		userer := NewMockUserer(gomock.NewController(t))
 		userer.EXPECT().ReadByEmail(gomock.Any(), user.Email, org.Name).
@@ -89,7 +87,6 @@ func TestLogin(t *testing.T) {
 
 		org := random.Org("api-session")
 		user := random.User("api-session", org.Id)
-		user.Status = api.Status_ACTIVE
 
 		userer := NewMockUserer(gomock.NewController(t))
 		userer.EXPECT().ReadByEmail(gomock.Any(), user.Email, org.Name).
@@ -112,41 +109,12 @@ func TestLogin(t *testing.T) {
 			err)
 	})
 
-	t.Run("Log in disabled user", func(t *testing.T) {
-		t.Parallel()
-
-		org := random.Org("api-session")
-		user := random.User("api-session", org.Id)
-		user.Status = api.Status_DISABLED
-
-		userer := NewMockUserer(gomock.NewController(t))
-		userer.EXPECT().ReadByEmail(gomock.Any(), user.Email, org.Name).
-			Return(user, globalHash, nil).Times(1)
-
-		pwtKey := make([]byte, 32)
-		_, err := rand.Read(pwtKey)
-		require.NoError(t, err)
-
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
-		defer cancel()
-
-		sessSvc := NewSession(userer, nil, nil, pwtKey)
-		loginResp, err := sessSvc.Login(ctx, &api.LoginRequest{
-			Email: user.Email, OrgName: org.Name, Password: globalPass,
-		})
-		t.Logf("loginResp, err: %+v, %v", loginResp, err)
-		require.Nil(t, loginResp)
-		require.Equal(t, status.Error(codes.Unauthenticated, "unauthorized"),
-			err)
-	})
-
 	t.Run("Log in unspecified user", func(t *testing.T) {
 		t.Parallel()
 
 		org := random.Org("api-session")
 		user := random.User("api-session", org.Id)
 		user.Role = common.Role_ROLE_UNSPECIFIED
-		user.Status = api.Status_ACTIVE
 
 		userer := NewMockUserer(gomock.NewController(t))
 		userer.EXPECT().ReadByEmail(gomock.Any(), user.Email, org.Name).
@@ -169,13 +137,12 @@ func TestLogin(t *testing.T) {
 			err)
 	})
 
-	t.Run("Log in wrong key", func(t *testing.T) {
+	t.Run("Log in nil key", func(t *testing.T) {
 		t.Parallel()
 
 		org := random.Org("api-session")
 		user := random.User("api-session", org.Id)
 		user.Role = common.Role_ADMIN
-		user.Status = api.Status_ACTIVE
 
 		userer := NewMockUserer(gomock.NewController(t))
 		userer.EXPECT().ReadByEmail(gomock.Any(), user.Email, org.Name).

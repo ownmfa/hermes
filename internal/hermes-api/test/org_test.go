@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/ownmfa/api/go/api"
+	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
@@ -244,6 +245,41 @@ func TestUpdateOrg(t *testing.T) {
 		if !proto.Equal(updateOrg, getOrg) {
 			t.Fatalf("\nExpect: %+v\nActual: %+v", updateOrg, getOrg)
 		}
+	})
+
+	// Test auth interceptor for disabled organization.
+	t.Run("Partial disable org by valid org", func(t *testing.T) {
+		t.Parallel()
+
+		disSysAdminOrgID, disSysAdminGRPCConn, err := authGRPCConn(
+			common.Role_SYS_ADMIN)
+		require.NoError(t, err)
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		// Update org fields.
+		part := &api.Org{Id: disSysAdminOrgID, Status: api.Status_DISABLED}
+
+		orgCli := api.NewOrgServiceClient(disSysAdminGRPCConn)
+		updateOrg, err := orgCli.UpdateOrg(ctx, &api.UpdateOrgRequest{
+			Org: part, UpdateMask: &fieldmaskpb.FieldMask{
+				Paths: []string{"status"},
+			},
+		})
+		t.Logf("updateOrg, err: %+v, %v", updateOrg, err)
+		require.NoError(t, err)
+		require.Equal(t, part.Status, updateOrg.Status)
+
+		updateOrg, err = orgCli.UpdateOrg(ctx, &api.UpdateOrgRequest{
+			Org: part, UpdateMask: &fieldmaskpb.FieldMask{
+				Paths: []string{"status"},
+			},
+		})
+		t.Logf("updateOrg, err: %+v, %v", updateOrg, err)
+		require.Nil(t, updateOrg)
+		require.EqualError(t, err, "rpc error: code = Unauthenticated desc = "+
+			"unauthorized")
 	})
 
 	t.Run("Update nil org", func(t *testing.T) {

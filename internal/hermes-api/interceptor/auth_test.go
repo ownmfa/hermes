@@ -10,6 +10,8 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
+	"github.com/ownmfa/api/go/api"
+	"github.com/ownmfa/hermes/internal/hermes-api/service"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/cache"
 	"github.com/ownmfa/hermes/pkg/consterr"
@@ -30,12 +32,11 @@ func TestAuth(t *testing.T) {
 	_, err := rand.Read(key)
 	require.NoError(t, err)
 
-	webToken, _, err := session.GenerateWebToken(key, random.User("auth",
-		uuid.NewString()))
+	user := random.User("auth", uuid.NewString())
+	webToken, _, err := session.GenerateWebToken(key, user)
 	t.Logf("webToken, err: %v, %v", webToken, err)
 	require.NoError(t, err)
 
-	user := random.User("auth", uuid.NewString())
 	keyToken, err := session.GenerateKeyToken(key, uuid.NewString(), user.OrgId,
 		user.Role)
 	t.Logf("keyToken, err: %v, %v", keyToken, err)
@@ -51,54 +52,74 @@ func TestAuth(t *testing.T) {
 		inpCache      bool
 		inpCacheErr   error
 		inpCacheTimes int
+		inpOrg        *api.Org
+		inpOrgErr     error
+		inpOrgTimes   int
 		err           error
 	}{
 		{
 			[]string{"authorization", "Bearer " + webToken},
 			nil, nil,
 			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, false, nil, 0,
-			nil,
+			&api.Org{Id: user.OrgId, Status: api.Status_ACTIVE}, nil, 1, nil,
 		},
 		{
 			[]string{"authorization", "Bearer " + keyToken},
 			nil, nil,
 			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, false, nil, 1,
-			nil,
+			&api.Org{Id: user.OrgId, Status: api.Status_ACTIVE}, nil, 1, nil,
 		},
 		{
 			nil, errTestFunc,
 			map[string]struct{}{skipPath: {}},
 			&grpc.UnaryServerInfo{FullMethod: skipPath}, false, nil, 0,
-			errTestFunc,
+			&api.Org{}, nil, 0, errTestFunc,
 		},
 		{
 			nil, errTestFunc, nil, &grpc.UnaryServerInfo{
 				FullMethod: random.String(10),
-			}, false, nil, 0, status.Error(codes.Unauthenticated,
-				"unauthorized"),
+			}, false, nil, 0, &api.Org{}, nil, 0,
+			status.Error(codes.Unauthenticated, "unauthorized"),
 		},
 		{
 			[]string{}, errTestFunc, nil, &grpc.UnaryServerInfo{
 				FullMethod: random.String(10),
-			}, false, nil, 0, status.Error(codes.Unauthenticated,
-				"unauthorized"),
+			}, false, nil, 0, &api.Org{}, nil, 0, status.Error(
+				codes.Unauthenticated, "unauthorized"),
 		},
 		{
 			[]string{"authorization", "NoBearer " + webToken},
 			errTestFunc, nil,
 			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, false, nil, 0,
-			status.Error(codes.Unauthenticated, "unauthorized"),
+			&api.Org{}, nil, 0, status.Error(codes.Unauthenticated,
+				"unauthorized"),
 		},
 		{
 			[]string{"authorization", "Bearer ..."},
 			errTestFunc, nil,
 			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, false, nil, 0,
-			status.Error(codes.Unauthenticated, "unauthorized"),
+			&api.Org{}, nil, 0, status.Error(codes.Unauthenticated,
+				"unauthorized"),
 		},
 		{
 			[]string{"authorization", "Bearer " + keyToken},
 			errTestFunc, nil,
 			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, true, nil, 1,
+			&api.Org{}, nil, 0, status.Error(codes.Unauthenticated,
+				"unauthorized"),
+		},
+		{
+			[]string{"authorization", "Bearer " + webToken},
+			errTestFunc, nil,
+			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, false, nil, 0,
+			&api.Org{Id: user.OrgId, Status: api.Status_ACTIVE}, errTestFunc, 1,
+			status.Error(codes.Unauthenticated, "unauthorized"),
+		},
+		{
+			[]string{"authorization", "Bearer " + webToken},
+			errTestFunc, nil,
+			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, false, nil, 0,
+			&api.Org{Id: user.OrgId, Status: api.Status_DISABLED}, nil, 1,
 			status.Error(codes.Unauthenticated, "unauthorized"),
 		},
 	}
@@ -109,10 +130,14 @@ func TestAuth(t *testing.T) {
 		t.Run(fmt.Sprintf("Can log %+v", lTest), func(t *testing.T) {
 			t.Parallel()
 
-			cacher := cache.NewMockCacher(gomock.NewController(t))
+			ctrl := gomock.NewController(t)
+			cacher := cache.NewMockCacher(ctrl)
 			cacher.EXPECT().Get(gomock.Any(), gomock.Any()).
 				Return(lTest.inpCache, "", lTest.inpCacheErr).
 				Times(lTest.inpCacheTimes)
+			orger := service.NewMockOrger(ctrl)
+			orger.EXPECT().Read(gomock.Any(), lTest.inpOrg.Id).
+				Return(lTest.inpOrg, lTest.inpOrgErr).Times(lTest.inpOrgTimes)
 
 			ctx, cancel := context.WithTimeout(context.Background(),
 				testTimeout)
@@ -127,7 +152,7 @@ func TestAuth(t *testing.T) {
 				return req, lTest.inpHandlerErr
 			}
 
-			res, err := Auth(lTest.inpSkipPaths, key, cacher)(ctx, nil,
+			res, err := Auth(lTest.inpSkipPaths, key, cacher, orger)(ctx, nil,
 				lTest.inpInfo, handler)
 			t.Logf("res, err: %v, %v", res, err)
 			require.Nil(t, res)
