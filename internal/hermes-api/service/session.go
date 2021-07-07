@@ -56,6 +56,7 @@ func (s *Session) Login(ctx context.Context,
 	req *api.LoginRequest) (*api.LoginResponse, error) {
 	logger := hlog.FromContext(ctx)
 
+	// Read an active user by email and active organization.
 	user, hash, err := s.userDAO.ReadByEmail(ctx, req.Email, req.OrgName)
 	// Hash the provided password if an error is returned to prevent account
 	// enumeration attacks.
@@ -71,9 +72,9 @@ func (s *Session) Login(ctx context.Context,
 		user.OrgId)
 
 	if err := crypto.CompareHashPass(hash, req.Password); err != nil ||
-		user.Status != api.Status_ACTIVE || user.Role < common.Role_VIEWER {
-		logger.Debugf("Login crypto.CompareHashPass err, user.Status: %v, %s",
-			err, user.Status)
+		user.Role < common.Role_VIEWER {
+		logger.Debugf("Login crypto.CompareHashPass err, user.Role: %v, %s",
+			err, user.Role)
 
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
 	}

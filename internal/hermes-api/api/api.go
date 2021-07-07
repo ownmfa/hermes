@@ -111,7 +111,7 @@ func New(cfg *config.Config) (*API, error) {
 	orgDAO := org.NewDAO(pg, redis, orgExp)
 	srv := grpc.NewServer(grpc.ChainUnaryInterceptor(
 		interceptor.Log(nil),
-		interceptor.Auth(skipAuth, cfg.PWTKey, redis),
+		interceptor.Auth(skipAuth, cfg.PWTKey, redis, orgDAO),
 		interceptor.Validate(skipValidate),
 	))
 

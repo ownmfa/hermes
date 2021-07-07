@@ -20,10 +20,13 @@ import (
 func TestLogin(t *testing.T) {
 	t.Parallel()
 
+	org := random.Org("api-session")
+	org.Status = api.Status_ACTIVE
+
 	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 	defer cancel()
 
-	createOrg, err := globalOrgDAO.Create(ctx, random.Org("api-session"))
+	createOrg, err := globalOrgDAO.Create(ctx, org)
 	t.Logf("createOrg, err: %+v, %v", createOrg, err)
 	require.NoError(t, err)
 
@@ -37,6 +40,17 @@ func TestLogin(t *testing.T) {
 	err = globalUserDAO.UpdatePassword(ctx, createUser.Id, createOrg.Id,
 		globalHash)
 	t.Logf("err: %v", err)
+	require.NoError(t, err)
+
+	disOrg := random.Org("api-session")
+	disOrg.Status = api.Status_ACTIVE
+	createDisOrg, err := globalOrgDAO.Create(ctx, disOrg)
+	t.Logf("createDisOrg, err: %+v, %v", createDisOrg, err)
+	require.NoError(t, err)
+
+	createDisOrgUser, err := globalUserDAO.Create(ctx,
+		random.User("api-session", createDisOrg.Id))
+	t.Logf("createDisOrgUser, err: %+v, %v", createDisOrgUser, err)
 	require.NoError(t, err)
 
 	disUser := random.User("api-session", createOrg.Id)
@@ -79,6 +93,23 @@ func TestLogin(t *testing.T) {
 		require.WithinDuration(t, time.Now().Add(
 			session.WebTokenExp*time.Second), login.ExpiresAt.AsTime(),
 			2*time.Second)
+	})
+
+	t.Run("Log in disabled org", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		sessCli := api.NewSessionServiceClient(globalNoAuthGRPCConn)
+		login, err := sessCli.Login(ctx, &api.LoginRequest{
+			Email: createDisOrgUser.Email, OrgName: createDisOrg.Name,
+			Password: random.String(10),
+		})
+		t.Logf("loginResp, err: %+v, %v", login, err)
+		require.Nil(t, login)
+		require.EqualError(t, err, "rpc error: code = Unauthenticated desc = "+
+			"unauthorized")
 	})
 
 	t.Run("Log in unknown user", func(t *testing.T) {
@@ -266,6 +297,7 @@ func TestDeleteKey(t *testing.T) {
 		})
 	})
 
+	// Test auth interceptor for disabled API key.
 	t.Run("Delete key with invalid key", func(t *testing.T) {
 		t.Parallel()
 

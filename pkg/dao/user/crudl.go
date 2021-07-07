@@ -65,10 +65,11 @@ SELECT u.id, u.org_id, u.name, u.email, u.password_hash, u.role, u.status,
 u.created_at, u.updated_at
 FROM users u
 INNER JOIN orgs o ON u.org_id = o.id
-WHERE (u.email, o.name) = ($1, $2)
+WHERE (u.email, u.status, o.name, o.status) = ($1, 'ACTIVE', $2, 'ACTIVE')
 `
 
-// ReadByEmail retrieves a user and password hash by email and org name.
+// ReadByEmail retrieves an active user and password hash by email and active
+// org name.
 func (d *DAO) ReadByEmail(ctx context.Context, email,
 	orgName string) (*api.User, []byte, error) {
 	user := &api.User{}

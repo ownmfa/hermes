@@ -4,7 +4,9 @@ import (
 	"context"
 	"strings"
 
+	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/hermes/internal/hermes-api/key"
+	"github.com/ownmfa/hermes/internal/hermes-api/service"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/cache"
 	"github.com/ownmfa/hermes/pkg/hlog"
@@ -17,7 +19,7 @@ import (
 // Auth performs authentication and authorization via web token, and implements
 // the grpc.UnaryServerInterceptor type signature.
 func Auth(skipPaths map[string]struct{}, pwtKey []byte,
-	cache cache.Cacher) grpc.UnaryServerInterceptor {
+	cache cache.Cacher, orgDAO service.Orger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{},
 		info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{},
 		error) {
@@ -53,6 +55,12 @@ func Auth(skipPaths map[string]struct{}, pwtKey []byte,
 				sess.KeyID)); ok || err != nil {
 				return nil, status.Error(codes.Unauthenticated, "unauthorized")
 			}
+		}
+
+		// Check for disabled organization.
+		if org, err := orgDAO.Read(ctx, sess.OrgID); err != nil ||
+			org.Status == api.Status_DISABLED {
+			return nil, status.Error(codes.Unauthenticated, "unauthorized")
 		}
 
 		// Add logging fields.

@@ -35,10 +35,13 @@ func (c *credential) RequireTransportSecurity() bool {
 }
 
 func authGRPCConn(role common.Role) (string, *grpc.ClientConn, error) {
+	org := random.Org("api-helper")
+	org.Status = api.Status_ACTIVE
+
 	ctx, cancel := context.WithTimeout(context.Background(), 14*time.Second)
 	defer cancel()
 
-	createOrg, err := globalOrgDAO.Create(ctx, random.Org("api-helper"))
+	createOrg, err := globalOrgDAO.Create(ctx, org)
 	if err != nil {
 		return "", nil, err
 	}

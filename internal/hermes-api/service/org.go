@@ -1,6 +1,6 @@
 package service
 
-//go:generate mockgen -source org.go -destination mock_orger_test.go -package service
+//go:generate mockgen -source org.go -destination mock_orger.go -package service
 
 import (
 	"context"
