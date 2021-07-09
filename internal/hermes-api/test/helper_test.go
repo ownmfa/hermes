@@ -34,9 +34,11 @@ func (c *credential) RequireTransportSecurity() bool {
 	return false
 }
 
-func authGRPCConn(role common.Role) (string, *grpc.ClientConn, error) {
+func authGRPCConn(role common.Role, plan api.Plan) (string, *grpc.ClientConn,
+	error) {
 	org := random.Org("api-helper")
 	org.Status = api.Status_ACTIVE
+	org.Plan = plan
 
 	ctx, cancel := context.WithTimeout(context.Background(), 14*time.Second)
 	defer cancel()

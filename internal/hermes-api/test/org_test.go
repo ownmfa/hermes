@@ -252,7 +252,7 @@ func TestUpdateOrg(t *testing.T) {
 		t.Parallel()
 
 		disSysAdminOrgID, disSysAdminGRPCConn, err := authGRPCConn(
-			common.Role_SYS_ADMIN)
+			common.Role_SYS_ADMIN, api.Plan_PRO)
 		require.NoError(t, err)
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
