@@ -59,9 +59,13 @@ func (ai *AppIdentity) CreateIdentity(ctx context.Context,
 		return nil, errPerm(common.Role_AUTHENTICATOR)
 	}
 
-	// Validate notification methods.
+	// Validate notification methods and apply plan limits.
 	switch m := req.Identity.MethodOneof.(type) {
 	case *api.Identity_SmsMethod:
+		if sess.OrgPlan < api.Plan_PRO {
+			return nil, errPlan(api.Plan_PRO)
+		}
+
 		if !rePhone.MatchString(m.SmsMethod.Phone) {
 			return nil, status.Error(codes.InvalidArgument,
 				"invalid E.164 phone number")
@@ -71,9 +75,21 @@ func (ai *AppIdentity) CreateIdentity(ctx context.Context,
 			return nil, errToStatus(err)
 		}
 	case *api.Identity_PushoverMethod:
+		if sess.OrgPlan < api.Plan_PRO {
+			return nil, errPlan(api.Plan_PRO)
+		}
+
 		if err := ai.notify.VaildatePushover(ctx,
 			m.PushoverMethod.PushoverKey); err != nil {
 			return nil, errToStatus(err)
+		}
+	case *api.Identity_EmailMethod:
+		if sess.OrgPlan < api.Plan_PRO {
+			return nil, errPlan(api.Plan_PRO)
+		}
+	case *api.Identity_BackupCodesMethod:
+		if sess.OrgPlan < api.Plan_PRO {
+			return nil, errPlan(api.Plan_PRO)
 		}
 	}
 
@@ -216,7 +232,8 @@ func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
 		offset, err = otp.VerifyTOTP(hardTOTPLookAhead, int(off), passcode)
 	case *api.Identity_BackupCodesMethod:
 		// Backup codes may be used out of order, always use a zero value HOTP
-		// counter and do not store the new counter.
+		// counter and do not store the new counter. Do not apply plan limits,
+		// as backup codes are limited in quantity.
 		_, err = otp.VerifyHOTP(hotpLookAhead, 0, passcode)
 	default:
 		logger.Errorf("verify unknown identity.MethodOneof: %+v", identity)
@@ -328,6 +345,12 @@ func (ai *AppIdentity) ChallengeIdentity(ctx context.Context,
 	switch identity.MethodOneof.(type) {
 	case *api.Identity_SmsMethod, *api.Identity_PushoverMethod,
 		*api.Identity_EmailMethod:
+		// Apply plan limits, in the event that the organization's plan was
+		// lowered after identity creation.
+		if sess.OrgPlan < api.Plan_PRO {
+			return nil, errPlan(api.Plan_PRO)
+		}
+
 		// Rate limit.
 		notifyKey := ikey.Challenge(identity.OrgId, identity.AppId, identity.Id)
 		ok, err := ai.cache.SetIfNotExistTTL(ctx, notifyKey, 1, notifyRate)

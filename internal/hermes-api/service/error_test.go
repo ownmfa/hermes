@@ -7,6 +7,7 @@ import (
 	"io"
 	"testing"
 
+	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/test/random"
@@ -83,6 +84,32 @@ func TestErrPerm(t *testing.T) {
 			require.Equal(t, status.Error(codes.PermissionDenied,
 				fmt.Sprintf("permission denied, %s role required",
 					role.String())), err)
+		})
+	}
+}
+
+func TestErrPlan(t *testing.T) {
+	t.Parallel()
+
+	for i := 0; i < 5; i++ {
+		lTest := i
+
+		t.Run(fmt.Sprintf("Can generate %v", lTest), func(t *testing.T) {
+			t.Parallel()
+
+			plan := []api.Plan{
+				api.Plan_PAYMENT_FAIL,
+				api.Plan_STARTER,
+				api.Plan_PRO,
+				api.Plan_ENTERPRISE,
+			}[random.Intn(4)]
+
+			err := errPlan(plan)
+			t.Logf("err: %v", err)
+
+			require.Equal(t, status.Error(codes.PermissionDenied,
+				fmt.Sprintf("permission denied, %s plan required",
+					plan.String())), err)
 		})
 	}
 }

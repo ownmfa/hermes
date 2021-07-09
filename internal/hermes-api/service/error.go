@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/pkg/crypto"
 	"github.com/ownmfa/hermes/pkg/dao"
@@ -55,4 +56,10 @@ func errToStatus(err error) error {
 func errPerm(role common.Role) error {
 	return status.Error(codes.PermissionDenied,
 		fmt.Sprintf("permission denied, %s role required", role.String()))
+}
+
+// errPlan returns a PermissionDenied status due to insufficient plan.
+func errPlan(plan api.Plan) error {
+	return status.Error(codes.PermissionDenied,
+		fmt.Sprintf("permission denied, %s plan required", plan.String()))
 }

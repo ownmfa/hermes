@@ -7,11 +7,13 @@ import (
 	"crypto"
 	"crypto/rand"
 	"encoding/base32"
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/ownmfa/api/go/api"
+	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/api/go/message"
 	ikey "github.com/ownmfa/hermes/internal/hermes-api/key"
 	"github.com/ownmfa/hermes/pkg/key"
@@ -19,6 +21,7 @@ import (
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/fieldmaskpb"
 )
 
 func TestCreateIdentity(t *testing.T) {
@@ -225,6 +228,46 @@ func TestCreateIdentity(t *testing.T) {
 			"invalid CreateIdentityRequest.Identity: embedded message failed "+
 			"validation | caused by: invalid Identity.Comment: value length "+
 			"must be between 5 and 80 runes, inclusive")
+	})
+
+	t.Run("Create valid identity with insufficient plan", func(t *testing.T) {
+		t.Parallel()
+
+		_, adminStarterGRPCConn, err := authGRPCConn(common.Role_ADMIN,
+			api.Plan_STARTER)
+		require.NoError(t, err)
+
+		tests := []*api.Identity{
+			random.SMSIdentity("api-identity", uuid.NewString(),
+				uuid.NewString()),
+			random.PushoverIdentity("api-identity", uuid.NewString(),
+				uuid.NewString()),
+			random.EmailIdentity("api-identity", uuid.NewString(),
+				uuid.NewString()),
+			random.BackupCodesIdentity("api-identity", uuid.NewString(),
+				uuid.NewString()),
+		}
+
+		for _, test := range tests {
+			lTest := test
+
+			t.Run(fmt.Sprintf("Can create %v", lTest), func(t *testing.T) {
+				t.Parallel()
+
+				ctx, cancel := context.WithTimeout(context.Background(),
+					testTimeout)
+				defer cancel()
+
+				aiCli := api.NewAppIdentityServiceClient(adminStarterGRPCConn)
+				createIdentity, err := aiCli.CreateIdentity(ctx,
+					&api.CreateIdentityRequest{Identity: lTest})
+				t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+				require.Nil(t, createIdentity)
+				require.EqualError(t, err, "rpc error: code = "+
+					"PermissionDenied desc = permission denied, PRO plan "+
+					"required")
+			})
+		}
 	})
 
 	t.Run("Create identity with non-E.164 phone number", func(t *testing.T) {
@@ -800,6 +843,52 @@ func TestChallengeIdentity(t *testing.T) {
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
 			"not found")
+	})
+
+	t.Run("Challenge identity with insufficient plan", func(t *testing.T) {
+		t.Parallel()
+
+		adminStarterOrgID, adminStarterGRPCConn, err := authGRPCConn(
+			common.Role_SYS_ADMIN, api.Plan_PRO)
+		require.NoError(t, err)
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		aiCli := api.NewAppIdentityServiceClient(adminStarterGRPCConn)
+		createApp, err := aiCli.CreateApp(ctx, &api.CreateAppRequest{
+			App: random.App("api-app", uuid.NewString()),
+		})
+		t.Logf("createApp, err: %+v, %v", createApp, err)
+		require.NoError(t, err)
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{
+				Identity: random.SMSIdentity("api-identity", uuid.NewString(),
+					createApp.Id),
+			})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+
+		// Update org fields.
+		part := &api.Org{Id: adminStarterOrgID, Plan: api.Plan_STARTER}
+
+		orgCli := api.NewOrgServiceClient(adminStarterGRPCConn)
+		updateOrg, err := orgCli.UpdateOrg(ctx, &api.UpdateOrgRequest{
+			Org: part, UpdateMask: &fieldmaskpb.FieldMask{
+				Paths: []string{"plan"},
+			},
+		})
+		t.Logf("updateOrg, err: %+v, %v", updateOrg, err)
+		require.NoError(t, err)
+		require.Equal(t, part.Plan, updateOrg.Plan)
+
+		_, err = aiCli.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{
+			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+		})
+		t.Logf("err: %v", err)
+		require.EqualError(t, err, "rpc error: code = PermissionDenied desc = "+
+			"permission denied, PRO plan required")
 	})
 
 	t.Run("Challenge SMS identity by invalid rate", func(t *testing.T) {

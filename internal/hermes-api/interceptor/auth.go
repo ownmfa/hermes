@@ -58,10 +58,11 @@ func Auth(skipPaths map[string]struct{}, pwtKey []byte,
 		}
 
 		// Check for disabled organization.
-		if org, err := orgDAO.Read(ctx, sess.OrgID); err != nil ||
-			org.Status == api.Status_DISABLED {
+		org, err := orgDAO.Read(ctx, sess.OrgID)
+		if err != nil || org.Status == api.Status_DISABLED {
 			return nil, status.Error(codes.Unauthenticated, "unauthorized")
 		}
+		sess.OrgPlan = org.Plan
 
 		// Add logging fields.
 		logger := hlog.FromContext(ctx)

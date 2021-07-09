@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto"
 	"encoding/hex"
+	"fmt"
 	"testing"
 	"time"
 
@@ -103,8 +104,8 @@ func TestCreateIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
-				TraceID: traceID,
+				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
+				Role: common.Role_ADMIN, TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
 
@@ -152,8 +153,8 @@ func TestCreateIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
-				TraceID: traceID,
+				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
+				Role: common.Role_ADMIN, TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
 
@@ -198,8 +199,8 @@ func TestCreateIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
-				TraceID: traceID,
+				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
+				Role: common.Role_ADMIN, TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
 
@@ -312,8 +313,8 @@ func TestCreateIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
-				TraceID: traceID,
+				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
+				Role: common.Role_ADMIN, TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
 
@@ -370,6 +371,44 @@ func TestCreateIdentity(t *testing.T) {
 		require.Equal(t, errPerm(common.Role_AUTHENTICATOR), err)
 	})
 
+	t.Run("Create identity with insufficient plan", func(t *testing.T) {
+		t.Parallel()
+
+		tests := []*api.Identity{
+			random.SMSIdentity("api-identity", uuid.NewString(),
+				uuid.NewString()),
+			random.PushoverIdentity("api-identity", uuid.NewString(),
+				uuid.NewString()),
+			random.EmailIdentity("api-identity", uuid.NewString(),
+				uuid.NewString()),
+			random.BackupCodesIdentity("api-identity", uuid.NewString(),
+				uuid.NewString()),
+		}
+
+		for _, test := range tests {
+			lTest := test
+
+			t.Run(fmt.Sprintf("Can create %v", lTest), func(t *testing.T) {
+				t.Parallel()
+
+				ctx, cancel := context.WithTimeout(session.NewContext(
+					context.Background(), &session.Session{
+						OrgID: lTest.OrgId, OrgPlan: api.Plan_STARTER,
+						Role: common.Role_ADMIN,
+					}), testTimeout)
+				defer cancel()
+
+				aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
+				createIdentity, err := aiSvc.CreateIdentity(ctx,
+					&api.CreateIdentityRequest{Identity: lTest})
+				t.Logf("lTest, createIdentity, err: %+v, %+v, %v", lTest,
+					createIdentity, err)
+				require.Nil(t, createIdentity)
+				require.Equal(t, errPlan(api.Plan_PRO), err)
+			})
+		}
+	})
+
 	t.Run("Create identity with non-E.164 phone number", func(t *testing.T) {
 		t.Parallel()
 
@@ -381,7 +420,8 @@ func TestCreateIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
+				Role: common.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -408,7 +448,8 @@ func TestCreateIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
+				Role: common.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -436,7 +477,8 @@ func TestCreateIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
+				Role: common.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -522,7 +564,8 @@ func TestCreateIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
+				Role: common.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -1343,8 +1386,8 @@ func TestChallengeIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
-				TraceID: traceID,
+				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
+				Role: common.Role_ADMIN, TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
 
@@ -1378,7 +1421,8 @@ func TestChallengeIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
+				Role: common.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -1466,6 +1510,31 @@ func TestChallengeIdentity(t *testing.T) {
 		require.Equal(t, status.Error(codes.NotFound, "object not found"), err)
 	})
 
+	t.Run("Challenge identity with insufficient plan", func(t *testing.T) {
+		t.Parallel()
+
+		identity := random.SMSIdentity("api-identity", uuid.NewString(),
+			uuid.NewString())
+
+		identityer := NewMockIdentityer(gomock.NewController(t))
+		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
+			identity.AppId).Return(identity, nil, nil).Times(1)
+
+		ctx, cancel := context.WithTimeout(session.NewContext(
+			context.Background(), &session.Session{
+				OrgID: identity.OrgId, OrgPlan: api.Plan_STARTER,
+				Role: common.Role_ADMIN,
+			}), testTimeout)
+		defer cancel()
+
+		aiSvc := NewAppIdentity(nil, identityer, nil, nil, nil, nil, "")
+		_, err := aiSvc.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{
+			Id: identity.Id, AppId: identity.AppId,
+		})
+		t.Logf("err: %v", err)
+		require.Equal(t, errPlan(api.Plan_PRO), err)
+	})
+
 	t.Run("Challenge SMS identity by invalid rate cache", func(t *testing.T) {
 		t.Parallel()
 
@@ -1483,7 +1552,8 @@ func TestChallengeIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
+				Role: common.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -1521,8 +1591,8 @@ func TestChallengeIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
-				TraceID: traceID,
+				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
+				Role: common.Role_ADMIN, TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
 
@@ -1556,7 +1626,8 @@ func TestChallengeIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
+				Role: common.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 

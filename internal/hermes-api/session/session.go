@@ -6,6 +6,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/api/go/common"
 )
 
@@ -16,6 +17,7 @@ type Session struct {
 	UserID  string
 	KeyID   string
 	OrgID   string
+	OrgPlan api.Plan
 	Role    common.Role
 	TraceID uuid.UUID
 }
