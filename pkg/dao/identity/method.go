@@ -3,6 +3,7 @@ package identity
 import (
 	"crypto"
 	"crypto/rand"
+	"strings"
 
 	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/hermes/pkg/consterr"
@@ -11,6 +12,7 @@ import (
 
 const (
 	defaultDigits = 7
+	defaultAnswer = "********"
 
 	errUnknownMethodOneof consterr.Error = "unknown identity.MethodOneof"
 )
@@ -118,6 +120,14 @@ func methodToOTP(identity *api.Identity) (*oath.OTP, *otpMeta, error) {
 
 		meta.backupCodes = m.BackupCodesMethod.Passcodes
 		meta.retSecret = false
+	case *api.Identity_SecurityQuestionsMethod:
+		otp.Hash = crypto.SHA512
+		otp.Digits = defaultDigits
+
+		otp.Answer = strings.ToLower(m.SecurityQuestionsMethod.Answer)
+		m.SecurityQuestionsMethod.Answer = defaultAnswer
+
+		meta.retSecret = false
 	default:
 		return nil, nil, errUnknownMethodOneof
 	}
@@ -129,6 +139,12 @@ func methodToOTP(identity *api.Identity) (*oath.OTP, *otpMeta, error) {
 // otpMeta.
 func otpToMethod(identity *api.Identity, otp *oath.OTP, meta *otpMeta) {
 	switch {
+	case otp.Answer != "":
+		identity.MethodOneof = &api.Identity_SecurityQuestionsMethod{
+			SecurityQuestionsMethod: &api.SecurityQuestionsMethod{
+				Answer: defaultAnswer,
+			},
+		}
 	case meta.backupCodes > 0:
 		identity.MethodOneof = &api.Identity_BackupCodesMethod{
 			BackupCodesMethod: &api.BackupsCodesMethod{

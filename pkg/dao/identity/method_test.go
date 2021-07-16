@@ -6,6 +6,7 @@ import (
 	"crypto"
 	"crypto/rand"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/google/uuid"
@@ -27,6 +28,7 @@ func TestMethodToOTP(t *testing.T) {
 	phone := random.String(10)
 	pushoverKey := random.String(10)
 	backupCodes := int32(random.Intn(5) + 6)
+	answer := random.String(80)
 
 	tests := []struct {
 		inp     *api.Identity
@@ -122,6 +124,16 @@ func TestMethodToOTP(t *testing.T) {
 			}, &otpMeta{backupCodes: backupCodes}, nil,
 		},
 		{
+			&api.Identity{MethodOneof: &api.Identity_SecurityQuestionsMethod{
+				SecurityQuestionsMethod: &api.SecurityQuestionsMethod{
+					Answer: strings.ToUpper(answer),
+				},
+			}}, &oath.OTP{
+				Algorithm: oath.HOTP, Hash: crypto.SHA512,
+				Digits: defaultDigits, Answer: answer,
+			}, &otpMeta{}, nil,
+		},
+		{
 			&api.Identity{MethodOneof: nil}, nil, nil, errUnknownMethodOneof,
 		},
 	}
@@ -155,6 +167,7 @@ func TestMethodToOTP(t *testing.T) {
 func TestOTPToMethod(t *testing.T) {
 	t.Parallel()
 
+	answer := random.String(80)
 	backupCodes := int32(random.Intn(5) + 6)
 	email := random.Email()
 	pushoverKey := random.String(30)
@@ -165,6 +178,18 @@ func TestOTPToMethod(t *testing.T) {
 		inpMeta *otpMeta
 		res     *api.Identity
 	}{
+		{
+			&oath.OTP{
+				Algorithm: oath.HOTP, Hash: crypto.SHA512,
+				Digits: defaultDigits, Answer: answer,
+			}, &otpMeta{}, &api.Identity{
+				MethodOneof: &api.Identity_SecurityQuestionsMethod{
+					SecurityQuestionsMethod: &api.SecurityQuestionsMethod{
+						Answer: defaultAnswer,
+					},
+				},
+			},
+		},
 		{
 			&oath.OTP{
 				Algorithm: oath.HOTP, Hash: crypto.SHA512,

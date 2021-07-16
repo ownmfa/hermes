@@ -4,6 +4,7 @@ package service
 
 import (
 	"context"
+	"crypto/subtle"
 	"errors"
 	"fmt"
 	"regexp"
@@ -88,6 +89,10 @@ func (ai *AppIdentity) CreateIdentity(ctx context.Context,
 			return nil, errPlan(api.Plan_PRO)
 		}
 	case *api.Identity_BackupCodesMethod:
+		if sess.OrgPlan < api.Plan_PRO {
+			return nil, errPlan(api.Plan_PRO)
+		}
+	case *api.Identity_SecurityQuestionsMethod:
 		if sess.OrgPlan < api.Plan_PRO {
 			return nil, errPlan(api.Plan_PRO)
 		}
@@ -179,13 +184,15 @@ func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
 
 	// Disallow passcode reuse, even when counter tracking would prevent it. Do
 	// not expire to support backup codes.
-	ok, err := ai.cache.SetIfNotExist(ctx, ikey.Reuse(identity.OrgId,
-		identity.AppId, identity.Id, passcode), 1)
-	if err != nil {
-		return err
-	}
-	if !ok {
-		return oath.ErrInvalidPasscode
+	if _, ok := identity.MethodOneof.(*api.Identity_SecurityQuestionsMethod); !ok {
+		ok, err := ai.cache.SetIfNotExist(ctx, ikey.Reuse(identity.OrgId,
+			identity.AppId, identity.Id, passcode), 1)
+		if err != nil {
+			return err
+		}
+		if !ok {
+			return oath.ErrInvalidPasscode
+		}
 	}
 
 	// Add logging fields.
@@ -235,10 +242,15 @@ func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
 		// counter and do not store the new counter. Do not apply plan limits,
 		// as backup codes are limited in quantity.
 		_, err = otp.VerifyHOTP(hotpLookAhead, 0, passcode)
+	case *api.Identity_SecurityQuestionsMethod:
+		if subtle.ConstantTimeCompare([]byte(otp.Answer),
+			[]byte(strings.ToLower(passcode))) == 0 {
+			err = oath.ErrInvalidPasscode
+		}
 	default:
 		logger.Errorf("verify unknown identity.MethodOneof: %+v", identity)
 
-		return oath.ErrInvalidPasscode
+		err = oath.ErrInvalidPasscode
 	}
 	if err != nil {
 		return err

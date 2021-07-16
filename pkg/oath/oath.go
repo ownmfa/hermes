@@ -32,14 +32,17 @@ const (
 	ErrInvalidPasscode consterr.Error = "oath: invalid passcode"
 )
 
-// OTP represents a one-time password generator, and is compatible with both
-// HOTP and TOTP algorithms. It uses a fixed time period of 30 seconds.
+// OTP represents a password generator, and is compatible with both HOTP and
+// TOTP algorithms, and with security questions. It uses a fixed time period of
+// 30 seconds.
 type OTP struct {
-	Algorithm   string
-	Hash        crypto.Hash
-	Digits      int
-	Key         []byte
+	Algorithm string
+	Hash      crypto.Hash
+	Digits    int
+	Key       []byte
+
 	AccountName string
+	Answer      string
 }
 
 // Secret returns the key in base32 format without padding.

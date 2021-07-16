@@ -7,6 +7,7 @@ import (
 	"crypto"
 	"encoding/hex"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -335,6 +336,57 @@ func TestCreateIdentity(t *testing.T) {
 			Identity: identity, Passcodes: createIdentity.Passcodes,
 		}, createIdentity) {
 			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.CreateIdentityResponse{
+				Identity: identity, Passcodes: createIdentity.Passcodes,
+			}, createIdentity)
+		}
+	})
+
+	t.Run("Create valid security questions identity", func(t *testing.T) {
+		t.Parallel()
+
+		otp := &oath.OTP{
+			Algorithm: oath.HOTP, Hash: crypto.SHA512, Digits: 7,
+			Answer: random.String(80),
+		}
+
+		identity := random.SecurityQuestionsIdentity("api-identity",
+			uuid.NewString(), uuid.NewString())
+		identity.Status = api.IdentityStatus_ACTIVATED
+		retIdentity, _ := proto.Clone(identity).(*api.Identity)
+		traceID := uuid.New()
+		event := &api.Event{
+			OrgId: identity.OrgId, AppId: identity.AppId,
+			IdentityId: identity.Id, Status: api.EventStatus_IDENTITY_CREATED,
+			TraceId: traceID.String(),
+		}
+
+		ctrl := gomock.NewController(t)
+		identityer := NewMockIdentityer(ctrl)
+		identityer.EXPECT().Create(gomock.Any(), identity).Return(retIdentity,
+			otp, false, nil).Times(1)
+		eventer := NewMockEventer(ctrl)
+		eventer.EXPECT().Create(gomock.Any(), event).Return(dao.ErrNotFound).
+			Times(1)
+
+		ctx, cancel := context.WithTimeout(session.NewContext(
+			context.Background(), &session.Session{
+				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
+				Role: common.Role_ADMIN, TraceID: traceID,
+			}), testTimeout)
+		defer cancel()
+
+		aiSvc := NewAppIdentity(nil, identityer, eventer, nil, nil, nil, "")
+		createIdentity, err := aiSvc.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{Identity: identity})
+		t.Logf("identity, createIdentity, err: %+v, %+v, %v", identity,
+			createIdentity, err)
+		require.NoError(t, err)
+
+		// Testify does not currently support protobuf equality:
+		// https://github.com/stretchr/testify/issues/758
+		if !proto.Equal(&api.CreateIdentityResponse{Identity: identity},
+			createIdentity) {
+			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.CreateIdentityResponse{
 				Identity: identity,
 			}, createIdentity)
 		}
@@ -382,6 +434,8 @@ func TestCreateIdentity(t *testing.T) {
 			random.EmailIdentity("api-identity", uuid.NewString(),
 				uuid.NewString()),
 			random.BackupCodesIdentity("api-identity", uuid.NewString(),
+				uuid.NewString()),
+			random.SecurityQuestionsIdentity("api-identity", uuid.NewString(),
 				uuid.NewString()),
 		}
 
@@ -772,6 +826,35 @@ func TestVerify(t *testing.T) {
 		require.NoError(t, err)
 	})
 
+	t.Run("Verify security questions identity by valid ID", func(t *testing.T) {
+		t.Parallel()
+
+		otp := &oath.OTP{
+			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6,
+			Answer: random.String(80),
+		}
+
+		identity := random.SecurityQuestionsIdentity("api-identity",
+			uuid.NewString(), uuid.NewString())
+		identity.Status = api.IdentityStatus_ACTIVATED
+		retIdentity, _ := proto.Clone(identity).(*api.Identity)
+
+		identityer := NewMockIdentityer(gomock.NewController(t))
+		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
+			identity.AppId).Return(retIdentity, otp, nil).Times(1)
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		aiSvc := NewAppIdentity(nil, identityer, nil, nil, nil, nil, "")
+		err := aiSvc.verify(ctx, identity.Id, identity.OrgId, identity.AppId,
+			api.IdentityStatus_ACTIVATED, strings.ToUpper(otp.Answer),
+			oath.DefaultHOTPLookAhead, oath.DefaultTOTPLookAhead,
+			oath.DefaultTOTPLookAhead)
+		t.Logf("err: %v", err)
+		require.NoError(t, err)
+	})
+
 	t.Run("Verify by unknown ID", func(t *testing.T) {
 		t.Parallel()
 
@@ -1095,6 +1178,34 @@ func TestVerify(t *testing.T) {
 		aiSvc := NewAppIdentity(nil, identityer, nil, cacher, nil, nil, "")
 		err := aiSvc.verify(ctx, identity.Id, identity.OrgId, identity.AppId,
 			api.IdentityStatus_UNVERIFIED, "0000000", oath.DefaultHOTPLookAhead,
+			oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead)
+		t.Logf("err: %v", err)
+		require.Equal(t, oath.ErrInvalidPasscode, err)
+	})
+
+	t.Run("Verify by invalid answer", func(t *testing.T) {
+		t.Parallel()
+
+		otp := &oath.OTP{
+			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6,
+			Answer: random.String(80),
+		}
+
+		identity := random.SecurityQuestionsIdentity("api-identity",
+			uuid.NewString(), uuid.NewString())
+		identity.Status = api.IdentityStatus_UNVERIFIED
+		retIdentity, _ := proto.Clone(identity).(*api.Identity)
+
+		identityer := NewMockIdentityer(gomock.NewController(t))
+		identityer.EXPECT().Read(gomock.Any(), identity.Id, identity.OrgId,
+			identity.AppId).Return(retIdentity, otp, nil).Times(1)
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		aiSvc := NewAppIdentity(nil, identityer, nil, nil, nil, nil, "")
+		err := aiSvc.verify(ctx, identity.Id, identity.OrgId, identity.AppId,
+			api.IdentityStatus_UNVERIFIED, "answer", oath.DefaultHOTPLookAhead,
 			oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead)
 		t.Logf("err: %v", err)
 		require.Equal(t, oath.ErrInvalidPasscode, err)
