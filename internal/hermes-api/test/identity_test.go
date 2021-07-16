@@ -191,6 +191,33 @@ func TestCreateIdentity(t *testing.T) {
 			int(identity.GetBackupCodesMethod().Passcodes))
 	})
 
+	t.Run("Create valid security questions identity", func(t *testing.T) {
+		t.Parallel()
+
+		identity := random.SecurityQuestionsIdentity("api-identity",
+			uuid.NewString(), createApp.Id)
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{Identity: identity})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+		require.NotEqual(t, identity.Id, createIdentity.Identity.Id)
+		require.Equal(t, api.IdentityStatus_ACTIVATED,
+			createIdentity.Identity.Status)
+		require.Equal(t, "********",
+			createIdentity.Identity.GetSecurityQuestionsMethod().Answer)
+		require.WithinDuration(t, time.Now(),
+			createIdentity.Identity.CreatedAt.AsTime(), 2*time.Second)
+		require.WithinDuration(t, time.Now(),
+			createIdentity.Identity.UpdatedAt.AsTime(), 2*time.Second)
+		require.Empty(t, createIdentity.Secret)
+		require.Empty(t, createIdentity.Qr)
+		require.Empty(t, createIdentity.Passcodes)
+	})
+
 	t.Run("Create valid identity with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
@@ -245,6 +272,8 @@ func TestCreateIdentity(t *testing.T) {
 			random.EmailIdentity("api-identity", uuid.NewString(),
 				uuid.NewString()),
 			random.BackupCodesIdentity("api-identity", uuid.NewString(),
+				uuid.NewString()),
+			random.SecurityQuestionsIdentity("api-identity", uuid.NewString(),
 				uuid.NewString()),
 		}
 
@@ -1239,6 +1268,28 @@ func TestVerifyIdentity(t *testing.T) {
 		}
 	})
 
+	t.Run("Verify security questions identity by valid ID", func(t *testing.T) {
+		t.Parallel()
+
+		identity := random.SecurityQuestionsIdentity("api-identity",
+			uuid.NewString(), createApp.Id)
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{Identity: identity})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+
+		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
+			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Passcode: identity.GetSecurityQuestionsMethod().Answer,
+		})
+		t.Logf("err: %v", err)
+		require.NoError(t, err)
+	})
+
 	t.Run("Verify identity with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
@@ -1476,6 +1527,29 @@ func TestVerifyIdentity(t *testing.T) {
 		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
 			Id: createIdentity.Identity.Id, AppId: createApp.Id,
 			Passcode: "000000",
+		})
+		t.Logf("err: %v", err)
+		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+
+			"oath: invalid passcode")
+	})
+
+	t.Run("Verify identity by invalid answer", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		defer cancel()
+
+		createIdentity, err := aiCli.CreateIdentity(ctx,
+			&api.CreateIdentityRequest{
+				Identity: random.SecurityQuestionsIdentity("api-identity",
+					uuid.NewString(), createApp.Id),
+			})
+		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
+		require.NoError(t, err)
+
+		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
+			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Passcode: random.String(80),
 		})
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+

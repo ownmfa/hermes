@@ -22,8 +22,6 @@ github.com/go-redis/redis/v8/internal/pool
 github.com/go-redis/redis/v8/internal/proto
 github.com/go-redis/redis/v8/internal/rand
 github.com/go-redis/redis/v8/internal/util
-# github.com/gofrs/uuid v4.0.0+incompatible
-## explicit
 # github.com/golang/mock v1.6.0
 ## explicit
 github.com/golang/mock/gomock
@@ -37,7 +35,7 @@ github.com/golang/protobuf/ptypes/timestamp
 # github.com/golang/snappy v0.0.4
 ## explicit
 github.com/golang/snappy
-# github.com/google/uuid v1.2.0
+# github.com/google/uuid v1.3.0
 ## explicit
 github.com/google/uuid
 # github.com/gregdel/pushover v1.1.0
@@ -51,7 +49,7 @@ github.com/grpc-ecosystem/grpc-gateway/v2/runtime
 github.com/grpc-ecosystem/grpc-gateway/v2/utilities
 # github.com/jackc/chunkreader/v2 v2.0.1
 github.com/jackc/chunkreader/v2
-# github.com/jackc/pgconn v1.8.1
+# github.com/jackc/pgconn v1.9.0
 ## explicit
 github.com/jackc/pgconn
 github.com/jackc/pgconn/internal/ctxwatch
@@ -60,14 +58,13 @@ github.com/jackc/pgconn/stmtcache
 github.com/jackc/pgio
 # github.com/jackc/pgpassfile v1.0.0
 github.com/jackc/pgpassfile
-# github.com/jackc/pgproto3/v2 v2.1.0
-## explicit
+# github.com/jackc/pgproto3/v2 v2.1.1
 github.com/jackc/pgproto3/v2
 # github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b
 github.com/jackc/pgservicefile
-# github.com/jackc/pgtype v1.7.0
+# github.com/jackc/pgtype v1.8.0
 github.com/jackc/pgtype
-# github.com/jackc/pgx/v4 v4.11.0
+# github.com/jackc/pgx/v4 v4.12.0
 ## explicit
 github.com/jackc/pgx/v4
 github.com/jackc/pgx/v4/internal/sanitize
@@ -78,7 +75,7 @@ github.com/mennanov/fmutils
 # github.com/nsqio/go-nsq v1.0.8
 ## explicit
 github.com/nsqio/go-nsq
-# github.com/ownmfa/api/go v0.1.5
+# github.com/ownmfa/api/go v0.1.6
 ## explicit
 github.com/ownmfa/api/go/api
 github.com/ownmfa/api/go/common
@@ -101,7 +98,7 @@ github.com/smira/go-statsd
 ## explicit
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
-# golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
+# golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 ## explicit
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
@@ -116,7 +113,6 @@ golang.org/x/net/trace
 # golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 golang.org/x/sync/singleflight
 # golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c
-## explicit
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 # golang.org/x/text v0.3.6
@@ -133,8 +129,7 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# google.golang.org/genproto v0.0.0-20210701191553-46259e63a0a9
-## explicit
+# google.golang.org/genproto v0.0.0-20210715145939-324b959e9c22
 google.golang.org/genproto/googleapis/api/annotations
 google.golang.org/genproto/googleapis/api/httpbody
 google.golang.org/genproto/googleapis/rpc/status

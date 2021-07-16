@@ -15,9 +15,9 @@ import (
 
 const createIdentity = `
 INSERT INTO identities (org_id, app_id, comment, status, algorithm, hash,
-digits, secret_enc, phone, pushover_key, email, backup_codes, created_at,
-updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $13)
+digits, secret_enc, phone, pushover_key, email, backup_codes, answer_enc,
+created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $14)
 RETURNING id
 `
 
@@ -25,9 +25,12 @@ RETURNING id
 // bool representing whether the OTP secret and QR should be returned.
 func (d *DAO) Create(ctx context.Context,
 	identity *api.Identity) (*api.Identity, *oath.OTP, bool, error) {
-	identity.Status = api.IdentityStatus_UNVERIFIED
-	if _, ok := identity.MethodOneof.(*api.Identity_BackupCodesMethod); ok {
+	// Backup codes and security questions methods do not require activation.
+	switch identity.MethodOneof.(type) {
+	case *api.Identity_BackupCodesMethod, *api.Identity_SecurityQuestionsMethod:
 		identity.Status = api.IdentityStatus_ACTIVATED
+	default:
+		identity.Status = api.IdentityStatus_UNVERIFIED
 	}
 
 	now := time.Now().UTC().Truncate(time.Microsecond)
@@ -44,11 +47,19 @@ func (d *DAO) Create(ctx context.Context,
 		return nil, nil, false, dao.DBToSentinel(err)
 	}
 
+	answerEnc := []byte{}
+	if otp.Answer != "" {
+		answerEnc, err = crypto.Encrypt(d.secretKey, []byte(otp.Answer))
+		if err != nil {
+			return nil, nil, false, dao.DBToSentinel(err)
+		}
+	}
+
 	if err := d.pg.QueryRowContext(ctx, createIdentity, identity.OrgId,
 		identity.AppId, identity.Comment, identity.Status.String(),
 		otp.Algorithm, hashCryptoToAPI[otp.Hash].String(), otp.Digits,
 		secretEnc, meta.phone, meta.pushoverKey, meta.email, meta.backupCodes,
-		now).Scan(&identity.Id); err != nil {
+		answerEnc, now).Scan(&identity.Id); err != nil {
 		return nil, nil, false, dao.DBToSentinel(err)
 	}
 
@@ -57,7 +68,7 @@ func (d *DAO) Create(ctx context.Context,
 
 const readIdentity = `
 SELECT id, org_id, app_id, comment, status, algorithm, hash, digits, secret_enc,
-phone, pushover_key, email, backup_codes, created_at, updated_at
+phone, pushover_key, email, backup_codes, answer_enc, created_at, updated_at
 FROM identities
 WHERE (id, org_id, app_id) = ($1, $2, $3)
 `
@@ -69,15 +80,23 @@ func (d *DAO) Read(ctx context.Context, identityID, orgID,
 	otp := &oath.OTP{}
 	meta := &otpMeta{}
 	var status, hash string
-	var secretEnc []byte
+	var secretEnc, answerEnc []byte
 	var createdAt, updatedAt time.Time
 
 	if err := d.pg.QueryRowContext(ctx, readIdentity, identityID, orgID,
 		appID).Scan(&identity.Id, &identity.OrgId, &identity.AppId,
 		&identity.Comment, &status, &otp.Algorithm, &hash, &otp.Digits,
 		&secretEnc, &meta.phone, &meta.pushoverKey, &meta.email,
-		&meta.backupCodes, &createdAt, &updatedAt); err != nil {
+		&meta.backupCodes, &answerEnc, &createdAt, &updatedAt); err != nil {
 		return nil, nil, dao.DBToSentinel(err)
+	}
+
+	if len(answerEnc) > 0 {
+		answer, err := crypto.Decrypt(d.secretKey, answerEnc)
+		if err != nil {
+			return nil, nil, dao.DBToSentinel(err)
+		}
+		otp.Answer = string(answer)
 	}
 
 	otp.Hash = hashAPIToCrypto[api.Hash(api.Hash_value[hash])]
@@ -153,7 +172,7 @@ AND app_id = $2
 
 const listIdentities = `
 SELECT id, org_id, app_id, comment, status, algorithm, hash, digits, phone,
-pushover_key, email, backup_codes, created_at, updated_at
+pushover_key, email, backup_codes, answer_enc, created_at, updated_at
 FROM identities
 WHERE org_id = $1
 `
@@ -237,13 +256,22 @@ func (d *DAO) List(ctx context.Context, orgID string, lBoundTS time.Time,
 		otp := &oath.OTP{}
 		meta := &otpMeta{}
 		var status, hash string
+		var answerEnc []byte
 		var createdAt, updatedAt time.Time
 
 		if err = rows.Scan(&identity.Id, &identity.OrgId, &identity.AppId,
 			&identity.Comment, &status, &otp.Algorithm, &hash, &otp.Digits,
 			&meta.phone, &meta.pushoverKey, &meta.email, &meta.backupCodes,
-			&createdAt, &updatedAt); err != nil {
+			&answerEnc, &createdAt, &updatedAt); err != nil {
 			return nil, 0, dao.DBToSentinel(err)
+		}
+
+		if len(answerEnc) > 0 {
+			answer, err := crypto.Decrypt(d.secretKey, answerEnc)
+			if err != nil {
+				return nil, 0, dao.DBToSentinel(err)
+			}
+			otp.Answer = string(answer)
 		}
 
 		otp.Hash = hashAPIToCrypto[api.Hash(api.Hash_value[hash])]
