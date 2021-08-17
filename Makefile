@@ -41,9 +41,9 @@ lint:
 
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	golangci-lint --version
-	golangci-lint run -E durationcheck,exportloopref,forcetypeassert,goconst \
-	-E godot,goerr113,gofumpt,gosec,nlreturn,prealloc,unconvert,unparam \
-	--exclude-use-default=false
+	golangci-lint run -E durationcheck,errname,exportloopref,forcetypeassert \
+	-E goconst,godot,goerr113,gofumpt,gosec,nlreturn,prealloc,unconvert \
+	-E unparam --exclude-use-default=false
 
 init_db:
 	echo FLUSHALL|nc -w 2 $(TEST_REDIS_HOST) 6379
