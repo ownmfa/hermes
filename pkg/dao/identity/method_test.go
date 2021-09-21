@@ -70,6 +70,14 @@ func TestMethodToOTP(t *testing.T) {
 			}, &otpMeta{retSecret: true}, nil,
 		},
 		{
+			&api.Identity{MethodOneof: &api.Identity_AppleIosTotpMethod{
+				AppleIosTotpMethod: &api.AppleiOSTOTPMethod{},
+			}}, &oath.OTP{
+				Algorithm: oath.TOTP, Hash: crypto.SHA512,
+				Digits: defaultDigits,
+			}, &otpMeta{retSecret: true}, nil,
+		},
+		{
 			&api.Identity{MethodOneof: &api.Identity_HardwareHotpMethod{
 				HardwareHotpMethod: &api.HardwareHOTPMethod{
 					Digits: 8, Secret: key,
@@ -247,6 +255,16 @@ func TestOTPToMethod(t *testing.T) {
 			&otpMeta{}, &api.Identity{
 				MethodOneof: &api.Identity_GoogleAuthTotpMethod{
 					GoogleAuthTotpMethod: &api.GoogleAuthTOTPMethod{},
+				},
+			},
+		},
+		{
+			&oath.OTP{
+				Algorithm: oath.TOTP, Hash: crypto.SHA512,
+				Digits: defaultDigits,
+			}, &otpMeta{}, &api.Identity{
+				MethodOneof: &api.Identity_AppleIosTotpMethod{
+					AppleIosTotpMethod: &api.AppleiOSTOTPMethod{},
 				},
 			},
 		},

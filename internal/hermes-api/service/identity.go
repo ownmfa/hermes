@@ -217,7 +217,8 @@ func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
 		}
 
 		counter, err = otp.VerifyHOTP(hotpLookAhead, curr, passcode)
-	case *api.Identity_SoftwareTotpMethod, *api.Identity_GoogleAuthTotpMethod:
+	case *api.Identity_SoftwareTotpMethod, *api.Identity_GoogleAuthTotpMethod,
+		*api.Identity_AppleIosTotpMethod:
 		// Retrieve TOTP window offset. If not found, use the zero value.
 		var off int64
 		_, off, err = ai.cache.GetI(ctx, ikey.TOTPOffset(identity.OrgId,
