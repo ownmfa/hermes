@@ -73,7 +73,8 @@ FROM identities
 WHERE (id, org_id, app_id) = ($1, $2, $3)
 `
 
-// Read retrieves an identity by ID, org ID, and app ID.
+// Read retrieves an identity by ID, org ID, and app ID. Identity MethodOneof
+// may be returned in simplified form.
 func (d *DAO) Read(ctx context.Context, identityID, orgID,
 	appID string) (*api.Identity, *oath.OTP, error) {
 	identity := &api.Identity{}

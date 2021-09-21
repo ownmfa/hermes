@@ -79,6 +79,10 @@ func methodToOTP(identity *api.Identity) (*oath.OTP, *otpMeta, error) {
 		otp.Hash = crypto.SHA1
 		otp.Digits = 6
 		otp.AccountName = m.GoogleAuthTotpMethod.AccountName
+	case *api.Identity_AppleIosTotpMethod:
+		otp.Algorithm = oath.TOTP
+		otp.Hash = crypto.SHA512
+		otp.Digits = defaultDigits
 	case *api.Identity_HardwareHotpMethod:
 		otp.Hash = hashAPIToCrypto[m.HardwareHotpMethod.Hash]
 		otp.Digits = int(m.HardwareHotpMethod.Digits)
@@ -136,7 +140,7 @@ func methodToOTP(identity *api.Identity) (*oath.OTP, *otpMeta, error) {
 }
 
 // otpToMethod modifies an Identity MethodOneof in-place based on an OTP and
-// otpMeta.
+// otpMeta. Identity MethodOneof may be returned in simplified form.
 func otpToMethod(identity *api.Identity, otp *oath.OTP, meta *otpMeta) {
 	switch {
 	case otp.Answer != "":
@@ -172,6 +176,11 @@ func otpToMethod(identity *api.Identity, otp *oath.OTP, meta *otpMeta) {
 		otp.Digits == 6:
 		identity.MethodOneof = &api.Identity_GoogleAuthTotpMethod{
 			GoogleAuthTotpMethod: &api.GoogleAuthTOTPMethod{},
+		}
+	case otp.Algorithm == oath.TOTP && otp.Hash == crypto.SHA512 &&
+		otp.Digits == defaultDigits:
+		identity.MethodOneof = &api.Identity_AppleIosTotpMethod{
+			AppleIosTotpMethod: &api.AppleiOSTOTPMethod{},
 		}
 	case otp.Algorithm == oath.HOTP:
 		identity.MethodOneof = &api.Identity_SoftwareHotpMethod{
