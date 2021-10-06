@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/ReneKroon/ttlcache/v2 v2.8.1
-	github.com/go-redis/redis/v8 v8.11.3
+	github.com/go-redis/redis/v8 v8.11.4
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.3.0
 	github.com/gregdel/pushover v1.1.0
@@ -14,7 +14,7 @@ require (
 	github.com/jackc/pgx/v4 v4.13.0
 	github.com/mennanov/fmutils v0.1.1
 	github.com/nsqio/go-nsq v1.0.8
-	github.com/ownmfa/api/go v1.0.2
+	github.com/ownmfa/api/go v1.0.3
 	github.com/rs/zerolog v1.25.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/smira/go-statsd v1.3.2
@@ -38,10 +38,10 @@ require (
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
 	github.com/jackc/pgtype v1.8.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	golang.org/x/net v0.0.0-20210924151903-3ad01bbaa167 // indirect
+	golang.org/x/net v0.0.0-20211006190231-62292e806868 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6 // indirect
+	golang.org/x/sys v0.0.0-20211006194710-c8a6f5223071 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	google.golang.org/genproto v0.0.0-20210924002016-3dee208752a0 // indirect
+	google.golang.org/genproto v0.0.0-20211005153810-c76a74d43a8e // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
