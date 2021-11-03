@@ -47,6 +47,7 @@ const (
 
 // Errors returned due to insufficient key length.
 const (
+	//#nosec G101 // false positive for hardcoded credentials
 	errPWTLength      consterr.Error = "pwt key must be 32 bytes"
 	errIdentityLength consterr.Error = "identity key must be 32 bytes"
 )
