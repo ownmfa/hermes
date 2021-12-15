@@ -15,6 +15,7 @@ import (
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func TestLogin(t *testing.T) {
@@ -315,7 +316,7 @@ func TestDeleteKey(t *testing.T) {
 
 		opts := []grpc.DialOption{
 			grpc.WithBlock(),
-			grpc.WithInsecure(),
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
 			grpc.WithPerRPCCredentials(&credential{token: createKey.Token}),
 		}
 		keyConn, err := grpc.Dial(iapi.GRPCHost+iapi.GRPCPort, opts...)
