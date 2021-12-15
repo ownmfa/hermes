@@ -24,6 +24,7 @@ import (
 	testconfig "github.com/ownmfa/hermes/pkg/test/config"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/encoding/gzip"
 )
 
@@ -113,7 +114,7 @@ func TestMain(m *testing.M) {
 	// Build unauthenticated gRPC connection.
 	opts := []grpc.DialOption{
 		grpc.WithBlock(),
-		grpc.WithInsecure(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithDefaultCallOptions(grpc.UseCompressor(gzip.Name)),
 	}
 	globalNoAuthGRPCConn, err = grpc.Dial(iapi.GRPCHost+iapi.GRPCPort, opts...)

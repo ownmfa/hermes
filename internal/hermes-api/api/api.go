@@ -29,6 +29,7 @@ import (
 	"github.com/ownmfa/hermes/pkg/notify"
 	"github.com/ownmfa/hermes/pkg/queue"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	// encoding/gzip imported for use by UseCompressor CallOption.
 	_ "google.golang.org/grpc/encoding/gzip"
@@ -129,7 +130,7 @@ func New(cfg *config.Config) (*API, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	gwMux := runtime.NewServeMux(runtime.WithForwardResponseOption(statusCode))
 	opts := []grpc.DialOption{
-		grpc.WithInsecure(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
 	// App and Identity.
