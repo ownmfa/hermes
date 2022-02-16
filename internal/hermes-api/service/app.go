@@ -8,7 +8,6 @@ import (
 
 	"github.com/mennanov/fmutils"
 	"github.com/ownmfa/api/go/api"
-	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/cache"
 	"github.com/ownmfa/hermes/pkg/hlog"
@@ -69,8 +68,8 @@ func NewAppIdentity(appDAO Apper, identDAO Identityer, evDAO Eventer,
 func (ai *AppIdentity) CreateApp(ctx context.Context,
 	req *api.CreateAppRequest) (*api.App, error) {
 	sess, ok := session.FromContext(ctx)
-	if !ok || sess.Role < common.Role_ADMIN {
-		return nil, errPerm(common.Role_ADMIN)
+	if !ok || sess.Role < api.Role_ADMIN {
+		return nil, errPerm(api.Role_ADMIN)
 	}
 
 	req.App.OrgId = sess.OrgID
@@ -93,8 +92,8 @@ func (ai *AppIdentity) CreateApp(ctx context.Context,
 func (ai *AppIdentity) GetApp(ctx context.Context,
 	req *api.GetAppRequest) (*api.App, error) {
 	sess, ok := session.FromContext(ctx)
-	if !ok || sess.Role < common.Role_VIEWER {
-		return nil, errPerm(common.Role_VIEWER)
+	if !ok || sess.Role < api.Role_VIEWER {
+		return nil, errPerm(api.Role_VIEWER)
 	}
 
 	app, err := ai.appDAO.Read(ctx, req.Id, sess.OrgID)
@@ -110,8 +109,8 @@ func (ai *AppIdentity) GetApp(ctx context.Context,
 func (ai *AppIdentity) UpdateApp(ctx context.Context,
 	req *api.UpdateAppRequest) (*api.App, error) {
 	sess, ok := session.FromContext(ctx)
-	if !ok || sess.Role < common.Role_ADMIN {
-		return nil, errPerm(common.Role_ADMIN)
+	if !ok || sess.Role < api.Role_ADMIN {
+		return nil, errPerm(api.Role_ADMIN)
 	}
 
 	if req.App == nil {
@@ -156,8 +155,8 @@ func (ai *AppIdentity) UpdateApp(ctx context.Context,
 func (ai *AppIdentity) DeleteApp(ctx context.Context,
 	req *api.DeleteAppRequest) (*emptypb.Empty, error) {
 	sess, ok := session.FromContext(ctx)
-	if !ok || sess.Role < common.Role_ADMIN {
-		return nil, errPerm(common.Role_ADMIN)
+	if !ok || sess.Role < api.Role_ADMIN {
+		return nil, errPerm(api.Role_ADMIN)
 	}
 
 	if err := ai.appDAO.Delete(ctx, req.Id, sess.OrgID); err != nil {
@@ -177,8 +176,8 @@ func (ai *AppIdentity) DeleteApp(ctx context.Context,
 func (ai *AppIdentity) ListApps(ctx context.Context,
 	req *api.ListAppsRequest) (*api.ListAppsResponse, error) {
 	sess, ok := session.FromContext(ctx)
-	if !ok || sess.Role < common.Role_VIEWER {
-		return nil, errPerm(common.Role_VIEWER)
+	if !ok || sess.Role < api.Role_VIEWER {
+		return nil, errPerm(api.Role_VIEWER)
 	}
 
 	if req.PageSize == 0 {

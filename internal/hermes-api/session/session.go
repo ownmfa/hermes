@@ -7,7 +7,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/ownmfa/api/go/api"
-	"github.com/ownmfa/api/go/common"
 )
 
 // Session represents session metadata as retrieved from an encrypted token.
@@ -18,7 +17,7 @@ type Session struct {
 	KeyID   string
 	OrgID   string
 	OrgPlan api.Plan
-	Role    common.Role
+	Role    api.Role
 	TraceID uuid.UUID
 }
 

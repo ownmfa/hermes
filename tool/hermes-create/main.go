@@ -12,7 +12,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/ownmfa/api/go/api"
-	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/pkg/crypto"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/dao/app"
@@ -148,7 +147,7 @@ func main() {
 		u := &api.User{
 			OrgId:  orgID,
 			Email:  flag.Arg(2),
-			Role:   common.Role_ADMIN,
+			Role:   api.Role_ADMIN,
 			Status: api.Status_ACTIVE,
 		}
 

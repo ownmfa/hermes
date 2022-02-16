@@ -1,7 +1,7 @@
 version: "3"
 services:
   hermes-api:
-    image: ghcr.io/ownmfa/hermes:78ab8b81
+    image: ghcr.io/ownmfa/hermes:41b5752f
     command: hermes-api
     depends_on:
       - hermes-notifier
@@ -32,7 +32,7 @@ services:
       - "traefik.http.services.hermes-grpc.loadbalancer.server.port=50051"
       - "traefik.http.services.hermes-grpc.loadbalancer.server.scheme=h2c"
   hermes-notifier:
-    image: ghcr.io/ownmfa/hermes:78ab8b81
+    image: ghcr.io/ownmfa/hermes:41b5752f
     command: hermes-notifier
     environment:
       - NOTIFIER_STATSD_ADDR=dogstatsd:8125

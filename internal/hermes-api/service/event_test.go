@@ -10,7 +10,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/ownmfa/api/go/api"
-	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/test/random"
@@ -38,7 +37,7 @@ func TestListEvents(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: event.OrgId, Role: common.Role_ADMIN,
+				OrgID: event.OrgId, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -70,7 +69,7 @@ func TestListEvents(t *testing.T) {
 		listEvents, err := evSvc.ListEvents(ctx, &api.ListEventsRequest{})
 		t.Logf("listEvents, err: %+v, %v", listEvents, err)
 		require.Nil(t, listEvents)
-		require.Equal(t, errPerm(common.Role_VIEWER), err)
+		require.Equal(t, errPerm(api.Role_VIEWER), err)
 	})
 
 	t.Run("List events with insufficient role", func(t *testing.T) {
@@ -78,7 +77,7 @@ func TestListEvents(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ROLE_UNSPECIFIED,
+				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
 
@@ -86,7 +85,7 @@ func TestListEvents(t *testing.T) {
 		listEvents, err := evSvc.ListEvents(ctx, &api.ListEventsRequest{})
 		t.Logf("listEvents, err: %+v, %v", listEvents, err)
 		require.Nil(t, listEvents)
-		require.Equal(t, errPerm(common.Role_VIEWER), err)
+		require.Equal(t, errPerm(api.Role_VIEWER), err)
 	})
 
 	t.Run("List events by invalid time range", func(t *testing.T) {
@@ -94,7 +93,7 @@ func TestListEvents(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ADMIN,
+				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -118,7 +117,7 @@ func TestListEvents(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: "aaa", Role: common.Role_ADMIN,
+				OrgID: "aaa", Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -147,7 +146,7 @@ func TestLatestEvents(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: orgID, Role: common.Role_ADMIN,
+				OrgID: orgID, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -178,7 +177,7 @@ func TestLatestEvents(t *testing.T) {
 		latEvents, err := evSvc.LatestEvents(ctx, &api.LatestEventsRequest{})
 		t.Logf("latEvents, err: %+v, %v", latEvents, err)
 		require.Nil(t, latEvents)
-		require.Equal(t, errPerm(common.Role_VIEWER), err)
+		require.Equal(t, errPerm(api.Role_VIEWER), err)
 	})
 
 	t.Run("Latest events with insufficient role", func(t *testing.T) {
@@ -186,7 +185,7 @@ func TestLatestEvents(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ROLE_UNSPECIFIED,
+				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
 
@@ -194,7 +193,7 @@ func TestLatestEvents(t *testing.T) {
 		latEvents, err := evSvc.LatestEvents(ctx, &api.LatestEventsRequest{})
 		t.Logf("latEvents, err: %+v, %v", latEvents, err)
 		require.Nil(t, latEvents)
-		require.Equal(t, errPerm(common.Role_VIEWER), err)
+		require.Equal(t, errPerm(api.Role_VIEWER), err)
 	})
 
 	t.Run("Latest events by invalid org ID", func(t *testing.T) {
@@ -206,7 +205,7 @@ func TestLatestEvents(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: "aaa", Role: common.Role_ADMIN,
+				OrgID: "aaa", Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 

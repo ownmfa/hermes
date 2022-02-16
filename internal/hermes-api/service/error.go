@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/ownmfa/api/go/api"
-	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/pkg/crypto"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/hlog"
@@ -53,7 +52,7 @@ func errToStatus(err error) error {
 }
 
 // errPerm returns a PermissionDenied status due to insufficient role.
-func errPerm(role common.Role) error {
+func errPerm(role api.Role) error {
 	return status.Error(codes.PermissionDenied,
 		fmt.Sprintf("permission denied, %s role required", role.String()))
 }

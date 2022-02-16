@@ -13,7 +13,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/ownmfa/api/go/api"
-	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/api/go/message"
 	ikey "github.com/ownmfa/hermes/internal/hermes-api/key"
 	"github.com/ownmfa/hermes/pkg/key"
@@ -260,7 +259,7 @@ func TestCreateIdentity(t *testing.T) {
 	t.Run("Create valid identity with insufficient plan", func(t *testing.T) {
 		t.Parallel()
 
-		_, adminStarterGRPCConn, err := authGRPCConn(common.Role_ADMIN,
+		_, adminStarterGRPCConn, err := authGRPCConn(api.Role_ADMIN,
 			api.Plan_STARTER)
 		require.NoError(t, err)
 
@@ -878,7 +877,7 @@ func TestChallengeIdentity(t *testing.T) {
 		t.Parallel()
 
 		adminStarterOrgID, adminStarterGRPCConn, err := authGRPCConn(
-			common.Role_SYS_ADMIN, api.Plan_PRO)
+			api.Role_SYS_ADMIN, api.Plan_PRO)
 		require.NoError(t, err)
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)

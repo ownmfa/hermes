@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/ownmfa/api/go/api"
-	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/stretchr/testify/require"
@@ -71,11 +70,11 @@ func TestErrPerm(t *testing.T) {
 		t.Run(fmt.Sprintf("Can generate %v", lTest), func(t *testing.T) {
 			t.Parallel()
 
-			role := []common.Role{
-				common.Role_VIEWER,
-				common.Role_AUTHENTICATOR,
-				common.Role_ADMIN,
-				common.Role_SYS_ADMIN,
+			role := []api.Role{
+				api.Role_VIEWER,
+				api.Role_AUTHENTICATOR,
+				api.Role_ADMIN,
+				api.Role_SYS_ADMIN,
 			}[random.Intn(4)]
 
 			err := errPerm(role)

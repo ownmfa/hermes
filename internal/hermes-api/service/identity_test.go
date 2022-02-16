@@ -14,7 +14,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/ownmfa/api/go/api"
-	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/api/go/message"
 	ikey "github.com/ownmfa/hermes/internal/hermes-api/key"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
@@ -57,7 +56,7 @@ func TestCreateIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+				OrgID: identity.OrgId, Role: api.Role_ADMIN,
 				TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
@@ -106,7 +105,7 @@ func TestCreateIdentity(t *testing.T) {
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
 				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
-				Role: common.Role_ADMIN, TraceID: traceID,
+				Role: api.Role_ADMIN, TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
 
@@ -155,7 +154,7 @@ func TestCreateIdentity(t *testing.T) {
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
 				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
-				Role: common.Role_ADMIN, TraceID: traceID,
+				Role: api.Role_ADMIN, TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
 
@@ -201,7 +200,7 @@ func TestCreateIdentity(t *testing.T) {
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
 				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
-				Role: common.Role_ADMIN, TraceID: traceID,
+				Role: api.Role_ADMIN, TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
 
@@ -257,7 +256,7 @@ func TestCreateIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+				OrgID: identity.OrgId, Role: api.Role_ADMIN,
 				TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
@@ -315,7 +314,7 @@ func TestCreateIdentity(t *testing.T) {
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
 				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
-				Role: common.Role_ADMIN, TraceID: traceID,
+				Role: api.Role_ADMIN, TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
 
@@ -371,7 +370,7 @@ func TestCreateIdentity(t *testing.T) {
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
 				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
-				Role: common.Role_ADMIN, TraceID: traceID,
+				Role: api.Role_ADMIN, TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
 
@@ -403,7 +402,7 @@ func TestCreateIdentity(t *testing.T) {
 			&api.CreateIdentityRequest{})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.Nil(t, createIdentity)
-		require.Equal(t, errPerm(common.Role_AUTHENTICATOR), err)
+		require.Equal(t, errPerm(api.Role_AUTHENTICATOR), err)
 	})
 
 	t.Run("Create identity with insufficient role", func(t *testing.T) {
@@ -411,7 +410,7 @@ func TestCreateIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_VIEWER,
+				OrgID: uuid.NewString(), Role: api.Role_VIEWER,
 			}), testTimeout)
 		defer cancel()
 
@@ -420,7 +419,7 @@ func TestCreateIdentity(t *testing.T) {
 			&api.CreateIdentityRequest{})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.Nil(t, createIdentity)
-		require.Equal(t, errPerm(common.Role_AUTHENTICATOR), err)
+		require.Equal(t, errPerm(api.Role_AUTHENTICATOR), err)
 	})
 
 	t.Run("Create identity with insufficient plan", func(t *testing.T) {
@@ -448,7 +447,7 @@ func TestCreateIdentity(t *testing.T) {
 				ctx, cancel := context.WithTimeout(session.NewContext(
 					context.Background(), &session.Session{
 						OrgID: lTest.OrgId, OrgPlan: api.Plan_STARTER,
-						Role: common.Role_ADMIN,
+						Role: api.Role_ADMIN,
 					}), testTimeout)
 				defer cancel()
 
@@ -475,7 +474,7 @@ func TestCreateIdentity(t *testing.T) {
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
 				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
-				Role: common.Role_ADMIN,
+				Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -503,7 +502,7 @@ func TestCreateIdentity(t *testing.T) {
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
 				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
-				Role: common.Role_ADMIN,
+				Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -532,7 +531,7 @@ func TestCreateIdentity(t *testing.T) {
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
 				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
-				Role: common.Role_ADMIN,
+				Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -559,7 +558,7 @@ func TestCreateIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+				OrgID: identity.OrgId, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -590,7 +589,7 @@ func TestCreateIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+				OrgID: identity.OrgId, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -619,7 +618,7 @@ func TestCreateIdentity(t *testing.T) {
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
 				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
-				Role: common.Role_ADMIN,
+				Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -1335,7 +1334,7 @@ func TestActivateIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+				OrgID: identity.OrgId, Role: api.Role_ADMIN,
 				TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
@@ -1367,7 +1366,7 @@ func TestActivateIdentity(t *testing.T) {
 			&api.ActivateIdentityRequest{})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
 		require.Nil(t, activateIdentity)
-		require.Equal(t, errPerm(common.Role_AUTHENTICATOR), err)
+		require.Equal(t, errPerm(api.Role_AUTHENTICATOR), err)
 	})
 
 	t.Run("Activate identity with insufficient role", func(t *testing.T) {
@@ -1375,7 +1374,7 @@ func TestActivateIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ROLE_UNSPECIFIED,
+				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
 
@@ -1384,7 +1383,7 @@ func TestActivateIdentity(t *testing.T) {
 			&api.ActivateIdentityRequest{})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
 		require.Nil(t, activateIdentity)
-		require.Equal(t, errPerm(common.Role_AUTHENTICATOR), err)
+		require.Equal(t, errPerm(api.Role_AUTHENTICATOR), err)
 	})
 
 	t.Run("Activate identity that is already active", func(t *testing.T) {
@@ -1411,7 +1410,7 @@ func TestActivateIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+				OrgID: identity.OrgId, Role: api.Role_ADMIN,
 				TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
@@ -1457,7 +1456,7 @@ func TestActivateIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+				OrgID: identity.OrgId, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -1498,7 +1497,7 @@ func TestChallengeIdentity(t *testing.T) {
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
 				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
-				Role: common.Role_ADMIN, TraceID: traceID,
+				Role: api.Role_ADMIN, TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
 
@@ -1533,7 +1532,7 @@ func TestChallengeIdentity(t *testing.T) {
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
 				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
-				Role: common.Role_ADMIN,
+				Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -1582,7 +1581,7 @@ func TestChallengeIdentity(t *testing.T) {
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
 		_, err := aiSvc.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{})
 		t.Logf("err: %v", err)
-		require.Equal(t, errPerm(common.Role_AUTHENTICATOR), err)
+		require.Equal(t, errPerm(api.Role_AUTHENTICATOR), err)
 	})
 
 	t.Run("Challenge identity with insufficient role", func(t *testing.T) {
@@ -1590,14 +1589,14 @@ func TestChallengeIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ROLE_UNSPECIFIED,
+				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
 		_, err := aiSvc.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{})
 		t.Logf("err: %v", err)
-		require.Equal(t, errPerm(common.Role_AUTHENTICATOR), err)
+		require.Equal(t, errPerm(api.Role_AUTHENTICATOR), err)
 	})
 
 	t.Run("Challenge identity by unknown ID", func(t *testing.T) {
@@ -1609,7 +1608,7 @@ func TestChallengeIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ADMIN,
+				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -1634,7 +1633,7 @@ func TestChallengeIdentity(t *testing.T) {
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
 				OrgID: identity.OrgId, OrgPlan: api.Plan_STARTER,
-				Role: common.Role_ADMIN,
+				Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -1664,7 +1663,7 @@ func TestChallengeIdentity(t *testing.T) {
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
 				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
-				Role: common.Role_ADMIN,
+				Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -1703,7 +1702,7 @@ func TestChallengeIdentity(t *testing.T) {
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
 				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
-				Role: common.Role_ADMIN, TraceID: traceID,
+				Role: api.Role_ADMIN, TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
 
@@ -1738,7 +1737,7 @@ func TestChallengeIdentity(t *testing.T) {
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
 				OrgID: identity.OrgId, OrgPlan: api.Plan_PRO,
-				Role: common.Role_ADMIN,
+				Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -1795,7 +1794,7 @@ func TestVerifyIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+				OrgID: identity.OrgId, Role: api.Role_ADMIN,
 				TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
@@ -1817,7 +1816,7 @@ func TestVerifyIdentity(t *testing.T) {
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
 		_, err := aiSvc.VerifyIdentity(ctx, &api.VerifyIdentityRequest{})
 		t.Logf("err: %v", err)
-		require.Equal(t, errPerm(common.Role_AUTHENTICATOR), err)
+		require.Equal(t, errPerm(api.Role_AUTHENTICATOR), err)
 	})
 
 	t.Run("Verify identity with insufficient role", func(t *testing.T) {
@@ -1825,14 +1824,14 @@ func TestVerifyIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ROLE_UNSPECIFIED,
+				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
 		_, err := aiSvc.VerifyIdentity(ctx, &api.VerifyIdentityRequest{})
 		t.Logf("err: %v", err)
-		require.Equal(t, errPerm(common.Role_AUTHENTICATOR), err)
+		require.Equal(t, errPerm(api.Role_AUTHENTICATOR), err)
 	})
 
 	t.Run("Verify identity that is not activated", func(t *testing.T) {
@@ -1859,7 +1858,7 @@ func TestVerifyIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+				OrgID: identity.OrgId, Role: api.Role_ADMIN,
 				TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
@@ -1890,7 +1889,7 @@ func TestGetIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+				OrgID: identity.OrgId, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -1919,7 +1918,7 @@ func TestGetIdentity(t *testing.T) {
 			&api.GetIdentityRequest{})
 		t.Logf("getIdentity, err: %+v, %v", getIdentity, err)
 		require.Nil(t, getIdentity)
-		require.Equal(t, errPerm(common.Role_VIEWER), err)
+		require.Equal(t, errPerm(api.Role_VIEWER), err)
 	})
 
 	t.Run("Get identity with insufficient role", func(t *testing.T) {
@@ -1927,7 +1926,7 @@ func TestGetIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ROLE_UNSPECIFIED,
+				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
 
@@ -1936,7 +1935,7 @@ func TestGetIdentity(t *testing.T) {
 			&api.GetIdentityRequest{})
 		t.Logf("getIdentity, err: %+v, %v", getIdentity, err)
 		require.Nil(t, getIdentity)
-		require.Equal(t, errPerm(common.Role_VIEWER), err)
+		require.Equal(t, errPerm(api.Role_VIEWER), err)
 	})
 
 	t.Run("Get identity by unknown ID", func(t *testing.T) {
@@ -1948,7 +1947,7 @@ func TestGetIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ADMIN,
+				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -1988,7 +1987,7 @@ func TestDeleteIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: identity.OrgId, Role: common.Role_ADMIN,
+				OrgID: identity.OrgId, Role: api.Role_ADMIN,
 				TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
@@ -2010,7 +2009,7 @@ func TestDeleteIdentity(t *testing.T) {
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
 		_, err := aiSvc.DeleteIdentity(ctx, &api.DeleteIdentityRequest{})
 		t.Logf("err: %v", err)
-		require.Equal(t, errPerm(common.Role_AUTHENTICATOR), err)
+		require.Equal(t, errPerm(api.Role_AUTHENTICATOR), err)
 	})
 
 	t.Run("Delete identity with insufficient role", func(t *testing.T) {
@@ -2018,14 +2017,14 @@ func TestDeleteIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_VIEWER,
+				OrgID: uuid.NewString(), Role: api.Role_VIEWER,
 			}), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
 		_, err := aiSvc.DeleteIdentity(ctx, &api.DeleteIdentityRequest{})
 		t.Logf("err: %v", err)
-		require.Equal(t, errPerm(common.Role_AUTHENTICATOR), err)
+		require.Equal(t, errPerm(api.Role_AUTHENTICATOR), err)
 	})
 
 	t.Run("Delete identity by unknown ID", func(t *testing.T) {
@@ -2037,7 +2036,7 @@ func TestDeleteIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ADMIN,
+				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -2073,7 +2072,7 @@ func TestListIdentities(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: orgID, Role: common.Role_ADMIN,
+				OrgID: orgID, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -2119,7 +2118,7 @@ func TestListIdentities(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: orgID, Role: common.Role_ADMIN,
+				OrgID: orgID, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -2152,7 +2151,7 @@ func TestListIdentities(t *testing.T) {
 			&api.ListIdentitiesRequest{})
 		t.Logf("listIdentities, err: %+v, %v", listIdentities, err)
 		require.Nil(t, listIdentities)
-		require.Equal(t, errPerm(common.Role_VIEWER), err)
+		require.Equal(t, errPerm(api.Role_VIEWER), err)
 	})
 
 	t.Run("List identities with insufficient role", func(t *testing.T) {
@@ -2160,7 +2159,7 @@ func TestListIdentities(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ROLE_UNSPECIFIED,
+				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
 
@@ -2169,7 +2168,7 @@ func TestListIdentities(t *testing.T) {
 			&api.ListIdentitiesRequest{})
 		t.Logf("listIdentities, err: %+v, %v", listIdentities, err)
 		require.Nil(t, listIdentities)
-		require.Equal(t, errPerm(common.Role_VIEWER), err)
+		require.Equal(t, errPerm(api.Role_VIEWER), err)
 	})
 
 	t.Run("List identities by invalid page token", func(t *testing.T) {
@@ -2177,7 +2176,7 @@ func TestListIdentities(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ADMIN,
+				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -2200,7 +2199,7 @@ func TestListIdentities(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: "aaa", Role: common.Role_ADMIN,
+				OrgID: "aaa", Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -2234,7 +2233,7 @@ func TestListIdentities(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: orgID, Role: common.Role_ADMIN,
+				OrgID: orgID, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
