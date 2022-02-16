@@ -10,7 +10,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/ownmfa/api/go/api"
-	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/test/matcher"
@@ -36,7 +35,7 @@ func TestCreateOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: org.Id, Role: common.Role_SYS_ADMIN,
+				OrgID: org.Id, Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -62,7 +61,7 @@ func TestCreateOrg(t *testing.T) {
 		createOrg, err := orgSvc.CreateOrg(ctx, &api.CreateOrgRequest{})
 		t.Logf("createOrg, err: %+v, %v", createOrg, err)
 		require.Nil(t, createOrg)
-		require.Equal(t, errPerm(common.Role_SYS_ADMIN), err)
+		require.Equal(t, errPerm(api.Role_SYS_ADMIN), err)
 	})
 
 	t.Run("Create org with insufficient role", func(t *testing.T) {
@@ -70,7 +69,7 @@ func TestCreateOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ADMIN,
+				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -78,7 +77,7 @@ func TestCreateOrg(t *testing.T) {
 		createOrg, err := orgSvc.CreateOrg(ctx, &api.CreateOrgRequest{})
 		t.Logf("createOrg, err: %+v, %v", createOrg, err)
 		require.Nil(t, createOrg)
-		require.Equal(t, errPerm(common.Role_SYS_ADMIN), err)
+		require.Equal(t, errPerm(api.Role_SYS_ADMIN), err)
 	})
 
 	t.Run("Create invalid org", func(t *testing.T) {
@@ -92,7 +91,7 @@ func TestCreateOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: org.Id, Role: common.Role_SYS_ADMIN,
+				OrgID: org.Id, Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -119,7 +118,7 @@ func TestGetOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: org.Id, Role: common.Role_SYS_ADMIN,
+				OrgID: org.Id, Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -145,7 +144,7 @@ func TestGetOrg(t *testing.T) {
 		getOrg, err := orgSvc.GetOrg(ctx, &api.GetOrgRequest{})
 		t.Logf("getOrg, err: %+v, %v", getOrg, err)
 		require.Nil(t, getOrg)
-		require.Equal(t, errPerm(common.Role_SYS_ADMIN), err)
+		require.Equal(t, errPerm(api.Role_SYS_ADMIN), err)
 	})
 
 	t.Run("Get org with insufficient role", func(t *testing.T) {
@@ -153,7 +152,7 @@ func TestGetOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ADMIN,
+				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -161,7 +160,7 @@ func TestGetOrg(t *testing.T) {
 		getOrg, err := orgSvc.GetOrg(ctx, &api.GetOrgRequest{})
 		t.Logf("getOrg, err: %+v, %v", getOrg, err)
 		require.Nil(t, getOrg)
-		require.Equal(t, errPerm(common.Role_SYS_ADMIN), err)
+		require.Equal(t, errPerm(api.Role_SYS_ADMIN), err)
 	})
 
 	t.Run("Get org by unknown ID", func(t *testing.T) {
@@ -173,7 +172,7 @@ func TestGetOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_SYS_ADMIN,
+				OrgID: uuid.NewString(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -200,7 +199,7 @@ func TestUpdateOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: org.Id, Role: common.Role_SYS_ADMIN,
+				OrgID: org.Id, Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -236,7 +235,7 @@ func TestUpdateOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: org.Id, Role: common.Role_SYS_ADMIN,
+				OrgID: org.Id, Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -266,7 +265,7 @@ func TestUpdateOrg(t *testing.T) {
 		updateOrg, err := orgSvc.UpdateOrg(ctx, &api.UpdateOrgRequest{})
 		t.Logf("updateOrg, err: %+v, %v", updateOrg, err)
 		require.Nil(t, updateOrg)
-		require.Equal(t, errPerm(common.Role_SYS_ADMIN), err)
+		require.Equal(t, errPerm(api.Role_SYS_ADMIN), err)
 	})
 
 	t.Run("Update nil org", func(t *testing.T) {
@@ -274,7 +273,7 @@ func TestUpdateOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_SYS_ADMIN,
+				OrgID: uuid.NewString(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -293,7 +292,7 @@ func TestUpdateOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: org.Id, Role: common.Role_AUTHENTICATOR,
+				OrgID: org.Id, Role: api.Role_AUTHENTICATOR,
 			}), testTimeout)
 		defer cancel()
 
@@ -301,7 +300,7 @@ func TestUpdateOrg(t *testing.T) {
 		updateOrg, err := orgSvc.UpdateOrg(ctx, &api.UpdateOrgRequest{Org: org})
 		t.Logf("org, updateOrg, err: %+v, %+v, %v", org, updateOrg, err)
 		require.Nil(t, updateOrg)
-		require.Equal(t, errPerm(common.Role_SYS_ADMIN), err)
+		require.Equal(t, errPerm(api.Role_SYS_ADMIN), err)
 	})
 
 	t.Run("Update different org with insufficient role", func(t *testing.T) {
@@ -309,7 +308,7 @@ func TestUpdateOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ADMIN,
+				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -318,7 +317,7 @@ func TestUpdateOrg(t *testing.T) {
 			&api.UpdateOrgRequest{Org: random.Org("api-org")})
 		t.Logf("updateOrg, err: %+v, %v", updateOrg, err)
 		require.Nil(t, updateOrg)
-		require.Equal(t, errPerm(common.Role_SYS_ADMIN), err)
+		require.Equal(t, errPerm(api.Role_SYS_ADMIN), err)
 	})
 
 	t.Run("Partial update invalid field mask", func(t *testing.T) {
@@ -328,7 +327,7 @@ func TestUpdateOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_SYS_ADMIN,
+				OrgID: uuid.NewString(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -355,7 +354,7 @@ func TestUpdateOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: orgID, Role: common.Role_SYS_ADMIN,
+				OrgID: orgID, Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -377,7 +376,7 @@ func TestUpdateOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: org.Id, Role: common.Role_SYS_ADMIN,
+				OrgID: org.Id, Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -402,7 +401,7 @@ func TestUpdateOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: org.Id, Role: common.Role_SYS_ADMIN,
+				OrgID: org.Id, Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -426,7 +425,7 @@ func TestDeleteOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_SYS_ADMIN,
+				OrgID: uuid.NewString(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -446,7 +445,7 @@ func TestDeleteOrg(t *testing.T) {
 		orgSvc := NewOrg(nil)
 		_, err := orgSvc.DeleteOrg(ctx, &api.DeleteOrgRequest{})
 		t.Logf("err: %v", err)
-		require.Equal(t, errPerm(common.Role_SYS_ADMIN), err)
+		require.Equal(t, errPerm(api.Role_SYS_ADMIN), err)
 	})
 
 	t.Run("Delete org with insufficient role", func(t *testing.T) {
@@ -454,14 +453,14 @@ func TestDeleteOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ADMIN,
+				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
 		orgSvc := NewOrg(nil)
 		_, err := orgSvc.DeleteOrg(ctx, &api.DeleteOrgRequest{})
 		t.Logf("err: %v", err)
-		require.Equal(t, errPerm(common.Role_SYS_ADMIN), err)
+		require.Equal(t, errPerm(api.Role_SYS_ADMIN), err)
 	})
 
 	t.Run("Delete org by unknown ID", func(t *testing.T) {
@@ -473,7 +472,7 @@ func TestDeleteOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_SYS_ADMIN,
+				OrgID: uuid.NewString(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -505,7 +504,7 @@ func TestListOrgs(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: orgID, Role: common.Role_SYS_ADMIN,
+				OrgID: orgID, Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -545,7 +544,7 @@ func TestListOrgs(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: orgID, Role: common.Role_SYS_ADMIN,
+				OrgID: orgID, Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -576,7 +575,7 @@ func TestListOrgs(t *testing.T) {
 		listOrgs, err := orgSvc.ListOrgs(ctx, &api.ListOrgsRequest{})
 		t.Logf("listOrgs, err: %+v, %v", listOrgs, err)
 		require.Nil(t, listOrgs)
-		require.Equal(t, errPerm(common.Role_SYS_ADMIN), err)
+		require.Equal(t, errPerm(api.Role_SYS_ADMIN), err)
 	})
 
 	t.Run("List own org with insufficient role", func(t *testing.T) {
@@ -589,7 +588,7 @@ func TestListOrgs(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: org.Id, Role: common.Role_ADMIN,
+				OrgID: org.Id, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -620,7 +619,7 @@ func TestListOrgs(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: org.Id, Role: common.Role_ADMIN,
+				OrgID: org.Id, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -636,7 +635,7 @@ func TestListOrgs(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_SYS_ADMIN,
+				OrgID: uuid.NewString(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -658,7 +657,7 @@ func TestListOrgs(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: "aaa", Role: common.Role_SYS_ADMIN,
+				OrgID: "aaa", Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -688,7 +687,7 @@ func TestListOrgs(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: orgID, Role: common.Role_SYS_ADMIN,
+				OrgID: orgID, Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 

@@ -9,7 +9,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/ownmfa/api/go/api"
-	"github.com/ownmfa/api/go/common"
 	iapi "github.com/ownmfa/hermes/internal/hermes-api/api"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/test/random"
@@ -32,7 +31,7 @@ func TestLogin(t *testing.T) {
 	require.NoError(t, err)
 
 	user := random.User("api-session", createOrg.Id)
-	user.Role = common.Role_ADMIN
+	user.Role = api.Role_ADMIN
 	user.Status = api.Status_ACTIVE
 	createUser, err := globalUserDAO.Create(ctx, user)
 	t.Logf("createUser, err: %+v, %v", createUser, err)
@@ -66,7 +65,7 @@ func TestLogin(t *testing.T) {
 	require.NoError(t, err)
 
 	unspecUser := random.User("api-session", createOrg.Id)
-	unspecUser.Role = common.Role_ROLE_UNSPECIFIED
+	unspecUser.Role = api.Role_ROLE_UNSPECIFIED
 	unspecUser.Status = api.Status_ACTIVE
 	createUnspecUser, err := globalUserDAO.Create(ctx, unspecUser)
 	t.Logf("createUnspecUser, err: %+v, %v", createUnspecUser, err)
@@ -189,7 +188,7 @@ func TestCreateKey(t *testing.T) {
 		t.Parallel()
 
 		key := random.Key("api-key", uuid.NewString())
-		key.Role = common.Role_AUTHENTICATOR
+		key.Role = api.Role_AUTHENTICATOR
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -224,7 +223,7 @@ func TestCreateKey(t *testing.T) {
 		t.Parallel()
 
 		key := random.Key("api-key", uuid.NewString())
-		key.Role = common.Role_SYS_ADMIN
+		key.Role = api.Role_SYS_ADMIN
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -266,7 +265,7 @@ func TestDeleteKey(t *testing.T) {
 		t.Parallel()
 
 		key := random.Key("api-key", uuid.NewString())
-		key.Role = common.Role_AUTHENTICATOR
+		key.Role = api.Role_AUTHENTICATOR
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -303,7 +302,7 @@ func TestDeleteKey(t *testing.T) {
 		t.Parallel()
 
 		key := random.Key("api-key", uuid.NewString())
-		key.Role = common.Role_ADMIN
+		key.Role = api.Role_ADMIN
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -367,7 +366,7 @@ func TestDeleteKey(t *testing.T) {
 		t.Parallel()
 
 		key := random.Key("api-key", uuid.NewString())
-		key.Role = common.Role_AUTHENTICATOR
+		key.Role = api.Role_AUTHENTICATOR
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -395,10 +394,10 @@ func TestListKeys(t *testing.T) {
 
 	keyIDs := []string{}
 	keyNames := []string{}
-	keyRoles := []common.Role{}
+	keyRoles := []api.Role{}
 	for i := 0; i < 3; i++ {
 		key := random.Key("api-key", uuid.NewString())
-		key.Role = common.Role_AUTHENTICATOR
+		key.Role = api.Role_AUTHENTICATOR
 
 		sessCli := api.NewSessionServiceClient(globalAdminGRPCConn)
 		createKey, err := sessCli.CreateKey(ctx,

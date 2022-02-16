@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/ownmfa/api/go/api"
-	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -41,8 +40,8 @@ func NewEvent(evDAO Eventer) *Event {
 func (e *Event) ListEvents(ctx context.Context,
 	req *api.ListEventsRequest) (*api.ListEventsResponse, error) {
 	sess, ok := session.FromContext(ctx)
-	if !ok || sess.Role < common.Role_VIEWER {
-		return nil, errPerm(common.Role_VIEWER)
+	if !ok || sess.Role < api.Role_VIEWER {
+		return nil, errPerm(api.Role_VIEWER)
 	}
 
 	end := time.Now().UTC()
@@ -73,8 +72,8 @@ func (e *Event) ListEvents(ctx context.Context,
 func (e *Event) LatestEvents(ctx context.Context,
 	req *api.LatestEventsRequest) (*api.LatestEventsResponse, error) {
 	sess, ok := session.FromContext(ctx)
-	if !ok || sess.Role < common.Role_VIEWER {
-		return nil, errPerm(common.Role_VIEWER)
+	if !ok || sess.Role < api.Role_VIEWER {
+		return nil, errPerm(api.Role_VIEWER)
 	}
 
 	events, err := e.evDAO.Latest(ctx, sess.OrgID, req.AppId, req.IdentityId)

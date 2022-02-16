@@ -8,7 +8,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/ownmfa/api/go/api"
-	"github.com/ownmfa/api/go/common"
 	iapi "github.com/ownmfa/hermes/internal/hermes-api/api"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"google.golang.org/grpc"
@@ -35,7 +34,7 @@ func (c *credential) RequireTransportSecurity() bool {
 	return false
 }
 
-func authGRPCConn(role common.Role, plan api.Plan) (string, *grpc.ClientConn,
+func authGRPCConn(role api.Role, plan api.Plan) (string, *grpc.ClientConn,
 	error) {
 	org := random.Org("api-helper")
 	org.Status = api.Status_ACTIVE
@@ -83,7 +82,7 @@ func authGRPCConn(role common.Role, plan api.Plan) (string, *grpc.ClientConn,
 	return createOrg.Id, authConn, nil
 }
 
-func keyGRPCConn(conn *grpc.ClientConn, role common.Role) (*grpc.ClientConn,
+func keyGRPCConn(conn *grpc.ClientConn, role api.Role) (*grpc.ClientConn,
 	error) {
 	key := random.Key("api-key", uuid.NewString())
 	key.Role = role

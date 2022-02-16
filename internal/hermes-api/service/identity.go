@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/ownmfa/api/go/api"
-	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/api/go/message"
 	ikey "github.com/ownmfa/hermes/internal/hermes-api/key"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
@@ -56,8 +55,8 @@ func (ai *AppIdentity) CreateIdentity(ctx context.Context,
 	req *api.CreateIdentityRequest) (*api.CreateIdentityResponse, error) {
 	logger := hlog.FromContext(ctx)
 	sess, ok := session.FromContext(ctx)
-	if !ok || sess.Role < common.Role_AUTHENTICATOR {
-		return nil, errPerm(common.Role_AUTHENTICATOR)
+	if !ok || sess.Role < api.Role_AUTHENTICATOR {
+		return nil, errPerm(api.Role_AUTHENTICATOR)
 	}
 
 	// Validate notification methods and apply plan limits.
@@ -280,8 +279,8 @@ func (ai *AppIdentity) ActivateIdentity(ctx context.Context,
 	req *api.ActivateIdentityRequest) (*api.Identity, error) {
 	logger := hlog.FromContext(ctx)
 	sess, ok := session.FromContext(ctx)
-	if !ok || sess.Role < common.Role_AUTHENTICATOR {
-		return nil, errPerm(common.Role_AUTHENTICATOR)
+	if !ok || sess.Role < api.Role_AUTHENTICATOR {
+		return nil, errPerm(api.Role_AUTHENTICATOR)
 	}
 
 	// Build event skeleton and function to write it. Failure to write an event
@@ -327,8 +326,8 @@ func (ai *AppIdentity) ChallengeIdentity(ctx context.Context,
 	req *api.ChallengeIdentityRequest) (*emptypb.Empty, error) {
 	logger := hlog.FromContext(ctx)
 	sess, ok := session.FromContext(ctx)
-	if !ok || sess.Role < common.Role_AUTHENTICATOR {
-		return nil, errPerm(common.Role_AUTHENTICATOR)
+	if !ok || sess.Role < api.Role_AUTHENTICATOR {
+		return nil, errPerm(api.Role_AUTHENTICATOR)
 	}
 
 	identity, _, err := ai.identDAO.Read(ctx, req.Id, sess.OrgID,
@@ -432,8 +431,8 @@ func (ai *AppIdentity) VerifyIdentity(ctx context.Context,
 	req *api.VerifyIdentityRequest) (*emptypb.Empty, error) {
 	logger := hlog.FromContext(ctx)
 	sess, ok := session.FromContext(ctx)
-	if !ok || sess.Role < common.Role_AUTHENTICATOR {
-		return nil, errPerm(common.Role_AUTHENTICATOR)
+	if !ok || sess.Role < api.Role_AUTHENTICATOR {
+		return nil, errPerm(api.Role_AUTHENTICATOR)
 	}
 
 	// Build event skeleton and function to write it. Failure to write an event
@@ -473,8 +472,8 @@ func (ai *AppIdentity) VerifyIdentity(ctx context.Context,
 func (ai *AppIdentity) GetIdentity(ctx context.Context,
 	req *api.GetIdentityRequest) (*api.Identity, error) {
 	sess, ok := session.FromContext(ctx)
-	if !ok || sess.Role < common.Role_VIEWER {
-		return nil, errPerm(common.Role_VIEWER)
+	if !ok || sess.Role < api.Role_VIEWER {
+		return nil, errPerm(api.Role_VIEWER)
 	}
 
 	identity, _, err := ai.identDAO.Read(ctx, req.Id, sess.OrgID, req.AppId)
@@ -490,8 +489,8 @@ func (ai *AppIdentity) DeleteIdentity(ctx context.Context,
 	req *api.DeleteIdentityRequest) (*emptypb.Empty, error) {
 	logger := hlog.FromContext(ctx)
 	sess, ok := session.FromContext(ctx)
-	if !ok || sess.Role < common.Role_AUTHENTICATOR {
-		return nil, errPerm(common.Role_AUTHENTICATOR)
+	if !ok || sess.Role < api.Role_AUTHENTICATOR {
+		return nil, errPerm(api.Role_AUTHENTICATOR)
 	}
 
 	if err := ai.identDAO.Delete(ctx, req.Id, sess.OrgID,
@@ -524,8 +523,8 @@ func (ai *AppIdentity) DeleteIdentity(ctx context.Context,
 func (ai *AppIdentity) ListIdentities(ctx context.Context,
 	req *api.ListIdentitiesRequest) (*api.ListIdentitiesResponse, error) {
 	sess, ok := session.FromContext(ctx)
-	if !ok || sess.Role < common.Role_VIEWER {
-		return nil, errPerm(common.Role_VIEWER)
+	if !ok || sess.Role < api.Role_VIEWER {
+		return nil, errPerm(api.Role_VIEWER)
 	}
 
 	if req.PageSize == 0 {

@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/ownmfa/api/go/api"
-	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/hlog"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -52,7 +51,7 @@ func (d *DAO) Read(ctx context.Context, userID, orgID string) (*api.User,
 		return nil, dao.DBToSentinel(err)
 	}
 
-	user.Role = common.Role(common.Role_value[role])
+	user.Role = api.Role(api.Role_value[role])
 	user.Status = api.Status(api.Status_value[status])
 	user.CreatedAt = timestamppb.New(createdAt)
 	user.UpdatedAt = timestamppb.New(updatedAt)
@@ -83,7 +82,7 @@ func (d *DAO) ReadByEmail(ctx context.Context, email,
 		return nil, nil, dao.DBToSentinel(err)
 	}
 
-	user.Role = common.Role(common.Role_value[role])
+	user.Role = api.Role(api.Role_value[role])
 	user.Status = api.Status(api.Status_value[status])
 	user.CreatedAt = timestamppb.New(createdAt)
 	user.UpdatedAt = timestamppb.New(updatedAt)
@@ -231,7 +230,7 @@ func (d *DAO) List(ctx context.Context, orgID string, lBoundTS time.Time,
 			return nil, 0, dao.DBToSentinel(err)
 		}
 
-		user.Role = common.Role(common.Role_value[role])
+		user.Role = api.Role(api.Role_value[role])
 		user.Status = api.Status(api.Status_value[status])
 		user.CreatedAt = timestamppb.New(createdAt)
 		user.UpdatedAt = timestamppb.New(updatedAt)

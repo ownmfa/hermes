@@ -10,7 +10,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/ownmfa/api/go/api"
-	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
@@ -252,7 +251,7 @@ func TestUpdateOrg(t *testing.T) {
 		t.Parallel()
 
 		disSysAdminOrgID, disSysAdminGRPCConn, err := authGRPCConn(
-			common.Role_SYS_ADMIN, api.Plan_PRO)
+			api.Role_SYS_ADMIN, api.Plan_PRO)
 		require.NoError(t, err)
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)

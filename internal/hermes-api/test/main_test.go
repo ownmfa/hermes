@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/ownmfa/api/go/api"
-	"github.com/ownmfa/api/go/common"
 	iapi "github.com/ownmfa/hermes/internal/hermes-api/api"
 	"github.com/ownmfa/hermes/internal/hermes-api/config"
 	"github.com/ownmfa/hermes/pkg/cache"
@@ -123,25 +122,25 @@ func TestMain(m *testing.M) {
 	}
 
 	// Build authenticated gRPC connections.
-	globalAdminOrgID, globalAdminGRPCConn, err = authGRPCConn(common.Role_ADMIN,
+	globalAdminOrgID, globalAdminGRPCConn, err = authGRPCConn(api.Role_ADMIN,
 		api.Plan_PRO)
 	if err != nil {
 		log.Fatalf("TestMain globalAdminGRPCConn authGRPCConn: %v", err)
 	}
 
-	_, secondaryAdminGRPCConn, err = authGRPCConn(common.Role_ADMIN,
+	_, secondaryAdminGRPCConn, err = authGRPCConn(api.Role_ADMIN,
 		api.Plan_PRO)
 	if err != nil {
 		log.Fatalf("TestMain secondaryAdminGRPCConn authGRPCConn: %v", err)
 	}
 
-	_, secondaryViewerGRPCConn, err = authGRPCConn(common.Role_VIEWER,
+	_, secondaryViewerGRPCConn, err = authGRPCConn(api.Role_VIEWER,
 		api.Plan_PRO)
 	if err != nil {
 		log.Fatalf("TestMain secondaryViewerGRPCConn authGRPCConn: %v", err)
 	}
 
-	_, secondarySysAdminGRPCConn, err = authGRPCConn(common.Role_SYS_ADMIN,
+	_, secondarySysAdminGRPCConn, err = authGRPCConn(api.Role_SYS_ADMIN,
 		api.Plan_PRO)
 	if err != nil {
 		log.Fatalf("TestMain secondarySysAdminGRPCConn authGRPCConn: %v", err)
@@ -149,13 +148,13 @@ func TestMain(m *testing.M) {
 
 	// Build API key-based gRPC connections.
 	globalAdminKeyGRPCConn, err = keyGRPCConn(globalAdminGRPCConn,
-		common.Role_ADMIN)
+		api.Role_ADMIN)
 	if err != nil {
 		log.Fatalf("TestMain globalAdminKeyGRPCConn keyGRPCConn: %v", err)
 	}
 
 	secondaryViewerKeyGRPCConn, err = keyGRPCConn(secondaryAdminGRPCConn,
-		common.Role_VIEWER)
+		api.Role_VIEWER)
 	if err != nil {
 		log.Fatalf("TestMain secondaryViewerKeyGRPCConn keyGRPCConn: %v", err)
 	}

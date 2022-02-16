@@ -10,7 +10,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/ownmfa/api/go/api"
-	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
@@ -24,7 +23,7 @@ func TestCreateUser(t *testing.T) {
 		t.Parallel()
 
 		user := random.User("api-user", uuid.NewString())
-		user.Role = common.Role_AUTHENTICATOR
+		user.Role = api.Role_AUTHENTICATOR
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -61,7 +60,7 @@ func TestCreateUser(t *testing.T) {
 		t.Parallel()
 
 		user := random.User("api-user", uuid.NewString())
-		user.Role = common.Role_SYS_ADMIN
+		user.Role = api.Role_SYS_ADMIN
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -100,7 +99,7 @@ func TestGetUser(t *testing.T) {
 	t.Parallel()
 
 	user := random.User("api-user", uuid.NewString())
-	user.Role = common.Role_AUTHENTICATOR
+	user.Role = api.Role_AUTHENTICATOR
 
 	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 	defer cancel()
@@ -198,7 +197,7 @@ func TestUpdateUser(t *testing.T) {
 		t.Parallel()
 
 		user := random.User("api-user", uuid.NewString())
-		user.Role = common.Role_AUTHENTICATOR
+		user.Role = api.Role_AUTHENTICATOR
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -212,7 +211,7 @@ func TestUpdateUser(t *testing.T) {
 		// Update user fields.
 		createUser.Name = "api-user-" + random.String(10)
 		createUser.Email = "api-user-" + random.Email()
-		createUser.Role = common.Role_ADMIN
+		createUser.Role = api.Role_ADMIN
 		createUser.Status = api.Status_DISABLED
 
 		updateUser, err := userCli.UpdateUser(ctx,
@@ -244,7 +243,7 @@ func TestUpdateUser(t *testing.T) {
 		t.Parallel()
 
 		user := random.User("api-user", uuid.NewString())
-		user.Role = common.Role_AUTHENTICATOR
+		user.Role = api.Role_AUTHENTICATOR
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -258,7 +257,7 @@ func TestUpdateUser(t *testing.T) {
 		// Update user fields.
 		part := &api.User{
 			Id: createUser.Id, Name: "api-user-" + random.String(10),
-			Email: "api-user-" + random.Email(), Role: common.Role_ADMIN,
+			Email: "api-user-" + random.Email(), Role: api.Role_ADMIN,
 			Status: api.Status_DISABLED,
 		}
 
@@ -341,7 +340,7 @@ func TestUpdateUser(t *testing.T) {
 		t.Parallel()
 
 		user := random.User("api-user", uuid.NewString())
-		user.Role = common.Role_AUTHENTICATOR
+		user.Role = api.Role_AUTHENTICATOR
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -353,7 +352,7 @@ func TestUpdateUser(t *testing.T) {
 		require.NoError(t, err)
 
 		// Update user fields.
-		createUser.Role = common.Role_SYS_ADMIN
+		createUser.Role = api.Role_SYS_ADMIN
 
 		updateUser, err := userCli.UpdateUser(ctx,
 			&api.UpdateUserRequest{User: createUser})
@@ -367,7 +366,7 @@ func TestUpdateUser(t *testing.T) {
 		t.Parallel()
 
 		user := random.User("api-user", uuid.NewString())
-		user.Role = common.Role_ADMIN
+		user.Role = api.Role_ADMIN
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -388,7 +387,7 @@ func TestUpdateUser(t *testing.T) {
 		t.Parallel()
 
 		user := random.User("api-user", uuid.NewString())
-		user.Role = common.Role_ADMIN
+		user.Role = api.Role_ADMIN
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -409,7 +408,7 @@ func TestUpdateUser(t *testing.T) {
 		t.Parallel()
 
 		user := random.User("api-user", uuid.NewString())
-		user.Role = common.Role_AUTHENTICATOR
+		user.Role = api.Role_AUTHENTICATOR
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -427,7 +426,7 @@ func TestUpdateUser(t *testing.T) {
 		t.Parallel()
 
 		user := random.User("api-user", uuid.NewString())
-		user.Role = common.Role_AUTHENTICATOR
+		user.Role = api.Role_AUTHENTICATOR
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -455,7 +454,7 @@ func TestUpdateUser(t *testing.T) {
 		t.Parallel()
 
 		user := random.User("api-user", uuid.NewString())
-		user.Role = common.Role_AUTHENTICATOR
+		user.Role = api.Role_AUTHENTICATOR
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -483,7 +482,7 @@ func TestUpdateUser(t *testing.T) {
 		t.Parallel()
 
 		user := random.User("api-user", uuid.NewString())
-		user.Role = common.Role_AUTHENTICATOR
+		user.Role = api.Role_AUTHENTICATOR
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -514,7 +513,7 @@ func TestUpdateUserPassword(t *testing.T) {
 		t.Parallel()
 
 		user := random.User("api-user", uuid.NewString())
-		user.Role = common.Role_AUTHENTICATOR
+		user.Role = api.Role_AUTHENTICATOR
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -568,7 +567,7 @@ func TestUpdateUserPassword(t *testing.T) {
 		t.Parallel()
 
 		user := random.User("api-user", uuid.NewString())
-		user.Role = common.Role_AUTHENTICATOR
+		user.Role = api.Role_AUTHENTICATOR
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -607,7 +606,7 @@ func TestUpdateUserPassword(t *testing.T) {
 		t.Parallel()
 
 		user := random.User("api-user", uuid.NewString())
-		user.Role = common.Role_AUTHENTICATOR
+		user.Role = api.Role_AUTHENTICATOR
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -635,7 +634,7 @@ func TestDeleteUser(t *testing.T) {
 		t.Parallel()
 
 		user := random.User("api-user", uuid.NewString())
-		user.Role = common.Role_AUTHENTICATOR
+		user.Role = api.Role_AUTHENTICATOR
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -700,7 +699,7 @@ func TestDeleteUser(t *testing.T) {
 		t.Parallel()
 
 		user := random.User("api-user", uuid.NewString())
-		user.Role = common.Role_AUTHENTICATOR
+		user.Role = api.Role_AUTHENTICATOR
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -728,11 +727,11 @@ func TestListUsers(t *testing.T) {
 
 	userIDs := []string{}
 	userNames := []string{}
-	userRoles := []common.Role{}
+	userRoles := []api.Role{}
 	userStatuses := []api.Status{}
 	for i := 0; i < 3; i++ {
 		user := random.User("api-user", uuid.NewString())
-		user.Role = common.Role_AUTHENTICATOR
+		user.Role = api.Role_AUTHENTICATOR
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		createUser, err := userCli.CreateUser(ctx,

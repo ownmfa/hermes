@@ -11,7 +11,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/ownmfa/api/go/api"
-	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/api/go/token"
 	"github.com/ownmfa/hermes/pkg/crypto"
 	"github.com/ownmfa/hermes/pkg/test/random"
@@ -60,7 +59,7 @@ func TestGenerateWebToken(t *testing.T) {
 
 			res, exp, err := GenerateWebToken(lTest.inpKey, &api.User{
 				Id: lTest.inpUserID, OrgId: lTest.inpOrgID,
-				Role: common.Role_AUTHENTICATOR,
+				Role: api.Role_AUTHENTICATOR,
 			})
 			t.Logf("res, exp, err: %v, %+v, %#v", res, exp, err)
 			require.GreaterOrEqual(t, len(res), lTest.resMinLen)
@@ -116,7 +115,7 @@ func TestGenerateKeyToken(t *testing.T) {
 			t.Parallel()
 
 			res, err := GenerateKeyToken(lTest.inpKey, lTest.inpKeyID,
-				lTest.inpOrgID, common.Role_AUTHENTICATOR)
+				lTest.inpOrgID, api.Role_AUTHENTICATOR)
 			t.Logf("res, err: %v, %#v", res, err)
 			require.GreaterOrEqual(t, len(res), lTest.resMinLen)
 			if lTest.err == "" {

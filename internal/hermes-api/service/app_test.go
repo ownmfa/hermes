@@ -10,7 +10,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/ownmfa/api/go/api"
-	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/test/matcher"
@@ -36,7 +35,7 @@ func TestCreateApp(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: app.OrgId, Role: common.Role_ADMIN,
+				OrgID: app.OrgId, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -62,7 +61,7 @@ func TestCreateApp(t *testing.T) {
 		createApp, err := aiSvc.CreateApp(ctx, &api.CreateAppRequest{})
 		t.Logf("createApp, err: %+v, %v", createApp, err)
 		require.Nil(t, createApp)
-		require.Equal(t, errPerm(common.Role_ADMIN), err)
+		require.Equal(t, errPerm(api.Role_ADMIN), err)
 	})
 
 	t.Run("Create app with insufficient role", func(t *testing.T) {
@@ -70,7 +69,7 @@ func TestCreateApp(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_VIEWER,
+				OrgID: uuid.NewString(), Role: api.Role_VIEWER,
 			}), testTimeout)
 		defer cancel()
 
@@ -78,7 +77,7 @@ func TestCreateApp(t *testing.T) {
 		createApp, err := aiSvc.CreateApp(ctx, &api.CreateAppRequest{})
 		t.Logf("createApp, err: %+v, %v", createApp, err)
 		require.Nil(t, createApp)
-		require.Equal(t, errPerm(common.Role_ADMIN), err)
+		require.Equal(t, errPerm(api.Role_ADMIN), err)
 	})
 
 	t.Run("Create invalid app", func(t *testing.T) {
@@ -93,7 +92,7 @@ func TestCreateApp(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: app.OrgId, Role: common.Role_ADMIN,
+				OrgID: app.OrgId, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -121,7 +120,7 @@ func TestGetApp(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: app.OrgId, Role: common.Role_ADMIN,
+				OrgID: app.OrgId, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -147,7 +146,7 @@ func TestGetApp(t *testing.T) {
 		getApp, err := aiSvc.GetApp(ctx, &api.GetAppRequest{})
 		t.Logf("getApp, err: %+v, %v", getApp, err)
 		require.Nil(t, getApp)
-		require.Equal(t, errPerm(common.Role_VIEWER), err)
+		require.Equal(t, errPerm(api.Role_VIEWER), err)
 	})
 
 	t.Run("Get app with insufficient role", func(t *testing.T) {
@@ -155,7 +154,7 @@ func TestGetApp(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ROLE_UNSPECIFIED,
+				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
 
@@ -163,7 +162,7 @@ func TestGetApp(t *testing.T) {
 		getApp, err := aiSvc.GetApp(ctx, &api.GetAppRequest{})
 		t.Logf("getApp, err: %+v, %v", getApp, err)
 		require.Nil(t, getApp)
-		require.Equal(t, errPerm(common.Role_VIEWER), err)
+		require.Equal(t, errPerm(api.Role_VIEWER), err)
 	})
 
 	t.Run("Get app by unknown ID", func(t *testing.T) {
@@ -175,7 +174,7 @@ func TestGetApp(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ADMIN,
+				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -202,7 +201,7 @@ func TestUpdateApp(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: app.OrgId, Role: common.Role_ADMIN,
+				OrgID: app.OrgId, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -246,7 +245,7 @@ func TestUpdateApp(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: app.OrgId, Role: common.Role_ADMIN,
+				OrgID: app.OrgId, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -276,7 +275,7 @@ func TestUpdateApp(t *testing.T) {
 		updateApp, err := aiSvc.UpdateApp(ctx, &api.UpdateAppRequest{})
 		t.Logf("updateApp, err: %+v, %v", updateApp, err)
 		require.Nil(t, updateApp)
-		require.Equal(t, errPerm(common.Role_ADMIN), err)
+		require.Equal(t, errPerm(api.Role_ADMIN), err)
 	})
 
 	t.Run("Update app with insufficient role", func(t *testing.T) {
@@ -284,7 +283,7 @@ func TestUpdateApp(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_VIEWER,
+				OrgID: uuid.NewString(), Role: api.Role_VIEWER,
 			}), testTimeout)
 		defer cancel()
 
@@ -292,7 +291,7 @@ func TestUpdateApp(t *testing.T) {
 		updateApp, err := aiSvc.UpdateApp(ctx, &api.UpdateAppRequest{})
 		t.Logf("updateApp, err: %+v, %v", updateApp, err)
 		require.Nil(t, updateApp)
-		require.Equal(t, errPerm(common.Role_ADMIN), err)
+		require.Equal(t, errPerm(api.Role_ADMIN), err)
 	})
 
 	t.Run("Update nil app", func(t *testing.T) {
@@ -300,7 +299,7 @@ func TestUpdateApp(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ADMIN,
+				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -319,7 +318,7 @@ func TestUpdateApp(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ADMIN,
+				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -347,7 +346,7 @@ func TestUpdateApp(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: orgID, Role: common.Role_ADMIN,
+				OrgID: orgID, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -370,7 +369,7 @@ func TestUpdateApp(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: app.OrgId, Role: common.Role_ADMIN,
+				OrgID: app.OrgId, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -397,7 +396,7 @@ func TestUpdateApp(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: app.OrgId, Role: common.Role_ADMIN,
+				OrgID: app.OrgId, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -424,7 +423,7 @@ func TestDeleteApp(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ADMIN,
+				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -444,7 +443,7 @@ func TestDeleteApp(t *testing.T) {
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
 		_, err := aiSvc.DeleteApp(ctx, &api.DeleteAppRequest{})
 		t.Logf("err: %v", err)
-		require.Equal(t, errPerm(common.Role_ADMIN), err)
+		require.Equal(t, errPerm(api.Role_ADMIN), err)
 	})
 
 	t.Run("Delete app with insufficient role", func(t *testing.T) {
@@ -452,14 +451,14 @@ func TestDeleteApp(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_VIEWER,
+				OrgID: uuid.NewString(), Role: api.Role_VIEWER,
 			}), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
 		_, err := aiSvc.DeleteApp(ctx, &api.DeleteAppRequest{})
 		t.Logf("err: %v", err)
-		require.Equal(t, errPerm(common.Role_ADMIN), err)
+		require.Equal(t, errPerm(api.Role_ADMIN), err)
 	})
 
 	t.Run("Delete app by unknown ID", func(t *testing.T) {
@@ -471,7 +470,7 @@ func TestDeleteApp(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ADMIN,
+				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -503,7 +502,7 @@ func TestListApps(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: orgID, Role: common.Role_ADMIN,
+				OrgID: orgID, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -543,7 +542,7 @@ func TestListApps(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: orgID, Role: common.Role_ADMIN,
+				OrgID: orgID, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -574,7 +573,7 @@ func TestListApps(t *testing.T) {
 		listApps, err := aiSvc.ListApps(ctx, &api.ListAppsRequest{})
 		t.Logf("listApps, err: %+v, %v", listApps, err)
 		require.Nil(t, listApps)
-		require.Equal(t, errPerm(common.Role_VIEWER), err)
+		require.Equal(t, errPerm(api.Role_VIEWER), err)
 	})
 
 	t.Run("List apps with insufficient role", func(t *testing.T) {
@@ -582,7 +581,7 @@ func TestListApps(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ROLE_UNSPECIFIED,
+				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
 
@@ -590,7 +589,7 @@ func TestListApps(t *testing.T) {
 		listApps, err := aiSvc.ListApps(ctx, &api.ListAppsRequest{})
 		t.Logf("listApps, err: %+v, %v", listApps, err)
 		require.Nil(t, listApps)
-		require.Equal(t, errPerm(common.Role_VIEWER), err)
+		require.Equal(t, errPerm(api.Role_VIEWER), err)
 	})
 
 	t.Run("List apps by invalid page token", func(t *testing.T) {
@@ -598,7 +597,7 @@ func TestListApps(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: uuid.NewString(), Role: common.Role_ADMIN,
+				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -620,7 +619,7 @@ func TestListApps(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: "aaa", Role: common.Role_ADMIN,
+				OrgID: "aaa", Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -650,7 +649,7 @@ func TestListApps(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: orgID, Role: common.Role_ADMIN,
+				OrgID: orgID, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 

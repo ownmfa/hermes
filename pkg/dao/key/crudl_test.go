@@ -9,7 +9,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/ownmfa/api/go/api"
-	"github.com/ownmfa/api/go/common"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/stretchr/testify/require"
@@ -208,7 +207,7 @@ func TestList(t *testing.T) {
 
 	keyIDs := []string{}
 	keyNames := []string{}
-	keyRoles := []common.Role{}
+	keyRoles := []api.Role{}
 	keyTSes := []time.Time{}
 	for i := 0; i < 3; i++ {
 		createKey, err := globalKeyDAO.Create(ctx, random.Key("dao-key",
