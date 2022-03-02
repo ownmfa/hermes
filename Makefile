@@ -12,12 +12,6 @@ RFLAG = -race
 export GORACE = halt_on_error=1
 endif
 
-# Assemble GOBIN until supported: https://github.com/golang/go/issues/23439
-INSTALLPATH = $(shell go env GOPATH)
-ifneq ($(DOCKER),)
-INSTALLPATH = .
-endif
-
 ifeq ($(strip $(TEST_REDIS_HOST)),)
 TEST_REDIS_HOST = 127.0.0.1
 endif
@@ -27,11 +21,11 @@ TEST_PG_URI = pgx://postgres:postgres@127.0.0.1/hermes_test
 endif
 
 install:
-	for x in $(shell find cmd -mindepth 1 -type d); do go build -ldflags="-w" \
-	-o $(INSTALLPATH)/bin/$${x#cmd/} $(RFLAG) ./$${x}; done
+	for x in $(shell find cmd -mindepth 1 -type d); do go install $(RFLAG) \
+	-ldflags="-w" ./$${x}; done
 
-	for x in $(shell find tool -mindepth 1 -type d); do go build -ldflags="-w" \
-	-o $(INSTALLPATH)/bin/$${x#tool/} $(RFLAG) ./$${x}; done
+	for x in $(shell find tool -mindepth 1 -type d); do go install \
+	-ldflags="-w" ./$${x}; done
 
 lint:
 	go install honnef.co/go/tools/cmd/staticcheck@latest
