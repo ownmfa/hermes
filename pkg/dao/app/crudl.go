@@ -71,8 +71,7 @@ RETURNING created_at
 
 // Update updates an application in the database. CreatedAt should not update,
 // so it is safe to override it at the DAO level.
-func (d *DAO) Update(ctx context.Context, app *api.App) (*api.App,
-	error) {
+func (d *DAO) Update(ctx context.Context, app *api.App) (*api.App, error) {
 	var createdAt time.Time
 	updatedAt := time.Now().UTC().Truncate(time.Microsecond)
 	app.UpdatedAt = timestamppb.New(updatedAt)
@@ -136,8 +135,10 @@ LIMIT %d
 // prevID are zero values, the first page of results is returned. Limits of 0 or
 // less do not apply a limit. List returns a slice of apps, a total count, and
 // an error value.
-func (d *DAO) List(ctx context.Context, orgID string, lBoundTS time.Time,
-	prevID string, limit int32) ([]*api.App, int32, error) {
+func (d *DAO) List(
+	ctx context.Context, orgID string, lBoundTS time.Time, prevID string,
+	limit int32,
+) ([]*api.App, int32, error) {
 	// Run count query.
 	var count int32
 	if err := d.pg.QueryRowContext(ctx, countApps, orgID).Scan(

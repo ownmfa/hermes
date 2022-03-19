@@ -39,8 +39,9 @@ ORDER BY created_at DESC
 `
 
 // List retrieves all events by org ID, identity ID, and [end, start) times.
-func (d *DAO) List(ctx context.Context, orgID, identityID string, end,
-	start time.Time) ([]*api.Event, error) {
+func (d *DAO) List(
+	ctx context.Context, orgID, identityID string, end, start time.Time,
+) ([]*api.Event, error) {
 	rows, err := d.pg.QueryContext(ctx, listEvents, orgID, identityID, end,
 		start)
 	if err != nil {
@@ -125,8 +126,9 @@ ORDER BY e.created_at DESC
 
 // Latest retrieves the latest events for each of an organization's identity by
 // org ID and any of the following: app ID, identity ID.
-func (d *DAO) Latest(ctx context.Context, orgID, appID,
-	identityID string) ([]*api.Event, error) {
+func (d *DAO) Latest(ctx context.Context, orgID, appID, identityID string) (
+	[]*api.Event, error,
+) {
 	// Build latest query.
 	query := latestEvents
 	args := []interface{}{orgID}

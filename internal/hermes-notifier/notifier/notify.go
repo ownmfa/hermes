@@ -202,8 +202,9 @@ func (not *Notifier) notifyMessages() {
 }
 
 // genTemplates generates a notification subject, body, and HTML body.
-func genTemplates(app *api.App, passcode string) (string, string, string,
-	error) {
+func genTemplates(app *api.App, passcode string) (
+	string, string, string, error,
+) {
 	subj, err := template.Generate(app.DisplayName, passcode,
 		app.SubjectTemplate)
 	if err != nil {

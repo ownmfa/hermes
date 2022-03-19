@@ -37,8 +37,9 @@ func NewEvent(evDAO Eventer) *Event {
 
 // ListEvents retrieves all events for an identity in an [end, start) time
 // range, in descending timestamp order.
-func (e *Event) ListEvents(ctx context.Context,
-	req *api.ListEventsRequest) (*api.ListEventsResponse, error) {
+func (e *Event) ListEvents(ctx context.Context, req *api.ListEventsRequest) (
+	*api.ListEventsResponse, error,
+) {
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < api.Role_VIEWER {
 		return nil, errPerm(api.Role_VIEWER)
@@ -69,8 +70,9 @@ func (e *Event) ListEvents(ctx context.Context,
 
 // LatestEvents retrieves the latest event for each of an organization's
 // identities.
-func (e *Event) LatestEvents(ctx context.Context,
-	req *api.LatestEventsRequest) (*api.LatestEventsResponse, error) {
+func (e *Event) LatestEvents(
+	ctx context.Context, req *api.LatestEventsRequest,
+) (*api.LatestEventsResponse, error) {
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < api.Role_VIEWER {
 		return nil, errPerm(api.Role_VIEWER)

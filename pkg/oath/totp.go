@@ -27,8 +27,9 @@ func (o *OTP) VerifyTOTP(lookAhead, offset int, passcode string) (int, error) {
 // count and window offset, based on the provided time, and returns the window
 // offset on success. lookAhead should usually be set to DefaultTOTPLookAhead
 // for non-activation use cases.
-func (o *OTP) verifyTOTP(lookAhead, offset int, t time.Time,
-	passcode string) (int, error) {
+func (o *OTP) verifyTOTP(lookAhead, offset int, t time.Time, passcode string) (
+	int, error,
+) {
 	for i := -lookAhead + offset; i <= lookAhead+offset; i++ {
 		pass, err := o.TOTP(t.Add(time.Duration(i*period) * time.Second))
 		if err != nil {

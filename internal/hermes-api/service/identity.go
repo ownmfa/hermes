@@ -51,8 +51,9 @@ type Identityer interface {
 }
 
 // CreateIdentity creates an identity.
-func (ai *AppIdentity) CreateIdentity(ctx context.Context,
-	req *api.CreateIdentityRequest) (*api.CreateIdentityResponse, error) {
+func (ai *AppIdentity) CreateIdentity(
+	ctx context.Context, req *api.CreateIdentityRequest,
+) (*api.CreateIdentityResponse, error) {
 	logger := hlog.FromContext(ctx)
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < api.Role_AUTHENTICATOR {
@@ -153,9 +154,11 @@ func (ai *AppIdentity) CreateIdentity(ctx context.Context,
 }
 
 // verify verifies a passcode and stores the HOTP counter or TOTP window offset.
-func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
-	appID string, expStatus api.IdentityStatus, passcode string, hotpLookAhead,
-	softTOTPLookAhead, hardTOTPLookAhead int) error {
+func (ai *AppIdentity) verify(
+	ctx context.Context, identityID, orgID, appID string,
+	expStatus api.IdentityStatus, passcode string, hotpLookAhead,
+	softTOTPLookAhead, hardTOTPLookAhead int,
+) error {
 	identity, otp, err := ai.identDAO.Read(ctx, identityID, orgID, appID)
 	if err != nil {
 		return err
@@ -275,8 +278,9 @@ func (ai *AppIdentity) verify(ctx context.Context, identityID, orgID,
 }
 
 // ActivateIdentity activates an identity by ID.
-func (ai *AppIdentity) ActivateIdentity(ctx context.Context,
-	req *api.ActivateIdentityRequest) (*api.Identity, error) {
+func (ai *AppIdentity) ActivateIdentity(
+	ctx context.Context, req *api.ActivateIdentityRequest,
+) (*api.Identity, error) {
 	logger := hlog.FromContext(ctx)
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < api.Role_AUTHENTICATOR {
@@ -322,8 +326,9 @@ func (ai *AppIdentity) ActivateIdentity(ctx context.Context,
 }
 
 // ChallengeIdentity issues a challenge to an identity by ID.
-func (ai *AppIdentity) ChallengeIdentity(ctx context.Context,
-	req *api.ChallengeIdentityRequest) (*emptypb.Empty, error) {
+func (ai *AppIdentity) ChallengeIdentity(
+	ctx context.Context, req *api.ChallengeIdentityRequest,
+) (*emptypb.Empty, error) {
 	logger := hlog.FromContext(ctx)
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < api.Role_AUTHENTICATOR {
@@ -427,8 +432,9 @@ func (ai *AppIdentity) ChallengeIdentity(ctx context.Context,
 }
 
 // VerifyIdentity verifies an identity by ID.
-func (ai *AppIdentity) VerifyIdentity(ctx context.Context,
-	req *api.VerifyIdentityRequest) (*emptypb.Empty, error) {
+func (ai *AppIdentity) VerifyIdentity(
+	ctx context.Context, req *api.VerifyIdentityRequest,
+) (*emptypb.Empty, error) {
 	logger := hlog.FromContext(ctx)
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < api.Role_AUTHENTICATOR {
@@ -469,8 +475,9 @@ func (ai *AppIdentity) VerifyIdentity(ctx context.Context,
 }
 
 // GetIdentity retrieves an identity by ID.
-func (ai *AppIdentity) GetIdentity(ctx context.Context,
-	req *api.GetIdentityRequest) (*api.Identity, error) {
+func (ai *AppIdentity) GetIdentity(
+	ctx context.Context, req *api.GetIdentityRequest,
+) (*api.Identity, error) {
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < api.Role_VIEWER {
 		return nil, errPerm(api.Role_VIEWER)
@@ -485,8 +492,9 @@ func (ai *AppIdentity) GetIdentity(ctx context.Context,
 }
 
 // DeleteIdentity deletes an identity by ID.
-func (ai *AppIdentity) DeleteIdentity(ctx context.Context,
-	req *api.DeleteIdentityRequest) (*emptypb.Empty, error) {
+func (ai *AppIdentity) DeleteIdentity(
+	ctx context.Context, req *api.DeleteIdentityRequest,
+) (*emptypb.Empty, error) {
 	logger := hlog.FromContext(ctx)
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < api.Role_AUTHENTICATOR {
@@ -520,8 +528,9 @@ func (ai *AppIdentity) DeleteIdentity(ctx context.Context,
 }
 
 // ListIdentities retrieves all identities.
-func (ai *AppIdentity) ListIdentities(ctx context.Context,
-	req *api.ListIdentitiesRequest) (*api.ListIdentitiesResponse, error) {
+func (ai *AppIdentity) ListIdentities(
+	ctx context.Context, req *api.ListIdentitiesRequest,
+) (*api.ListIdentitiesResponse, error) {
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < api.Role_VIEWER {
 		return nil, errPerm(api.Role_VIEWER)

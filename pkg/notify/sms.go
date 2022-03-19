@@ -37,8 +37,9 @@ func (n *notify) VaildateSMS(ctx context.Context, phone string) error {
 
 // SMS sends an SMS verification. This operation can block based on rate
 // limiting.
-func (n *notify) SMS(ctx context.Context, phone, displayName,
-	passcode string) error {
+func (n *notify) SMS(
+	ctx context.Context, phone, displayName, passcode string,
+) error {
 	// Support modified Twilio rate limit of 1 per second, serially. Twilio will
 	// queue up to 4 hours worth of messages (14,400), but at the risk of abuse
 	// by fraudulent users:

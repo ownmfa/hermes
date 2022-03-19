@@ -295,31 +295,35 @@ func TestNotifyMessagesError(t *testing.T) {
 
 			notifier := notify.NewMockNotifier(ctrl)
 			notifier.EXPECT().SMS(gomock.Any(), "+15125551212", app.DisplayName,
-				"861821").DoAndReturn(func(ctx interface{}, phone interface{},
-				displayName interface{}, passcode interface{}) error {
+				"861821").DoAndReturn(func(
+				ctx interface{}, phone interface{}, displayName interface{},
+				passcode interface{},
+			) error {
 				defer wg.Done()
 
 				return lTest.inpSMSErr
 			}).Times(lTest.inpSMSTimes)
 			notifier.EXPECT().Pushover(gomock.Any(),
 				pushoverIdentity.GetPushoverMethod().PushoverKey,
-				app.DisplayName, "861821").
-				DoAndReturn(func(ctx interface{}, userKey interface{},
-					displayName interface{}, passcode interface{}) error {
-					defer wg.Done()
+				app.DisplayName, "861821").DoAndReturn(func(
+				ctx interface{}, userKey interface{}, displayName interface{},
+				passcode interface{},
+			) error {
+				defer wg.Done()
 
-					return lTest.inpPushoverErr
-				}).Times(lTest.inpPushoverTimes)
+				return lTest.inpPushoverErr
+			}).Times(lTest.inpPushoverTimes)
 			notifier.EXPECT().Email(gomock.Any(), app.DisplayName, app.Email,
 				emailIdentity.GetEmailMethod().Email, gomock.Any(),
-				gomock.Any(), gomock.Any()).
-				DoAndReturn(func(ctx interface{}, displayName interface{},
-					from interface{}, to interface{}, subject interface{},
-					body interface{}, htmlBody interface{}) error {
-					defer wg.Done()
+				gomock.Any(), gomock.Any()).DoAndReturn(func(
+				ctx interface{}, displayName interface{}, from interface{},
+				to interface{}, subject interface{}, body interface{},
+				htmlBody interface{},
+			) error {
+				defer wg.Done()
 
-					return lTest.inpEmailErr
-				}).Times(lTest.inpEmailTimes)
+				return lTest.inpEmailErr
+			}).Times(lTest.inpEmailTimes)
 
 			eventer := NewMockeventer(ctrl)
 			eventer.EXPECT().Create(gomock.Any(), gomock.Any()).

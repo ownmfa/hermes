@@ -21,8 +21,9 @@ type credential struct {
 
 // GetRequestMetadata returns authentication metadata and implements the
 // PerRPCCredentials interface.
-func (c *credential) GetRequestMetadata(ctx context.Context,
-	uri ...string) (map[string]string, error) {
+func (c *credential) GetRequestMetadata(ctx context.Context, uri ...string) (
+	map[string]string, error,
+) {
 	return map[string]string{
 		"authorization": "Bearer " + c.token,
 	}, nil
@@ -34,8 +35,9 @@ func (c *credential) RequireTransportSecurity() bool {
 	return false
 }
 
-func authGRPCConn(role api.Role, plan api.Plan) (string, *grpc.ClientConn,
-	error) {
+func authGRPCConn(role api.Role, plan api.Plan) (
+	string, *grpc.ClientConn, error,
+) {
 	org := random.Org("api-helper")
 	org.Status = api.Status_ACTIVE
 	org.Plan = plan
@@ -82,8 +84,9 @@ func authGRPCConn(role api.Role, plan api.Plan) (string, *grpc.ClientConn,
 	return createOrg.Id, authConn, nil
 }
 
-func keyGRPCConn(conn *grpc.ClientConn, role api.Role) (*grpc.ClientConn,
-	error) {
+func keyGRPCConn(conn *grpc.ClientConn, role api.Role) (
+	*grpc.ClientConn, error,
+) {
 	key := random.Key("api-key", uuid.NewString())
 	key.Role = role
 

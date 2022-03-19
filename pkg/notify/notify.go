@@ -16,8 +16,10 @@ type notify struct {
 var _ Notifier = &notify{}
 
 // New builds a new Notifier and returns it.
-func New(cache cache.Cacher, smsKeyID, smsAccountID, smsKeySecret, smsPhone,
-	pushoverAppKey, emailDomain, emailAPIKey string) Notifier {
+func New(
+	cache cache.Cacher, smsKeyID, smsAccountID, smsKeySecret, smsPhone,
+	pushoverAppKey, emailDomain, emailAPIKey string,
+) Notifier {
 	return &notify{
 		cache: cache,
 
