@@ -44,8 +44,9 @@ func (n *notify) VaildatePushover(ctx context.Context, userKey string) error {
 
 // Pushover sends a Pushover notification using the default application key and
 // templates. This operation can block based on rate limiting.
-func (n *notify) Pushover(ctx context.Context, userKey, displayName,
-	passcode string) error {
+func (n *notify) Pushover(
+	ctx context.Context, userKey, displayName, passcode string,
+) error {
 	subj := fmt.Sprintf(poSubjTempl, displayName)
 	body := fmt.Sprintf(poBodyTempl, displayName, passcode)
 
@@ -54,15 +55,17 @@ func (n *notify) Pushover(ctx context.Context, userKey, displayName,
 
 // PushoverByApp sends a Pushover notification by application key. This
 // operation can block based on rate limiting.
-func (n *notify) PushoverByApp(ctx context.Context, appKey, userKey, subject,
-	body string) error {
+func (n *notify) PushoverByApp(
+	ctx context.Context, appKey, userKey, subject, body string,
+) error {
 	return n.pushover(ctx, appKey, userKey, subject, body)
 }
 
 // pushover sends a Pushover notification by application key. This operation can
 // block based on rate limiting.
-func (n *notify) pushover(ctx context.Context, appKey, userKey, subject,
-	body string) error {
+func (n *notify) pushover(
+	ctx context.Context, appKey, userKey, subject, body string,
+) error {
 	po := pushover.New(appKey)
 	recipient := pushover.NewRecipient(userKey)
 

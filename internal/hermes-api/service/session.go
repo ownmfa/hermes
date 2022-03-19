@@ -39,8 +39,9 @@ type Session struct {
 }
 
 // NewSession instantiates and returns a new Session service.
-func NewSession(userDAO Userer, keyDAO Keyer, cache cache.Cacher,
-	pwtKey []byte) *Session {
+func NewSession(
+	userDAO Userer, keyDAO Keyer, cache cache.Cacher, pwtKey []byte,
+) *Session {
 	return &Session{
 		userDAO: userDAO,
 		keyDAO:  keyDAO,
@@ -51,8 +52,9 @@ func NewSession(userDAO Userer, keyDAO Keyer, cache cache.Cacher,
 }
 
 // Login logs in a user.
-func (s *Session) Login(ctx context.Context,
-	req *api.LoginRequest) (*api.LoginResponse, error) {
+func (s *Session) Login(ctx context.Context, req *api.LoginRequest) (
+	*api.LoginResponse, error,
+) {
 	logger := hlog.FromContext(ctx)
 
 	// Read an active user by email and active organization.
@@ -89,8 +91,9 @@ func (s *Session) Login(ctx context.Context,
 }
 
 // CreateKey creates an API key.
-func (s *Session) CreateKey(ctx context.Context,
-	req *api.CreateKeyRequest) (*api.CreateKeyResponse, error) {
+func (s *Session) CreateKey(ctx context.Context, req *api.CreateKeyRequest) (
+	*api.CreateKeyResponse, error,
+) {
 	logger := hlog.FromContext(ctx)
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < api.Role_ADMIN {
@@ -128,8 +131,9 @@ func (s *Session) CreateKey(ctx context.Context,
 }
 
 // DeleteKey deletes an API key by ID.
-func (s *Session) DeleteKey(ctx context.Context,
-	req *api.DeleteKeyRequest) (*emptypb.Empty, error) {
+func (s *Session) DeleteKey(ctx context.Context, req *api.DeleteKeyRequest) (
+	*emptypb.Empty, error,
+) {
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < api.Role_ADMIN {
 		return nil, errPerm(api.Role_ADMIN)
@@ -157,8 +161,9 @@ func (s *Session) DeleteKey(ctx context.Context,
 }
 
 // ListKeys retrieves all API keys.
-func (s *Session) ListKeys(ctx context.Context,
-	req *api.ListKeysRequest) (*api.ListKeysResponse, error) {
+func (s *Session) ListKeys(ctx context.Context, req *api.ListKeysRequest) (
+	*api.ListKeysResponse, error,
+) {
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < api.Role_ADMIN {
 		return nil, errPerm(api.Role_ADMIN)

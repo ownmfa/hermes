@@ -48,9 +48,10 @@ type AppIdentity struct {
 }
 
 // NewAppIdentity instantiates and returns a new AppIdentity service.
-func NewAppIdentity(appDAO Apper, identDAO Identityer, evDAO Eventer,
-	cache cache.Cacher, notify notify.Notifier, pubQueue queue.Queuer,
-	pubTopic string) *AppIdentity {
+func NewAppIdentity(
+	appDAO Apper, identDAO Identityer, evDAO Eventer, cache cache.Cacher,
+	notify notify.Notifier, pubQueue queue.Queuer, pubTopic string,
+) *AppIdentity {
 	return &AppIdentity{
 		appDAO:   appDAO,
 		identDAO: identDAO,
@@ -65,8 +66,9 @@ func NewAppIdentity(appDAO Apper, identDAO Identityer, evDAO Eventer,
 }
 
 // CreateApp creates an application.
-func (ai *AppIdentity) CreateApp(ctx context.Context,
-	req *api.CreateAppRequest) (*api.App, error) {
+func (ai *AppIdentity) CreateApp(
+	ctx context.Context, req *api.CreateAppRequest,
+) (*api.App, error) {
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < api.Role_ADMIN {
 		return nil, errPerm(api.Role_ADMIN)
@@ -89,8 +91,9 @@ func (ai *AppIdentity) CreateApp(ctx context.Context,
 }
 
 // GetApp retrieves an application by ID.
-func (ai *AppIdentity) GetApp(ctx context.Context,
-	req *api.GetAppRequest) (*api.App, error) {
+func (ai *AppIdentity) GetApp(ctx context.Context, req *api.GetAppRequest) (
+	*api.App, error,
+) {
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < api.Role_VIEWER {
 		return nil, errPerm(api.Role_VIEWER)
@@ -106,8 +109,9 @@ func (ai *AppIdentity) GetApp(ctx context.Context,
 
 // UpdateApp updates an application. Update actions validate after merge to
 // support partial updates.
-func (ai *AppIdentity) UpdateApp(ctx context.Context,
-	req *api.UpdateAppRequest) (*api.App, error) {
+func (ai *AppIdentity) UpdateApp(
+	ctx context.Context, req *api.UpdateAppRequest,
+) (*api.App, error) {
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < api.Role_ADMIN {
 		return nil, errPerm(api.Role_ADMIN)
@@ -152,8 +156,9 @@ func (ai *AppIdentity) UpdateApp(ctx context.Context,
 }
 
 // DeleteApp deletes an application by ID.
-func (ai *AppIdentity) DeleteApp(ctx context.Context,
-	req *api.DeleteAppRequest) (*emptypb.Empty, error) {
+func (ai *AppIdentity) DeleteApp(
+	ctx context.Context, req *api.DeleteAppRequest,
+) (*emptypb.Empty, error) {
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < api.Role_ADMIN {
 		return nil, errPerm(api.Role_ADMIN)
@@ -173,8 +178,9 @@ func (ai *AppIdentity) DeleteApp(ctx context.Context,
 }
 
 // ListApps retrieves all applications.
-func (ai *AppIdentity) ListApps(ctx context.Context,
-	req *api.ListAppsRequest) (*api.ListAppsResponse, error) {
+func (ai *AppIdentity) ListApps(ctx context.Context, req *api.ListAppsRequest) (
+	*api.ListAppsResponse, error,
+) {
 	sess, ok := session.FromContext(ctx)
 	if !ok || sess.Role < api.Role_VIEWER {
 		return nil, errPerm(api.Role_VIEWER)

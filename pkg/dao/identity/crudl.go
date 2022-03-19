@@ -23,8 +23,9 @@ RETURNING id
 
 // Create creates an identity in the database. It returns an Identity, OTP, and
 // bool representing whether the OTP secret and QR should be returned.
-func (d *DAO) Create(ctx context.Context,
-	identity *api.Identity) (*api.Identity, *oath.OTP, bool, error) {
+func (d *DAO) Create(ctx context.Context, identity *api.Identity) (
+	*api.Identity, *oath.OTP, bool, error,
+) {
 	// Backup codes and security questions methods do not require activation.
 	switch identity.MethodOneof.(type) {
 	case *api.Identity_BackupCodesMethod, *api.Identity_SecurityQuestionsMethod:
@@ -75,8 +76,9 @@ WHERE (id, org_id, app_id) = ($1, $2, $3)
 
 // Read retrieves an identity by ID, org ID, and app ID. Identity MethodOneof
 // may be returned in simplified form.
-func (d *DAO) Read(ctx context.Context, identityID, orgID,
-	appID string) (*api.Identity, *oath.OTP, error) {
+func (d *DAO) Read(ctx context.Context, identityID, orgID, appID string) (
+	*api.Identity, *oath.OTP, error,
+) {
 	identity := &api.Identity{}
 	otp := &oath.OTP{}
 	meta := &otpMeta{}
@@ -122,8 +124,10 @@ WHERE (id, org_id, app_id) = ($3, $4, $5)
 `
 
 // UpdateStatus updates an identity's status by ID, org ID, and app ID.
-func (d *DAO) UpdateStatus(ctx context.Context, identityID, orgID,
-	appID string, status api.IdentityStatus) (*api.Identity, error) {
+func (d *DAO) UpdateStatus(
+	ctx context.Context, identityID, orgID, appID string,
+	status api.IdentityStatus,
+) (*api.Identity, error) {
 	// Read the identity before attempting to update it. Do not remap the error.
 	identity, _, err := d.Read(ctx, identityID, orgID, appID)
 	if err != nil {
@@ -148,8 +152,9 @@ WHERE (id, org_id, app_id) = ($1, $2, $3)
 `
 
 // Delete deletes an identity by ID, org ID, and app ID.
-func (d *DAO) Delete(ctx context.Context, identityID, orgID,
-	appID string) error {
+func (d *DAO) Delete(
+	ctx context.Context, identityID, orgID, appID string,
+) error {
 	// Verify an identity exists before attempting to delete it. Do not remap
 	// the error.
 	if _, _, err := d.Read(ctx, identityID, orgID, appID); err != nil {
@@ -198,8 +203,10 @@ LIMIT %d
 // filter. If lBoundTS and prevID are zero values, the first page of results is
 // returned. Limits of 0 or less do not apply a limit. List returns a slice of
 // identities, a total count, and an error value.
-func (d *DAO) List(ctx context.Context, orgID string, lBoundTS time.Time,
-	prevID string, limit int32, appID string) ([]*api.Identity, int32, error) {
+func (d *DAO) List(
+	ctx context.Context, orgID string, lBoundTS time.Time, prevID string,
+	limit int32, appID string,
+) ([]*api.Identity, int32, error) {
 	// Build count query.
 	cQuery := countIdentities
 	cArgs := []interface{}{orgID}
