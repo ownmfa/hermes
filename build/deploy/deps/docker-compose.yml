@@ -27,7 +27,7 @@ services:
     ports:
       - "127.0.0.1:4171:4171"
   redis:
-    image: redis:6-alpine
+    image: redis:7-alpine
     command: redis-server --save 300 1 --save 60 100 --appendonly no
     volumes:
       - ./volume/redis:/data
@@ -45,7 +45,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
   traefik:
-    image: traefik:v2.6
+    image: traefik:v2.7
     ports:
       - "80:80"
       # - "443:443"
