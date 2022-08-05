@@ -7,7 +7,9 @@ import (
 	"crypto/subtle"
 	"errors"
 	"fmt"
+	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -146,7 +148,7 @@ func (ai *AppIdentity) CreateIdentity(
 	}
 
 	if err = grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
-		"201")); err != nil {
+		strconv.Itoa(http.StatusCreated))); err != nil {
 		logger.Errorf("CreateIdentity grpc.SetHeader: %v", err)
 	}
 
@@ -414,7 +416,7 @@ func (ai *AppIdentity) ChallengeIdentity(
 		logger.Debug("ChallengeIdentity published")
 
 		if err := grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
-			"202")); err != nil {
+			strconv.Itoa(http.StatusAccepted))); err != nil {
 			logger.Errorf("ChallengeIdentity grpc.SetHeader: %v", err)
 		}
 
@@ -424,7 +426,7 @@ func (ai *AppIdentity) ChallengeIdentity(
 	writeEvent(api.EventStatus_CHALLENGE_NOOP, "")
 
 	if err := grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
-		"204")); err != nil {
+		strconv.Itoa(http.StatusNoContent))); err != nil {
 		logger.Errorf("ChallengeIdentity grpc.SetHeader: %v", err)
 	}
 
@@ -520,7 +522,7 @@ func (ai *AppIdentity) DeleteIdentity(
 	}
 
 	if err := grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
-		"204")); err != nil {
+		strconv.Itoa(http.StatusNoContent))); err != nil {
 		logger.Errorf("DeleteIdentity grpc.SetHeader: %v", err)
 	}
 
