@@ -48,8 +48,8 @@ func (t *mailgun) sendEmail(
 	vals.Set("html", htmlBody)
 	r := strings.NewReader(vals.Encode())
 
-	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf(emailURL,
-		t.domain), r)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost,
+		fmt.Sprintf(emailURL, t.domain), r)
 	if err != nil {
 		return err
 	}

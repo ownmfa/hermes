@@ -15,7 +15,7 @@ jobs:
         TEST_NSQ_PUB_ADDR: nsqd:4150
         TEST_NSQ_LOOKUP_ADDRS: nsqlookupd:4161
     env:
-      SLACK_WEBHOOK_URL: https://hooks.slack.com/services/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
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     services:
       postgres:
         image: postgres:12-alpine

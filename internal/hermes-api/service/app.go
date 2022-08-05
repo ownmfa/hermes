@@ -4,6 +4,8 @@ package service
 
 import (
 	"context"
+	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/mennanov/fmutils"
@@ -82,7 +84,7 @@ func (ai *AppIdentity) CreateApp(
 	}
 
 	if err := grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
-		"201")); err != nil {
+		strconv.Itoa(http.StatusCreated))); err != nil {
 		logger := hlog.FromContext(ctx)
 		logger.Errorf("CreateApp grpc.SetHeader: %v", err)
 	}
@@ -169,7 +171,7 @@ func (ai *AppIdentity) DeleteApp(
 	}
 
 	if err := grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
-		"204")); err != nil {
+		strconv.Itoa(http.StatusNoContent))); err != nil {
 		logger := hlog.FromContext(ctx)
 		logger.Errorf("DeleteApp grpc.SetHeader: %v", err)
 	}
