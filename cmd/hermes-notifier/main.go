@@ -1,3 +1,4 @@
+// Package main starts the Notifier service.
 package main
 
 import (
