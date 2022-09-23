@@ -7,9 +7,9 @@ deps:
 
 message:
 	protoc -I=../protobuf --go_out=. --go_opt=paths=source_relative \
-	message/notifier_in.proto
+	message/ownmfa_notifier_in.proto
 
 token:
 	protoc -I=../protobuf --go_out=. --go_opt=paths=source_relative \
-	token/web.proto \
-	token/page.proto
+	token/ownmfa_web.proto \
+	token/ownmfa_page.proto

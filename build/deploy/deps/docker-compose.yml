@@ -9,34 +9,42 @@ services:
       - POSTGRES_DB=hermes
     volumes:
       - ./volume/postgres:/var/lib/postgresql/data
+
   nsqlookupd:
     image: nsqio/nsq:v1.2.1
     command: /nsqlookupd --log-level=warn
+
   nsqd:
     image: nsqio/nsq:v1.2.1
     command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 --broadcast-address=nsqd --log-level=warn
+    restart: on-failure
     depends_on:
       - nsqlookupd
     volumes:
       - ./volume/nsqd:/data
+
   nsqadmin:
     image: nsqio/nsq:v1.2.1
     command: /nsqadmin --lookupd-http-address=nsqlookupd:4161 --log-level=warn
+    restart: on-failure
     depends_on:
       - nsqlookupd
     ports:
       - "127.0.0.1:4171:4171"
+
   redis:
     image: redis:7-alpine
     command: redis-server --save 300 1 --save 60 100 --appendonly no
     volumes:
       - ./volume/redis:/data
+
   dogstatsd:
     image: datadog/dogstatsd:latest
     environment:
       - DD_API_KEY=notasecurekey
       - DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true
       - DD_ENV=dev
+
   logspout:
     image: gliderlabs/logspout:latest
     command: syslog+tls://logs-01.loggly.com:6514
@@ -44,6 +52,7 @@ services:
       - 'SYSLOG_STRUCTURED_DATA=notasecurekey@41058 tag="dev"'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+
   traefik:
     image: traefik:v2.8
     ports:
