@@ -11,7 +11,7 @@ import (
 func main() {
 	cfg := config.New()
 
-	hlog.SetDefault(hlog.NewJSON().WithLevel(cfg.LogLevel).WithStr("service",
+	hlog.SetDefault(hlog.NewJSON().WithLevel(cfg.LogLevel).WithField("service",
 		notifier.ServiceName))
 	metric.SetStatsD(cfg.StatsDAddr, notifier.ServiceName)
 
