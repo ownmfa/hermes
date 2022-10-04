@@ -201,8 +201,8 @@ func (ai *AppIdentity) verify(
 
 	// Add logging fields.
 	logger := hlog.FromContext(ctx)
-	logger.Logger = logger.WithStr("appID", identity.AppId)
-	logger.Logger = logger.WithStr("identityID", identity.Id)
+	logger.Logger = logger.WithField("appID", identity.AppId)
+	logger.Logger = logger.WithField("identityID", identity.Id)
 
 	// Verify passcode and calculate HOTP counter or TOTP window offset.
 	var counter int64
@@ -388,8 +388,8 @@ func (ai *AppIdentity) ChallengeIdentity(
 		}
 
 		// Add logging fields.
-		logger.Logger = logger.WithStr("appID", identity.AppId)
-		logger.Logger = logger.WithStr("identityID", identity.Id)
+		logger.Logger = logger.WithField("appID", identity.AppId)
+		logger.Logger = logger.WithField("identityID", identity.Id)
 
 		nIn := &message.NotifierIn{
 			OrgId:      identity.OrgId,

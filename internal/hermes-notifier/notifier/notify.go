@@ -49,13 +49,11 @@ func (not *Notifier) notifyMessages() {
 		copy(traceID[:], nIn.TraceId)
 
 		// Set up logging fields.
-		logFields := map[string]interface{}{
-			"traceID":    traceID.String(),
-			"orgID":      nIn.OrgId,
-			"appID":      nIn.AppId,
-			"identityID": nIn.IdentityId,
-		}
-		logger := hlog.WithFields(logFields)
+		logger := hlog.
+			WithField("traceID", traceID.String()).
+			WithField("orgID", nIn.OrgId).
+			WithField("appID", nIn.AppId).
+			WithField("identityID", nIn.IdentityId)
 
 		// Retrieve identity.
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
