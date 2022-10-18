@@ -18,21 +18,21 @@ jobs:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     services:
       postgres:
-        image: postgres:12-alpine
+        image: postgres:14-alpine
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: hermes_test
       nsqlookupd:
-        image: ownmfa/nsqlookupd:v1.2.0
+        image: ownmfa/nsqlookupd:v1.2.1
         env:
           LOG_LEVEL: warn
       nsqd:
-        image: ownmfa/nsqd:v1.2.0
+        image: ownmfa/nsqd:v1.2.1
         env:
           LOOKUP_ADDR: nsqlookupd:4160
           LOG_LEVEL: warn
       redis:
-        image: redis:6-alpine
+        image: redis:7-alpine
     steps:
       - name: Deps
         # Names are duplicated as IDs for use by Notify
