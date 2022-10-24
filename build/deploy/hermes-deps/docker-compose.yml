@@ -4,7 +4,7 @@ services:
     image: postgres:14-alpine
     # command: postgres -c log_statement=all
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:5438:5432"
     environment:
       - POSTGRES_PASSWORD=notasecurepassword
       - POSTGRES_DB=hermes
@@ -31,7 +31,7 @@ services:
     depends_on:
       - nsqlookupd
     ports:
-      - "127.0.0.1:4171:4171"
+      - "127.0.0.1:4178:4171"
 
   redis:
     image: redis:7-alpine
@@ -78,4 +78,6 @@ services:
       # - ./volume/tls:/tls
 networks:
   default:
-    name: deps
+    name: hermes-deps
+    # driver_opts:
+    #   com.docker.network.bridge.host_binding_ipv4: "10.0.0.26"

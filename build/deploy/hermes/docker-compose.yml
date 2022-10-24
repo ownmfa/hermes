@@ -1,14 +1,11 @@
 version: "3"
 services:
   hermes-api:
-    image: ghcr.io/ownmfa/hermes:08e32a83
+    image: ghcr.io/ownmfa/hermes:79257833
     command: hermes-api
     restart: on-failure
     depends_on:
       - hermes-notifier
-    ports:
-      - "127.0.0.1:8000:8000"
-      - "127.0.0.1:5005:50051"
     environment:
       - API_STATSD_ADDR=dogstatsd:8125
       - API_PG_URI=postgres://postgres:notasecurepassword@postgres/hermes
@@ -34,7 +31,7 @@ services:
       - "traefik.http.services.hermes-grpc.loadbalancer.server.scheme=h2c"
 
   hermes-notifier:
-    image: ghcr.io/ownmfa/hermes:08e32a83
+    image: ghcr.io/ownmfa/hermes:79257833
     command: hermes-notifier
     restart: on-failure
     environment:
@@ -50,4 +47,4 @@ services:
 networks:
   default:
     external: true
-    name: deps
+    name: hermes-deps
