@@ -9,7 +9,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.3.0
 	github.com/gregdel/pushover v1.1.0
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.12.0
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.13.0
 	github.com/jackc/pgconn v1.13.0
 	github.com/jackc/pgx/v4 v4.17.2
 	github.com/mennanov/fmutils v0.2.0
@@ -18,8 +18,8 @@ require (
 	github.com/rs/zerolog v1.28.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/smira/go-statsd v1.3.2
-	github.com/stretchr/testify v1.8.0
-	golang.org/x/crypto v0.0.0-20221012134737-56aed061732a
+	github.com/stretchr/testify v1.8.1
+	golang.org/x/crypto v0.1.0
 	google.golang.org/grpc v1.50.1
 	google.golang.org/protobuf v1.28.1
 )
@@ -40,10 +40,10 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	golang.org/x/net v0.0.0-20221017152216-f25eb7ecb193 // indirect
+	golang.org/x/net v0.1.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.1.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
-	google.golang.org/genproto v0.0.0-20221018160656-63c7b68cfc55 // indirect
+	google.golang.org/genproto v0.0.0-20221027153422-115e99e71e1c // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
