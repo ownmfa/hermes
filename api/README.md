@@ -16,7 +16,8 @@ import "github.com/ownmfa/hermes/api/go/token"
 ## Building
 
 These instructions require
-[Docker](https://docs.docker.com/get-started/overview/) to be installed.
+[Docker](https://docs.docker.com/get-started/overview/) and
+[Docker Compose](https://docs.docker.com/compose/) (V1 or V2) to be installed.
 
 ```
 make
