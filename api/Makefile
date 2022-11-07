@@ -4,9 +4,9 @@
 # filesystem depth
 generate:
 	cp -Rf ../../api/protobuf/api protobuf/
-	docker compose build --no-cache --pull
-	docker compose up
-	docker compose down
+	docker-compose build --progress=plain --no-cache --pull
+	docker-compose up
+	docker-compose down
 	rm -rf protobuf/api
 	cp -f ../../api/openapi/hermes.swagger.json ../web/
 
