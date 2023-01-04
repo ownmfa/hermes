@@ -4,7 +4,7 @@ github.com/NYTimes/gziphandler
 # github.com/ReneKroon/ttlcache/v3 v3.0.0-beta
 ## explicit; go 1.18
 github.com/ReneKroon/ttlcache/v3
-# github.com/cespare/xxhash/v2 v2.1.2
+# github.com/cespare/xxhash/v2 v2.2.0
 ## explicit; go 1.11
 github.com/cespare/xxhash/v2
 # github.com/davecgh/go-spew v1.1.1
@@ -13,7 +13,7 @@ github.com/davecgh/go-spew/spew
 # github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f
 ## explicit
 github.com/dgryski/go-rendezvous
-# github.com/envoyproxy/protoc-gen-validate v0.9.0
+# github.com/envoyproxy/protoc-gen-validate v0.9.1
 ## explicit; go 1.17
 github.com/envoyproxy/protoc-gen-validate/validate
 # github.com/go-redis/redis/v8 v8.11.5
@@ -46,7 +46,7 @@ github.com/google/uuid
 # github.com/gregdel/pushover v1.1.0
 ## explicit; go 1.14
 github.com/gregdel/pushover
-# github.com/grpc-ecosystem/grpc-gateway/v2 v2.14.0
+# github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.0
 ## explicit; go 1.17
 github.com/grpc-ecosystem/grpc-gateway/v2/internal/httprule
 github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2/options
@@ -69,10 +69,10 @@ github.com/jackc/pgpassfile
 # github.com/jackc/pgproto3/v2 v2.3.1
 ## explicit; go 1.12
 github.com/jackc/pgproto3/v2
-# github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b
+# github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a
 ## explicit; go 1.14
 github.com/jackc/pgservicefile
-# github.com/jackc/pgtype v1.12.0
+# github.com/jackc/pgtype v1.13.0
 ## explicit; go 1.13
 github.com/jackc/pgtype
 # github.com/jackc/pgx/v4 v4.17.2
@@ -83,7 +83,7 @@ github.com/jackc/pgx/v4/stdlib
 # github.com/mattn/go-colorable v0.1.13
 ## explicit; go 1.15
 github.com/mattn/go-colorable
-# github.com/mattn/go-isatty v0.0.16
+# github.com/mattn/go-isatty v0.0.17
 ## explicit; go 1.15
 github.com/mattn/go-isatty
 # github.com/mennanov/fmutils v0.2.0
@@ -92,7 +92,7 @@ github.com/mennanov/fmutils
 # github.com/nsqio/go-nsq v1.1.0
 ## explicit; go 1.11
 github.com/nsqio/go-nsq
-# github.com/ownmfa/api/go v1.0.20
+# github.com/ownmfa/api/go v1.0.21
 ## explicit; go 1.19
 github.com/ownmfa/api/go/api
 # github.com/pmezard/go-difflib v1.0.0
@@ -115,12 +115,12 @@ github.com/smira/go-statsd
 ## explicit; go 1.13
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
-# golang.org/x/crypto v0.3.0
+# golang.org/x/crypto v0.5.0
 ## explicit; go 1.17
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/pbkdf2
-# golang.org/x/net v0.2.0
+# golang.org/x/net v0.5.0
 ## explicit; go 1.17
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
@@ -131,10 +131,10 @@ golang.org/x/net/trace
 # golang.org/x/sync v0.1.0
 ## explicit
 golang.org/x/sync/singleflight
-# golang.org/x/sys v0.2.0
+# golang.org/x/sys v0.4.0
 ## explicit; go 1.17
 golang.org/x/sys/unix
-# golang.org/x/text v0.4.0
+# golang.org/x/text v0.6.0
 ## explicit; go 1.17
 golang.org/x/text/cases
 golang.org/x/text/internal
@@ -149,7 +149,7 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# google.golang.org/genproto v0.0.0-20221118155620-16455021b5e6
+# google.golang.org/genproto v0.0.0-20230104163317-caabf589fcbf
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/api
 google.golang.org/genproto/googleapis/api/annotations
