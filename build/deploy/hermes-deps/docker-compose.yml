@@ -1,3 +1,4 @@
+# Hermes service suffix: 8
 version: "3"
 services:
   postgres:
