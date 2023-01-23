@@ -14,15 +14,16 @@ type Config struct {
 	PgURI     string
 	RedisHost string
 
-	PWTKey      []byte
-	IdentityKey []byte
-
 	NSQPubAddr  string
 	NSQPubTopic string
 
 	SMSKeyID       string
 	SMSKeySecret   string
 	PushoverAPIKey string
+
+	PWTKey      []byte
+	IdentityKey []byte
+	APIHost     string
 }
 
 // New instantiates a service Config, parses the environment, and returns it.
@@ -35,9 +36,6 @@ func New() *Config {
 			"postgres://postgres:postgres@127.0.0.1/hermes_test"),
 		RedisHost: config.String(pref+"REDIS_HOST", "127.0.0.1"),
 
-		PWTKey:      config.ByteSlice(pref + "PWT_KEY"),
-		IdentityKey: config.ByteSlice(pref + "IDENTITY_KEY"),
-
 		NSQPubAddr:  config.String(pref+"NSQ_PUB_ADDR", "127.0.0.1:4150"),
 		NSQPubTopic: config.String(pref+"NSQ_PUB_TOPIC", "NotifierIn"),
 
@@ -45,5 +43,9 @@ func New() *Config {
 			"SKc8b34a092fe8790061c58b3fb3db752f"),
 		SMSKeySecret:   config.String(pref+"SMS_KEY_SECRET", ""),
 		PushoverAPIKey: config.String(pref+"PUSHOVER_API_KEY", ""),
+
+		PWTKey:      config.ByteSlice(pref + "PWT_KEY"),
+		IdentityKey: config.ByteSlice(pref + "IDENTITY_KEY"),
+		APIHost:     config.String(pref+"API_HOST", ""),
 	}
 }

@@ -13,6 +13,8 @@ type Config struct {
 
 	NSQPubAddr     string
 	NSQLookupAddrs []string
+
+	APIHost string
 }
 
 // New instantiates a test Config, parses the environment, and returns it.
@@ -25,5 +27,7 @@ func New() *Config {
 		NSQPubAddr: config.String(pref+"NSQ_PUB_ADDR", "127.0.0.1:4150"),
 		NSQLookupAddrs: config.StringSlice(pref+"NSQ_LOOKUP_ADDRS",
 			[]string{"127.0.0.1:4161"}),
+
+		APIHost: config.String(pref+"API_HOST", "127.0.0.1"),
 	}
 }
