@@ -8,26 +8,21 @@ production NSQ images and set specific `CMD` values for each service.
 ## Build
 
 ```
-docker login -u ownmfa
+docker login -u ownmfa -p XXX ghcr.io
+docker buildx create --use
 
-docker build -f Dockerfile-nsqlookupd -t ownmfa/nsqlookupd:v1.2.1 .
-docker push ownmfa/nsqlookupd:v1.2.1
+docker buildx build -f Dockerfile-nsqlookupd -t ghcr.io/ownmfa/nsqlookupd:v1.2.1 --platform linux/amd64,linux/arm64 --push .
 
-docker build -f Dockerfile-nsqd -t ownmfa/nsqd:v1.2.1 .
-docker push ownmfa/nsqd:v1.2.1
+docker buildx build -f Dockerfile-nsqd -t ghcr.io/ownmfa/nsqd:v1.2.1 --platform linux/amd64,linux/arm64 --push .
 
-docker build -f Dockerfile-nsqadmin -t ownmfa/nsqadmin:v1.2.1 .
-docker push ownmfa/nsqadmin:v1.2.1
-
-docker logout
+docker buildx rm
+docker logout ghcr.io
 ```
 
 ## Usage
 
 ```
-docker run -it --env LOG_LEVEL=info ownmfa/nsqlookupd:v1.2.1
+docker run -it --env LOG_LEVEL=info ghcr.io/ownmfa/nsqlookupd:v1.2.1
 
-docker run -it --env LOOKUP_ADDR=nsqlookupd:4160 --env LOG_LEVEL=info ownmfa/nsqd:v1.2.1
-
-docker run -it --env LOOKUP_ADDR=nsqlookupd:4161 --env LOG_LEVEL=info ownmfa/nsqadmin:v1.2.1
+docker run -it --env LOOKUP_ADDR=nsqlookupd:4160 --env LOG_LEVEL=info ghcr.io/ownmfa/nsqd:v1.2.1
 ```
