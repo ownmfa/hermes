@@ -23,11 +23,17 @@ jobs:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: hermes_test
       nsqlookupd:
-        image: ownmfa/nsqlookupd:v1.2.1
+        image: ghcr.io/ownmfa/nsqlookupd:v1.2.1
+        credentials:
+          username: ownmfa
+          password: ${{ secrets.GHCR_PAT }}
         env:
           LOG_LEVEL: warn
       nsqd:
-        image: ownmfa/nsqd:v1.2.1
+        image: ghcr.io/ownmfa/nsqd:v1.2.1
+        credentials:
+          username: ownmfa
+          password: ${{ secrets.GHCR_PAT }}
         env:
           LOOKUP_ADDR: nsqlookupd:4160
           LOG_LEVEL: warn
