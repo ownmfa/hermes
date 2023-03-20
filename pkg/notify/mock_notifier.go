@@ -91,17 +91,17 @@ func (mr *MockNotifierMockRecorder) SMS(ctx, phone, displayName, passcode interf
 }
 
 // VaildatePushover mocks base method.
-func (m *MockNotifier) VaildatePushover(ctx context.Context, userKey string) error {
+func (m *MockNotifier) VaildatePushover(userKey string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VaildatePushover", ctx, userKey)
+	ret := m.ctrl.Call(m, "VaildatePushover", userKey)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // VaildatePushover indicates an expected call of VaildatePushover.
-func (mr *MockNotifierMockRecorder) VaildatePushover(ctx, userKey interface{}) *gomock.Call {
+func (mr *MockNotifierMockRecorder) VaildatePushover(userKey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VaildatePushover", reflect.TypeOf((*MockNotifier)(nil).VaildatePushover), ctx, userKey)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VaildatePushover", reflect.TypeOf((*MockNotifier)(nil).VaildatePushover), userKey)
 }
 
 // VaildateSMS mocks base method.

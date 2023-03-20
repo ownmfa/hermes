@@ -31,8 +31,7 @@ func TestNewFake(t *testing.T) {
 			require.NoError(t, notifier.VaildateSMS(ctx, random.String(10)))
 			require.NoError(t, notifier.SMS(ctx, random.String(10),
 				random.String(10), random.String(10)))
-			require.NoError(t, notifier.VaildatePushover(ctx,
-				random.String(10)))
+			require.NoError(t, notifier.VaildatePushover(random.String(10)))
 			require.NoError(t, notifier.Pushover(ctx, random.String(10),
 				random.String(10), random.String(10)))
 			require.NoError(t, notifier.PushoverByApp(ctx, random.String(10),
