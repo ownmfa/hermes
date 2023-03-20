@@ -24,7 +24,7 @@ const (
 )
 
 // VaildatePushover verifies that a Pushover user key is valid.
-func (n *notify) VaildatePushover(ctx context.Context, userKey string) error {
+func (n *notify) VaildatePushover(userKey string) error {
 	po := pushover.New(n.pushoverAppKey)
 	recipient := pushover.NewRecipient(userKey)
 

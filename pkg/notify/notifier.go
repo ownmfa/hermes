@@ -14,7 +14,7 @@ type Notifier interface {
 	// limiting.
 	SMS(ctx context.Context, phone, displayName, passcode string) error
 	// VaildatePushover verifies that a Pushover user key is valid.
-	VaildatePushover(ctx context.Context, userKey string) error
+	VaildatePushover(userKey string) error
 	// Pushover sends a Pushover notification using the default application key
 	// and templates. This operation can block based on rate limiting.
 	Pushover(ctx context.Context, userKey, displayName, passcode string) error

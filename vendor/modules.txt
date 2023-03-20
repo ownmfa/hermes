@@ -13,8 +13,8 @@ github.com/davecgh/go-spew/spew
 # github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f
 ## explicit
 github.com/dgryski/go-rendezvous
-# github.com/envoyproxy/protoc-gen-validate v0.9.1
-## explicit; go 1.17
+# github.com/envoyproxy/protoc-gen-validate v0.10.0
+## explicit; go 1.19
 github.com/envoyproxy/protoc-gen-validate/validate
 # github.com/golang/glog v1.1.0
 ## explicit; go 1.18
@@ -210,7 +210,7 @@ google.golang.org/grpc/serviceconfig
 google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
-# google.golang.org/protobuf v1.29.1
+# google.golang.org/protobuf v1.30.0
 ## explicit; go 1.11
 google.golang.org/protobuf/encoding/protojson
 google.golang.org/protobuf/encoding/prototext

@@ -82,7 +82,7 @@ func (ai *AppIdentity) CreateIdentity(
 			return nil, errPlan(api.Plan_PRO)
 		}
 
-		if err := ai.notify.VaildatePushover(ctx,
+		if err := ai.notify.VaildatePushover(
 			m.PushoverMethod.PushoverKey); err != nil {
 			return nil, errToStatus(err)
 		}
