@@ -7,14 +7,14 @@ import "context"
 
 // Notifier defines the methods provided by a Notify.
 type Notifier interface {
-	// VaildateSMS verifies that a phone number is correct and supported for SMS
+	// ValidateSMS verifies that a phone number is correct and supported for SMS
 	// usage.
-	VaildateSMS(ctx context.Context, phone string) error
+	ValidateSMS(ctx context.Context, phone string) error
 	// SMS sends an SMS verification. This operation can block based on rate
 	// limiting.
 	SMS(ctx context.Context, phone, displayName, passcode string) error
-	// VaildatePushover verifies that a Pushover user key is valid.
-	VaildatePushover(userKey string) error
+	// ValidatePushover verifies that a Pushover user key is valid.
+	ValidatePushover(userKey string) error
 	// Pushover sends a Pushover notification using the default application key
 	// and templates. This operation can block based on rate limiting.
 	Pushover(ctx context.Context, userKey, displayName, passcode string) error

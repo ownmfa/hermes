@@ -23,8 +23,8 @@ const (
 		"We will NOT contact you for it."
 )
 
-// VaildatePushover verifies that a Pushover user key is valid.
-func (n *notify) VaildatePushover(userKey string) error {
+// ValidatePushover verifies that a Pushover user key is valid.
+func (n *notify) ValidatePushover(userKey string) error {
 	po := pushover.New(n.pushoverAppKey)
 	recipient := pushover.NewRecipient(userKey)
 

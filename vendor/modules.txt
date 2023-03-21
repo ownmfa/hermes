@@ -13,7 +13,7 @@ github.com/davecgh/go-spew/spew
 # github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f
 ## explicit
 github.com/dgryski/go-rendezvous
-# github.com/envoyproxy/protoc-gen-validate v0.10.0
+# github.com/envoyproxy/protoc-gen-validate v0.10.1
 ## explicit; go 1.19
 github.com/envoyproxy/protoc-gen-validate/validate
 # github.com/golang/glog v1.1.0
@@ -84,7 +84,7 @@ github.com/mennanov/fmutils
 # github.com/nsqio/go-nsq v1.1.0
 ## explicit; go 1.11
 github.com/nsqio/go-nsq
-# github.com/ownmfa/api/go v1.0.25
+# github.com/ownmfa/api/go v1.0.26
 ## explicit; go 1.20
 github.com/ownmfa/api/go/api
 # github.com/pmezard/go-difflib v1.0.0
@@ -151,7 +151,7 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# google.golang.org/genproto v0.0.0-20230306155012-7f2fa6fef1f4
+# google.golang.org/genproto v0.0.0-20230320184635-7606e756e683
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/api
 google.golang.org/genproto/googleapis/api/annotations

@@ -11,11 +11,11 @@ func NewFake() Notifier {
 	// Controller.Finish() is not called because usage is expected to be
 	// long-lived.
 	notifier := NewMockNotifier(gomock.NewController(hlog.Default()))
-	notifier.EXPECT().VaildateSMS(gomock.Any(), gomock.Any()).Return(nil).
+	notifier.EXPECT().ValidateSMS(gomock.Any(), gomock.Any()).Return(nil).
 		AnyTimes()
 	notifier.EXPECT().SMS(gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any()).Return(nil).AnyTimes()
-	notifier.EXPECT().VaildatePushover(gomock.Any()).Return(nil).AnyTimes()
+	notifier.EXPECT().ValidatePushover(gomock.Any()).Return(nil).AnyTimes()
 	notifier.EXPECT().Pushover(gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any()).Return(nil).AnyTimes()
 	notifier.EXPECT().PushoverByApp(gomock.Any(), gomock.Any(), gomock.Any(),
