@@ -74,7 +74,7 @@ func (ai *AppIdentity) CreateIdentity(
 				"invalid E.164 phone number")
 		}
 
-		if err := ai.notify.VaildateSMS(ctx, m.SmsMethod.Phone); err != nil {
+		if err := ai.notify.ValidateSMS(ctx, m.SmsMethod.Phone); err != nil {
 			return nil, errToStatus(err)
 		}
 	case *api.Identity_PushoverMethod:
@@ -82,7 +82,7 @@ func (ai *AppIdentity) CreateIdentity(
 			return nil, errPlan(api.Plan_PRO)
 		}
 
-		if err := ai.notify.VaildatePushover(
+		if err := ai.notify.ValidatePushover(
 			m.PushoverMethod.PushoverKey); err != nil {
 			return nil, errToStatus(err)
 		}

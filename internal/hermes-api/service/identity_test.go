@@ -96,7 +96,7 @@ func TestCreateIdentity(t *testing.T) {
 		identityer.EXPECT().Create(gomock.Any(), identity).Return(retIdentity,
 			nil, false, nil).Times(1)
 		notifier := notify.NewMockNotifier(ctrl)
-		notifier.EXPECT().VaildateSMS(gomock.Any(),
+		notifier.EXPECT().ValidateSMS(gomock.Any(),
 			identity.GetSmsMethod().Phone).Return(nil).Times(1)
 		eventer := NewMockEventer(ctrl)
 		eventer.EXPECT().Create(gomock.Any(), event).Return(dao.ErrNotFound).
@@ -145,7 +145,7 @@ func TestCreateIdentity(t *testing.T) {
 		identityer.EXPECT().Create(gomock.Any(), identity).Return(retIdentity,
 			nil, false, nil).Times(1)
 		notifier := notify.NewMockNotifier(ctrl)
-		notifier.EXPECT().VaildatePushover(identity.GetPushoverMethod().
+		notifier.EXPECT().ValidatePushover(identity.GetPushoverMethod().
 			PushoverKey).Return(nil).Times(1)
 		eventer := NewMockEventer(ctrl)
 		eventer.EXPECT().Create(gomock.Any(), event).Return(dao.ErrNotFound).
@@ -494,9 +494,8 @@ func TestCreateIdentity(t *testing.T) {
 		identity := random.SMSIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
 
-		ctrl := gomock.NewController(t)
-		notifier := notify.NewMockNotifier(ctrl)
-		notifier.EXPECT().VaildateSMS(gomock.Any(),
+		notifier := notify.NewMockNotifier(gomock.NewController(t))
+		notifier.EXPECT().ValidateSMS(gomock.Any(),
 			identity.GetSmsMethod().Phone).Return(notify.ErrInvalidSMS).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
@@ -516,15 +515,14 @@ func TestCreateIdentity(t *testing.T) {
 			"unknown or unsupported phone number"), err)
 	})
 
-	t.Run("Create identity with unsupported user key", func(t *testing.T) {
+	t.Run("Create identity with unsupported Pushover key", func(t *testing.T) {
 		t.Parallel()
 
 		identity := random.PushoverIdentity("api-identity", uuid.NewString(),
 			uuid.NewString())
 
-		ctrl := gomock.NewController(t)
-		notifier := notify.NewMockNotifier(ctrl)
-		notifier.EXPECT().VaildatePushover(identity.GetPushoverMethod().
+		notifier := notify.NewMockNotifier(gomock.NewController(t))
+		notifier.EXPECT().ValidatePushover(identity.GetPushoverMethod().
 			PushoverKey).Return(notify.ErrInvalidPushover).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(

@@ -90,30 +90,30 @@ func (mr *MockNotifierMockRecorder) SMS(ctx, phone, displayName, passcode interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SMS", reflect.TypeOf((*MockNotifier)(nil).SMS), ctx, phone, displayName, passcode)
 }
 
-// VaildatePushover mocks base method.
-func (m *MockNotifier) VaildatePushover(userKey string) error {
+// ValidatePushover mocks base method.
+func (m *MockNotifier) ValidatePushover(userKey string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VaildatePushover", userKey)
+	ret := m.ctrl.Call(m, "ValidatePushover", userKey)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// VaildatePushover indicates an expected call of VaildatePushover.
-func (mr *MockNotifierMockRecorder) VaildatePushover(userKey interface{}) *gomock.Call {
+// ValidatePushover indicates an expected call of ValidatePushover.
+func (mr *MockNotifierMockRecorder) ValidatePushover(userKey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VaildatePushover", reflect.TypeOf((*MockNotifier)(nil).VaildatePushover), userKey)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidatePushover", reflect.TypeOf((*MockNotifier)(nil).ValidatePushover), userKey)
 }
 
-// VaildateSMS mocks base method.
-func (m *MockNotifier) VaildateSMS(ctx context.Context, phone string) error {
+// ValidateSMS mocks base method.
+func (m *MockNotifier) ValidateSMS(ctx context.Context, phone string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VaildateSMS", ctx, phone)
+	ret := m.ctrl.Call(m, "ValidateSMS", ctx, phone)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// VaildateSMS indicates an expected call of VaildateSMS.
-func (mr *MockNotifierMockRecorder) VaildateSMS(ctx, phone interface{}) *gomock.Call {
+// ValidateSMS indicates an expected call of ValidateSMS.
+func (mr *MockNotifierMockRecorder) ValidateSMS(ctx, phone interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VaildateSMS", reflect.TypeOf((*MockNotifier)(nil).VaildateSMS), ctx, phone)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateSMS", reflect.TypeOf((*MockNotifier)(nil).ValidateSMS), ctx, phone)
 }

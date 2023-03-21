@@ -1,6 +1,8 @@
 package random
 
 import (
+	"strconv"
+
 	"github.com/google/uuid"
 	"github.com/ownmfa/api/go/api"
 )
@@ -104,7 +106,10 @@ func SMSIdentity(prefix, orgID, appID string) *api.Identity {
 			api.IdentityStatus_ACTIVATED,
 		}[Intn(2)],
 		MethodOneof: &api.Identity_SmsMethod{
-			SmsMethod: &api.SMSMethod{Phone: "+15125551212"},
+			// https://en.wikipedia.org/wiki/555_(telephone_number)
+			SmsMethod: &api.SMSMethod{Phone: "+1" +
+				strconv.Itoa(Intn(900)+100) + "5550" +
+				strconv.Itoa(Intn(100)+100)},
 		},
 	}
 }

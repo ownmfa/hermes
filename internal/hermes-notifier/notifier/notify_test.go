@@ -118,9 +118,9 @@ func TestNotifyMessages(t *testing.T) {
 				lTest.inpNIn.OrgId).Return(lTest.inpApp, nil).Times(1)
 
 			notifier := notify.NewMockNotifier(ctrl)
-			notifier.EXPECT().SMS(gomock.Any(), "+15125551212",
-				lTest.inpApp.DisplayName, "861821").Return(nil).
-				Times(lTest.inpSMSTimes)
+			notifier.EXPECT().SMS(gomock.Any(),
+				smsIdentity.GetSmsMethod().Phone, lTest.inpApp.DisplayName,
+				"861821").Return(nil).Times(lTest.inpSMSTimes)
 			notifier.EXPECT().Pushover(gomock.Any(),
 				pushoverIdentity.GetPushoverMethod().PushoverKey,
 				lTest.inpApp.DisplayName, "861821").Return(nil).
@@ -294,15 +294,16 @@ func TestNotifyMessagesError(t *testing.T) {
 				Times(lTest.inpSetIfNotExistTTLTimes)
 
 			notifier := notify.NewMockNotifier(ctrl)
-			notifier.EXPECT().SMS(gomock.Any(), "+15125551212", app.DisplayName,
-				"861821").DoAndReturn(func(
-				ctx interface{}, phone interface{}, displayName interface{},
-				passcode interface{},
-			) error {
-				defer wg.Done()
+			notifier.EXPECT().SMS(gomock.Any(),
+				smsIdentity.GetSmsMethod().Phone, app.DisplayName, "861821").
+				DoAndReturn(func(
+					ctx interface{}, phone interface{}, displayName interface{},
+					passcode interface{},
+				) error {
+					defer wg.Done()
 
-				return lTest.inpSMSErr
-			}).Times(lTest.inpSMSTimes)
+					return lTest.inpSMSErr
+				}).Times(lTest.inpSMSTimes)
 			notifier.EXPECT().Pushover(gomock.Any(),
 				pushoverIdentity.GetPushoverMethod().PushoverKey,
 				app.DisplayName, "861821").DoAndReturn(func(
