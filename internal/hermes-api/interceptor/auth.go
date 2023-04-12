@@ -60,7 +60,7 @@ func Auth(
 			}
 		}
 
-		// Check for disabled organization.
+		// Check for disabled organization. This read is cached.
 		org, err := orgDAO.Read(ctx, sess.OrgID)
 		if err != nil || org.Status == api.Status_DISABLED {
 			return nil, status.Error(codes.Unauthenticated, "unauthorized")

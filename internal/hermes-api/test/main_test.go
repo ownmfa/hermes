@@ -137,13 +137,13 @@ func TestMain(m *testing.M) {
 	}
 
 	_, secondaryViewerGRPCConn, err = authGRPCConn(api.Role_VIEWER,
-		api.Plan_PRO)
+		api.Plan_ENTERPRISE)
 	if err != nil {
 		log.Fatalf("TestMain secondaryViewerGRPCConn authGRPCConn: %v", err)
 	}
 
 	_, secondarySysAdminGRPCConn, err = authGRPCConn(api.Role_SYS_ADMIN,
-		api.Plan_PRO)
+		api.Plan_ENTERPRISE)
 	if err != nil {
 		log.Fatalf("TestMain secondarySysAdminGRPCConn authGRPCConn: %v", err)
 	}

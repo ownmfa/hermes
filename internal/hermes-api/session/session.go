@@ -10,8 +10,9 @@ import (
 )
 
 // Session represents session metadata as retrieved from an encrypted token.
-// Either UserID or KeyID will be present, but not both. TraceID will be
-// generated whenever a token is validated and a session is returned.
+// Either UserID or KeyID will be present, but not both. OrgPlan and TraceID
+// will be loaded/generated whenever a token is validated and a session is
+// returned.
 type Session struct {
 	UserID  string
 	KeyID   string
