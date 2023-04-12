@@ -122,7 +122,7 @@ func TestRead(t *testing.T) {
 	})
 }
 
-func TestReadCache(t *testing.T) {
+func TestReadUpdateDeleteCache(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Read cached org by valid ID", func(t *testing.T) {

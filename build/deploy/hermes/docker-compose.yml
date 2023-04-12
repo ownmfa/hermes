@@ -17,13 +17,17 @@ services:
       - API_PUSHOVER_API_KEY=notasecurekey
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.hermes-web.rule=Host(`hermes.example.com`)"
+      - "traefik.http.routers.hermes-web.rule=Host(`api.example.com`)"
+      # Comment plaintext when enabling tls
       - "traefik.http.routers.hermes-web.entrypoints=plaintext"
       # - "traefik.http.routers.hermes-web.entrypoints=tls"
       - "traefik.http.routers.hermes-web.service=hermes-web"
       # - "traefik.http.routers.hermes-web.tls.certresolver=hermes-tls"
+      # - "traefik.http.middlewares.hermes-web-sts.headers.stspreload=true"
+      # - "traefik.http.middlewares.hermes-web-sts.headers.stsseconds=31536000"
+      # - "traefik.http.routers.hermes-web.middlewares=hermes-web-sts"
       - "traefik.http.services.hermes-web.loadbalancer.server.port=8000"
-      - "traefik.http.routers.hermes-grpc.rule=Host(`hermes.example.com`)"
+      - "traefik.http.routers.hermes-grpc.rule=Host(`api.example.com`)"
       - "traefik.http.routers.hermes-grpc.entrypoints=grpc"
       - "traefik.http.routers.hermes-grpc.service=hermes-grpc"
       # - "traefik.http.routers.hermes-grpc.tls.certresolver=hermes-tls"

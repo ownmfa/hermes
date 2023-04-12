@@ -72,6 +72,7 @@ func (d *DAO) Read(ctx context.Context, orgID string) (*api.Org, error) {
 	org.CreatedAt = timestamppb.New(createdAt)
 	org.UpdatedAt = timestamppb.New(updatedAt)
 
+	// Cache write errors should not prevent successful database reads.
 	if d.cache != nil {
 		logger := hlog.FromContext(ctx)
 
