@@ -8,9 +8,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	api "github.com/ownmfa/api/go/api"
 	oath "github.com/ownmfa/hermes/pkg/oath"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // Mockapper is a mock of apper interface.

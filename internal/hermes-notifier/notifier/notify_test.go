@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/hermes/api/go/message"
@@ -22,6 +21,7 @@ import (
 	"github.com/ownmfa/hermes/pkg/queue"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 	"google.golang.org/protobuf/proto"
 )
 
