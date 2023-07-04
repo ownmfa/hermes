@@ -9,8 +9,8 @@ import (
 	reflect "reflect"
 	time "time"
 
-	gomock "github.com/golang/mock/gomock"
 	api "github.com/ownmfa/api/go/api"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockApper is a mock of Apper interface.

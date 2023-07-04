@@ -1,8 +1,8 @@
 package notify
 
 import (
-	"github.com/golang/mock/gomock"
 	"github.com/ownmfa/hermes/pkg/hlog"
+	"go.uber.org/mock/gomock"
 )
 
 // NewFake builds a new Notifier using a mock and returns it. It may be used in
