@@ -1,7 +1,7 @@
 version: "3"
 services:
   hermes-api:
-    image: ghcr.io/ownmfa/hermes:aafe23c5
+    image: ghcr.io/ownmfa/hermes:c8374a87
     command: hermes-api
     restart: on-failure
     depends_on:
@@ -35,7 +35,7 @@ services:
       - "traefik.http.services.hermes-grpc.loadbalancer.server.scheme=h2c"
 
   hermes-notifier:
-    image: ghcr.io/ownmfa/hermes:aafe23c5
+    image: ghcr.io/ownmfa/hermes:c8374a87
     command: hermes-notifier
     restart: on-failure
     environment:
