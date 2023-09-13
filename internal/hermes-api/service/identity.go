@@ -52,6 +52,50 @@ type Identityer interface {
 		limit int32, appID string) ([]*api.Identity, int32, error)
 }
 
+// validatePlan validates notification methods and apply plan limits.
+func (ai *AppIdentity) validatePlan(
+	ctx context.Context, orgPlan api.Plan, i *api.Identity,
+) error {
+	switch m := i.MethodOneof.(type) {
+	case *api.Identity_SmsMethod:
+		if orgPlan < api.Plan_PRO {
+			return errPlan(api.Plan_PRO)
+		}
+
+		if !rePhone.MatchString(m.SmsMethod.Phone) {
+			return status.Error(codes.InvalidArgument,
+				"invalid E.164 phone number")
+		}
+
+		if err := ai.notify.ValidateSMS(ctx, m.SmsMethod.Phone); err != nil {
+			return errToStatus(err)
+		}
+	case *api.Identity_PushoverMethod:
+		if orgPlan < api.Plan_PRO {
+			return errPlan(api.Plan_PRO)
+		}
+
+		if err := ai.notify.ValidatePushover(
+			m.PushoverMethod.PushoverKey); err != nil {
+			return errToStatus(err)
+		}
+	case *api.Identity_EmailMethod:
+		if orgPlan < api.Plan_PRO {
+			return errPlan(api.Plan_PRO)
+		}
+	case *api.Identity_BackupCodesMethod:
+		if orgPlan < api.Plan_PRO {
+			return errPlan(api.Plan_PRO)
+		}
+	case *api.Identity_SecurityQuestionsMethod:
+		if orgPlan < api.Plan_PRO {
+			return errPlan(api.Plan_PRO)
+		}
+	}
+
+	return nil
+}
+
 // CreateIdentity creates an identity.
 func (ai *AppIdentity) CreateIdentity(
 	ctx context.Context, req *api.CreateIdentityRequest,
@@ -63,41 +107,8 @@ func (ai *AppIdentity) CreateIdentity(
 	}
 
 	// Validate notification methods and apply plan limits.
-	switch m := req.Identity.MethodOneof.(type) {
-	case *api.Identity_SmsMethod:
-		if sess.OrgPlan < api.Plan_PRO {
-			return nil, errPlan(api.Plan_PRO)
-		}
-
-		if !rePhone.MatchString(m.SmsMethod.Phone) {
-			return nil, status.Error(codes.InvalidArgument,
-				"invalid E.164 phone number")
-		}
-
-		if err := ai.notify.ValidateSMS(ctx, m.SmsMethod.Phone); err != nil {
-			return nil, errToStatus(err)
-		}
-	case *api.Identity_PushoverMethod:
-		if sess.OrgPlan < api.Plan_PRO {
-			return nil, errPlan(api.Plan_PRO)
-		}
-
-		if err := ai.notify.ValidatePushover(
-			m.PushoverMethod.PushoverKey); err != nil {
-			return nil, errToStatus(err)
-		}
-	case *api.Identity_EmailMethod:
-		if sess.OrgPlan < api.Plan_PRO {
-			return nil, errPlan(api.Plan_PRO)
-		}
-	case *api.Identity_BackupCodesMethod:
-		if sess.OrgPlan < api.Plan_PRO {
-			return nil, errPlan(api.Plan_PRO)
-		}
-	case *api.Identity_SecurityQuestionsMethod:
-		if sess.OrgPlan < api.Plan_PRO {
-			return nil, errPlan(api.Plan_PRO)
-		}
+	if err := ai.validatePlan(ctx, sess.OrgPlan, req.Identity); err != nil {
+		return nil, err
 	}
 
 	req.Identity.OrgId = sess.OrgID
