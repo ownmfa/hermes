@@ -27,10 +27,10 @@ github.com/golang/snappy
 # github.com/google/uuid v1.3.1
 ## explicit
 github.com/google/uuid
-# github.com/gregdel/pushover v1.2.1
+# github.com/gregdel/pushover v1.3.0
 ## explicit; go 1.14
 github.com/gregdel/pushover
-# github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.2
+# github.com/grpc-ecosystem/grpc-gateway/v2 v2.18.0
 ## explicit; go 1.17
 github.com/grpc-ecosystem/grpc-gateway/v2/internal/httprule
 github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2/options
@@ -56,11 +56,9 @@ github.com/jackc/pgx/v5/pgconn/internal/ctxwatch
 github.com/jackc/pgx/v5/pgproto3
 github.com/jackc/pgx/v5/pgtype
 github.com/jackc/pgx/v5/stdlib
-# github.com/jellydator/ttlcache/v3 v3.0.1
+# github.com/jellydator/ttlcache/v3 v3.1.0
 ## explicit; go 1.18
 github.com/jellydator/ttlcache/v3
-# github.com/kr/text v0.2.0
-## explicit
 # github.com/mennanov/fmutils v0.2.0
 ## explicit; go 1.15
 github.com/mennanov/fmutils
@@ -100,12 +98,12 @@ github.com/stretchr/testify/require
 # go.uber.org/mock v0.2.0
 ## explicit; go 1.19
 go.uber.org/mock/gomock
-# golang.org/x/crypto v0.12.0
+# golang.org/x/crypto v0.13.0
 ## explicit; go 1.17
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/pbkdf2
-# golang.org/x/net v0.14.0
+# golang.org/x/net v0.15.0
 ## explicit; go 1.17
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
@@ -116,10 +114,10 @@ golang.org/x/net/trace
 # golang.org/x/sync v0.3.0
 ## explicit; go 1.17
 golang.org/x/sync/singleflight
-# golang.org/x/sys v0.11.0
+# golang.org/x/sys v0.12.0
 ## explicit; go 1.17
 golang.org/x/sys/unix
-# golang.org/x/text v0.12.0
+# golang.org/x/text v0.13.0
 ## explicit; go 1.17
 golang.org/x/text/cases
 golang.org/x/text/internal
@@ -134,19 +132,19 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# google.golang.org/genproto v0.0.0-20230821184602-ccc8af3d0e93
+# google.golang.org/genproto v0.0.0-20230911183012-2d3300fd4832
 ## explicit; go 1.19
 google.golang.org/genproto/internal
-# google.golang.org/genproto/googleapis/api v0.0.0-20230821184602-ccc8af3d0e93
+# google.golang.org/genproto/googleapis/api v0.0.0-20230911183012-2d3300fd4832
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/api
 google.golang.org/genproto/googleapis/api/annotations
 google.golang.org/genproto/googleapis/api/httpbody
-# google.golang.org/genproto/googleapis/rpc v0.0.0-20230821184602-ccc8af3d0e93
+# google.golang.org/genproto/googleapis/rpc v0.0.0-20230911183012-2d3300fd4832
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.57.0
-## explicit; go 1.17
+# google.golang.org/grpc v1.58.0
+## explicit; go 1.19
 google.golang.org/grpc
 google.golang.org/grpc/attributes
 google.golang.org/grpc/backoff
@@ -178,6 +176,7 @@ google.golang.org/grpc/internal/grpclog
 google.golang.org/grpc/internal/grpcrand
 google.golang.org/grpc/internal/grpcsync
 google.golang.org/grpc/internal/grpcutil
+google.golang.org/grpc/internal/idle
 google.golang.org/grpc/internal/metadata
 google.golang.org/grpc/internal/pretty
 google.golang.org/grpc/internal/resolver
