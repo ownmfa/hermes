@@ -27,7 +27,7 @@ func (d *DAO) Create(ctx context.Context, identity *api.Identity) (
 	*api.Identity, *oath.OTP, bool, error,
 ) {
 	// Backup codes and security questions methods do not require activation.
-	switch identity.MethodOneof.(type) {
+	switch identity.GetMethodOneof().(type) {
 	case *api.Identity_BackupCodesMethod, *api.Identity_SecurityQuestionsMethod:
 		identity.Status = api.IdentityStatus_ACTIVATED
 	default:
@@ -56,8 +56,8 @@ func (d *DAO) Create(ctx context.Context, identity *api.Identity) (
 		}
 	}
 
-	if err := d.pg.QueryRowContext(ctx, createIdentity, identity.OrgId,
-		identity.AppId, identity.Comment, identity.Status.String(),
+	if err := d.pg.QueryRowContext(ctx, createIdentity, identity.GetOrgId(),
+		identity.GetAppId(), identity.GetComment(), identity.GetStatus().String(),
 		otp.Algorithm, hashCryptoToAPI[otp.Hash].String(), otp.Digits,
 		secretEnc, meta.phone, meta.pushoverKey, meta.email, meta.backupCodes,
 		answerEnc, now).Scan(&identity.Id); err != nil {

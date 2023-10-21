@@ -46,19 +46,19 @@ func (not *Notifier) notifyMessages() {
 
 		// Trace IDs have been authenticated and are safe to copy.
 		var traceID uuid.UUID
-		copy(traceID[:], nIn.TraceId)
+		copy(traceID[:], nIn.GetTraceId())
 
 		// Set up logging fields.
 		logger := hlog.
 			WithField("traceID", traceID.String()).
-			WithField("orgID", nIn.OrgId).
-			WithField("appID", nIn.AppId).
-			WithField("identityID", nIn.IdentityId)
+			WithField("orgID", nIn.GetOrgId()).
+			WithField("appID", nIn.GetAppId()).
+			WithField("identityID", nIn.GetIdentityId())
 
 		// Retrieve identity.
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		identity, otp, err := not.identDAO.Read(ctx, nIn.IdentityId,
-			nIn.OrgId, nIn.AppId)
+		identity, otp, err := not.identDAO.Read(ctx, nIn.GetIdentityId(),
+			nIn.GetOrgId(), nIn.GetAppId())
 		cancel()
 		if err != nil {
 			msg.Requeue()
@@ -74,8 +74,8 @@ func (not *Notifier) notifyMessages() {
 		// successful verifications.
 		var counter int64
 		ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
-		counter, err = not.cache.Incr(ctx, key.HOTPCounter(identity.OrgId,
-			identity.AppId, identity.Id))
+		counter, err = not.cache.Incr(ctx, key.HOTPCounter(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId()))
 		cancel()
 		if err != nil {
 			msg.Requeue()
@@ -97,7 +97,7 @@ func (not *Notifier) notifyMessages() {
 
 		// Retrieve app.
 		ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
-		app, err := not.appDAO.Read(ctx, nIn.AppId, nIn.OrgId)
+		app, err := not.appDAO.Read(ctx, nIn.GetAppId(), nIn.GetOrgId())
 		cancel()
 		if err != nil {
 			msg.Requeue()
@@ -112,9 +112,9 @@ func (not *Notifier) notifyMessages() {
 		// event is non-fatal, but should be logged for investigation.
 		writeEvent := func(status api.EventStatus, err string) {
 			event := &api.Event{
-				OrgId:      nIn.OrgId,
-				AppId:      nIn.AppId,
-				IdentityId: nIn.IdentityId,
+				OrgId:      nIn.GetOrgId(),
+				AppId:      nIn.GetAppId(),
+				IdentityId: nIn.GetIdentityId(),
 				Status:     status,
 				Error:      err,
 				TraceId:    traceID.String(),
@@ -142,13 +142,13 @@ func (not *Notifier) notifyMessages() {
 		// Set the passcode expiration. It is not necessary to check for
 		// collisions here, but if one was found, that would be notable.
 		expire := smsPushoverExpire
-		if _, ok := identity.MethodOneof.(*api.Identity_EmailMethod); ok {
+		if _, ok := identity.GetMethodOneof().(*api.Identity_EmailMethod); ok {
 			expire = emailExpire
 		}
 
 		ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
-		ok, err := not.cache.SetIfNotExistTTL(ctx, key.Expire(identity.OrgId,
-			identity.AppId, identity.Id, passcode), 1, expire)
+		ok, err := not.cache.SetIfNotExistTTL(ctx, key.Expire(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId(), passcode), 1, expire)
 		cancel()
 		if err != nil || !ok {
 			msg.Requeue()
@@ -161,21 +161,21 @@ func (not *Notifier) notifyMessages() {
 
 		// Send notification.
 		ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
-		switch m := identity.MethodOneof.(type) {
+		switch m := identity.GetMethodOneof().(type) {
 		case *api.Identity_SmsMethod:
-			err = not.notify.SMS(ctx, m.SmsMethod.Phone, app.DisplayName,
+			err = not.notify.SMS(ctx, m.SmsMethod.GetPhone(), app.GetDisplayName(),
 				passcode)
 		case *api.Identity_PushoverMethod:
-			if app.PushoverKey == "" {
-				err = not.notify.Pushover(ctx, m.PushoverMethod.PushoverKey,
-					app.DisplayName, passcode)
+			if app.GetPushoverKey() == "" {
+				err = not.notify.Pushover(ctx, m.PushoverMethod.GetPushoverKey(),
+					app.GetDisplayName(), passcode)
 			} else {
-				err = not.notify.PushoverByApp(ctx, app.PushoverKey,
-					m.PushoverMethod.PushoverKey, subj, body)
+				err = not.notify.PushoverByApp(ctx, app.GetPushoverKey(),
+					m.PushoverMethod.GetPushoverKey(), subj, body)
 			}
 		case *api.Identity_EmailMethod:
-			err = not.notify.Email(ctx, app.DisplayName, app.Email,
-				m.EmailMethod.Email, subj, body, htmlBody)
+			err = not.notify.Email(ctx, app.GetDisplayName(), app.GetEmail(),
+				m.EmailMethod.GetEmail(), subj, body, htmlBody)
 		}
 		cancel()
 		if err != nil {
@@ -203,24 +203,24 @@ func (not *Notifier) notifyMessages() {
 func genTemplates(app *api.App, passcode string) (
 	string, string, string, error,
 ) {
-	subj, err := template.Generate(app.DisplayName, passcode,
-		app.SubjectTemplate)
+	subj, err := template.Generate(app.GetDisplayName(), passcode,
+		app.GetSubjectTemplate())
 	if err != nil {
 		metric.Incr("error", map[string]string{"func": "gensubject"})
 
 		return "", "", "", err
 	}
 
-	body, err := template.Generate(app.DisplayName, passcode,
-		app.TextBodyTemplate)
+	body, err := template.Generate(app.GetDisplayName(), passcode,
+		app.GetTextBodyTemplate())
 	if err != nil {
 		metric.Incr("error", map[string]string{"func": "genbody"})
 
 		return "", "", "", err
 	}
 
-	htmlBody, err := template.Generate(app.DisplayName, passcode,
-		string(app.HtmlBodyTemplate))
+	htmlBody, err := template.Generate(app.GetDisplayName(), passcode,
+		string(app.GetHtmlBodyTemplate()))
 	if err != nil {
 		metric.Incr("error", map[string]string{"func": "genhtmlbody"})
 

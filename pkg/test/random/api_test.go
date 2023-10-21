@@ -27,8 +27,8 @@ func TestOrg(t *testing.T) {
 			t.Logf("o1, o2: %+v, %+v", o1, o2)
 
 			require.NotEqual(t, o1, o2)
-			require.True(t, strings.HasPrefix(o1.Name, prefix))
-			require.True(t, strings.HasPrefix(o2.Name, prefix))
+			require.True(t, strings.HasPrefix(o1.GetName(), prefix))
+			require.True(t, strings.HasPrefix(o2.GetName(), prefix))
 		})
 	}
 }
@@ -50,10 +50,10 @@ func TestUser(t *testing.T) {
 			t.Logf("u1, u2: %+v, %+v", u1, u2)
 
 			require.NotEqual(t, u1, u2)
-			require.True(t, strings.HasPrefix(u1.Name, prefix))
-			require.True(t, strings.HasPrefix(u2.Name, prefix))
-			require.True(t, strings.HasPrefix(u1.Email, prefix))
-			require.True(t, strings.HasPrefix(u2.Email, prefix))
+			require.True(t, strings.HasPrefix(u1.GetName(), prefix))
+			require.True(t, strings.HasPrefix(u2.GetName(), prefix))
+			require.True(t, strings.HasPrefix(u1.GetEmail(), prefix))
+			require.True(t, strings.HasPrefix(u2.GetEmail(), prefix))
 		})
 	}
 }
@@ -75,8 +75,8 @@ func TestKey(t *testing.T) {
 			t.Logf("k1, k2: %+v, %+v", k1, k2)
 
 			require.NotEqual(t, k1, k2)
-			require.True(t, strings.HasPrefix(k1.Name, prefix))
-			require.True(t, strings.HasPrefix(k2.Name, prefix))
+			require.True(t, strings.HasPrefix(k1.GetName(), prefix))
+			require.True(t, strings.HasPrefix(k2.GetName(), prefix))
 		})
 	}
 }
@@ -98,12 +98,12 @@ func TestApp(t *testing.T) {
 			t.Logf("a1, a2: %+v, %+v", a1, a2)
 
 			require.NotEqual(t, a1, a2)
-			require.True(t, strings.HasPrefix(a1.Name, prefix))
-			require.True(t, strings.HasPrefix(a2.Name, prefix))
-			require.True(t, strings.HasPrefix(a1.DisplayName, prefix))
-			require.True(t, strings.HasPrefix(a2.DisplayName, prefix))
-			require.True(t, strings.HasPrefix(a1.Email, prefix))
-			require.True(t, strings.HasPrefix(a2.Email, prefix))
+			require.True(t, strings.HasPrefix(a1.GetName(), prefix))
+			require.True(t, strings.HasPrefix(a2.GetName(), prefix))
+			require.True(t, strings.HasPrefix(a1.GetDisplayName(), prefix))
+			require.True(t, strings.HasPrefix(a2.GetDisplayName(), prefix))
+			require.True(t, strings.HasPrefix(a1.GetEmail(), prefix))
+			require.True(t, strings.HasPrefix(a2.GetEmail(), prefix))
 		})
 	}
 }
@@ -126,8 +126,8 @@ func TestHOTPIdentity(t *testing.T) {
 			t.Logf("i1, i2: %+v, %+v", i1, i2)
 
 			require.NotEqual(t, i1, i2)
-			require.True(t, strings.HasPrefix(i1.Comment, prefix))
-			require.True(t, strings.HasPrefix(i2.Comment, prefix))
+			require.True(t, strings.HasPrefix(i1.GetComment(), prefix))
+			require.True(t, strings.HasPrefix(i2.GetComment(), prefix))
 		})
 	}
 }
@@ -150,8 +150,8 @@ func TestSMSIdentity(t *testing.T) {
 			t.Logf("i1, i2: %+v, %+v", i1, i2)
 
 			require.NotEqual(t, i1, i2)
-			require.True(t, strings.HasPrefix(i1.Comment, prefix))
-			require.True(t, strings.HasPrefix(i2.Comment, prefix))
+			require.True(t, strings.HasPrefix(i1.GetComment(), prefix))
+			require.True(t, strings.HasPrefix(i2.GetComment(), prefix))
 		})
 	}
 }
@@ -174,8 +174,8 @@ func TestPushoverIdentity(t *testing.T) {
 			t.Logf("i1, i2: %+v, %+v", i1, i2)
 
 			require.NotEqual(t, i1, i2)
-			require.True(t, strings.HasPrefix(i1.Comment, prefix))
-			require.True(t, strings.HasPrefix(i2.Comment, prefix))
+			require.True(t, strings.HasPrefix(i1.GetComment(), prefix))
+			require.True(t, strings.HasPrefix(i2.GetComment(), prefix))
 		})
 	}
 }
@@ -198,8 +198,8 @@ func TestEmailIdentity(t *testing.T) {
 			t.Logf("i1, i2: %+v, %+v", i1, i2)
 
 			require.NotEqual(t, i1, i2)
-			require.True(t, strings.HasPrefix(i1.Comment, prefix))
-			require.True(t, strings.HasPrefix(i2.Comment, prefix))
+			require.True(t, strings.HasPrefix(i1.GetComment(), prefix))
+			require.True(t, strings.HasPrefix(i2.GetComment(), prefix))
 		})
 	}
 }
@@ -222,8 +222,8 @@ func TestBackupCodesIdentity(t *testing.T) {
 			t.Logf("i1, i2: %+v, %+v", i1, i2)
 
 			require.NotEqual(t, i1, i2)
-			require.True(t, strings.HasPrefix(i1.Comment, prefix))
-			require.True(t, strings.HasPrefix(i2.Comment, prefix))
+			require.True(t, strings.HasPrefix(i1.GetComment(), prefix))
+			require.True(t, strings.HasPrefix(i2.GetComment(), prefix))
 		})
 	}
 }
@@ -246,8 +246,8 @@ func TestSecurityQuestionsIdentity(t *testing.T) {
 			t.Logf("i1, i2: %+v, %+v", i1, i2)
 
 			require.NotEqual(t, i1, i2)
-			require.True(t, strings.HasPrefix(i1.Comment, prefix))
-			require.True(t, strings.HasPrefix(i2.Comment, prefix))
+			require.True(t, strings.HasPrefix(i1.GetComment(), prefix))
+			require.True(t, strings.HasPrefix(i2.GetComment(), prefix))
 		})
 	}
 }
@@ -269,11 +269,11 @@ func TestEvent(t *testing.T) {
 			t.Logf("e1, e2: %+v, %+v", e1, e2)
 
 			require.NotEqual(t, e1, e2)
-			if e1.Error != "" {
-				require.True(t, strings.HasPrefix(e1.Error, prefix))
+			if e1.GetError() != "" {
+				require.True(t, strings.HasPrefix(e1.GetError(), prefix))
 			}
-			if e2.Error != "" {
-				require.True(t, strings.HasPrefix(e2.Error, prefix))
+			if e2.GetError() != "" {
+				require.True(t, strings.HasPrefix(e2.GetError(), prefix))
 			}
 		})
 	}

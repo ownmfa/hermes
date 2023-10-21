@@ -40,7 +40,7 @@ func TestCreateIdentity(t *testing.T) {
 		t.Parallel()
 
 		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			createApp.Id)
+			createApp.GetId())
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -49,38 +49,38 @@ func TestCreateIdentity(t *testing.T) {
 			&api.CreateIdentityRequest{Identity: identity})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
-		require.NotEqual(t, identity.Id, createIdentity.Identity.Id)
+		require.NotEqual(t, identity.GetId(), createIdentity.GetIdentity().GetId())
 		require.Equal(t, api.IdentityStatus_UNVERIFIED,
-			createIdentity.Identity.Status)
+			createIdentity.GetIdentity().GetStatus())
 		require.WithinDuration(t, time.Now(),
-			createIdentity.Identity.CreatedAt.AsTime(), 2*time.Second)
+			createIdentity.GetIdentity().GetCreatedAt().AsTime(), 2*time.Second)
 		require.WithinDuration(t, time.Now(),
-			createIdentity.Identity.UpdatedAt.AsTime(), 2*time.Second)
-		require.Greater(t, len(createIdentity.Secret), 50)
-		require.Greater(t, len(createIdentity.Qr), 800)
-		require.Empty(t, createIdentity.Passcodes)
+			createIdentity.GetIdentity().GetUpdatedAt().AsTime(), 2*time.Second)
+		require.Greater(t, len(createIdentity.GetSecret()), 50)
+		require.Greater(t, len(createIdentity.GetQr()), 800)
+		require.Empty(t, createIdentity.GetPasscodes())
 
 		// Verify event.
 		event := &api.Event{
 			OrgId:      globalAdminOrgID,
-			AppId:      createIdentity.Identity.AppId,
-			IdentityId: createIdentity.Identity.Id,
+			AppId:      createIdentity.GetIdentity().GetAppId(),
+			IdentityId: createIdentity.GetIdentity().GetId(),
 			Status:     api.EventStatus_IDENTITY_CREATED,
 		}
 
 		listEvents, err := globalEvDAO.List(ctx, globalAdminOrgID,
-			createIdentity.Identity.Id, time.Now(),
+			createIdentity.GetIdentity().GetId(), time.Now(),
 			time.Now().Add(-testTimeout))
 		t.Logf("listEvents, err: %+v, %v", listEvents, err)
 		require.NoError(t, err)
 		require.Len(t, listEvents, 1)
 
 		// Normalize generated trace ID.
-		event.TraceId = listEvents[0].TraceId
+		event.TraceId = listEvents[0].GetTraceId()
 		// Normalize timestamp.
 		require.WithinDuration(t, time.Now(),
-			listEvents[0].CreatedAt.AsTime(), testTimeout)
-		event.CreatedAt = listEvents[0].CreatedAt
+			listEvents[0].GetCreatedAt().AsTime(), testTimeout)
+		event.CreatedAt = listEvents[0].GetCreatedAt()
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
@@ -93,7 +93,7 @@ func TestCreateIdentity(t *testing.T) {
 		t.Parallel()
 
 		identity := random.SMSIdentity("api-identity", uuid.NewString(),
-			createApp.Id)
+			createApp.GetId())
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -102,23 +102,23 @@ func TestCreateIdentity(t *testing.T) {
 			&api.CreateIdentityRequest{Identity: identity})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
-		require.NotEqual(t, identity.Id, createIdentity.Identity.Id)
+		require.NotEqual(t, identity.GetId(), createIdentity.GetIdentity().GetId())
 		require.Equal(t, api.IdentityStatus_UNVERIFIED,
-			createIdentity.Identity.Status)
+			createIdentity.GetIdentity().GetStatus())
 		require.WithinDuration(t, time.Now(),
-			createIdentity.Identity.CreatedAt.AsTime(), 2*time.Second)
+			createIdentity.GetIdentity().GetCreatedAt().AsTime(), 2*time.Second)
 		require.WithinDuration(t, time.Now(),
-			createIdentity.Identity.UpdatedAt.AsTime(), 2*time.Second)
-		require.Empty(t, createIdentity.Secret)
-		require.Empty(t, createIdentity.Qr)
-		require.Empty(t, createIdentity.Passcodes)
+			createIdentity.GetIdentity().GetUpdatedAt().AsTime(), 2*time.Second)
+		require.Empty(t, createIdentity.GetSecret())
+		require.Empty(t, createIdentity.GetQr())
+		require.Empty(t, createIdentity.GetPasscodes())
 	})
 
 	t.Run("Create valid Pushover identity", func(t *testing.T) {
 		t.Parallel()
 
 		identity := random.PushoverIdentity("api-identity", uuid.NewString(),
-			createApp.Id)
+			createApp.GetId())
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -127,23 +127,23 @@ func TestCreateIdentity(t *testing.T) {
 			&api.CreateIdentityRequest{Identity: identity})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
-		require.NotEqual(t, identity.Id, createIdentity.Identity.Id)
+		require.NotEqual(t, identity.GetId(), createIdentity.GetIdentity().GetId())
 		require.Equal(t, api.IdentityStatus_UNVERIFIED,
-			createIdentity.Identity.Status)
+			createIdentity.GetIdentity().GetStatus())
 		require.WithinDuration(t, time.Now(),
-			createIdentity.Identity.CreatedAt.AsTime(), 2*time.Second)
+			createIdentity.GetIdentity().GetCreatedAt().AsTime(), 2*time.Second)
 		require.WithinDuration(t, time.Now(),
-			createIdentity.Identity.UpdatedAt.AsTime(), 2*time.Second)
-		require.Empty(t, createIdentity.Secret)
-		require.Empty(t, createIdentity.Qr)
-		require.Empty(t, createIdentity.Passcodes)
+			createIdentity.GetIdentity().GetUpdatedAt().AsTime(), 2*time.Second)
+		require.Empty(t, createIdentity.GetSecret())
+		require.Empty(t, createIdentity.GetQr())
+		require.Empty(t, createIdentity.GetPasscodes())
 	})
 
 	t.Run("Create valid email identity", func(t *testing.T) {
 		t.Parallel()
 
 		identity := random.EmailIdentity("api-identity", uuid.NewString(),
-			createApp.Id)
+			createApp.GetId())
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -152,23 +152,23 @@ func TestCreateIdentity(t *testing.T) {
 			&api.CreateIdentityRequest{Identity: identity})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
-		require.NotEqual(t, identity.Id, createIdentity.Identity.Id)
+		require.NotEqual(t, identity.GetId(), createIdentity.GetIdentity().GetId())
 		require.Equal(t, api.IdentityStatus_UNVERIFIED,
-			createIdentity.Identity.Status)
+			createIdentity.GetIdentity().GetStatus())
 		require.WithinDuration(t, time.Now(),
-			createIdentity.Identity.CreatedAt.AsTime(), 2*time.Second)
+			createIdentity.GetIdentity().GetCreatedAt().AsTime(), 2*time.Second)
 		require.WithinDuration(t, time.Now(),
-			createIdentity.Identity.UpdatedAt.AsTime(), 2*time.Second)
-		require.Empty(t, createIdentity.Secret)
-		require.Empty(t, createIdentity.Qr)
-		require.Empty(t, createIdentity.Passcodes)
+			createIdentity.GetIdentity().GetUpdatedAt().AsTime(), 2*time.Second)
+		require.Empty(t, createIdentity.GetSecret())
+		require.Empty(t, createIdentity.GetQr())
+		require.Empty(t, createIdentity.GetPasscodes())
 	})
 
 	t.Run("Create valid backup codes identity", func(t *testing.T) {
 		t.Parallel()
 
 		identity := random.BackupCodesIdentity("api-identity", uuid.NewString(),
-			createApp.Id)
+			createApp.GetId())
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -177,24 +177,24 @@ func TestCreateIdentity(t *testing.T) {
 			&api.CreateIdentityRequest{Identity: identity})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
-		require.NotEqual(t, identity.Id, createIdentity.Identity.Id)
+		require.NotEqual(t, identity.GetId(), createIdentity.GetIdentity().GetId())
 		require.Equal(t, api.IdentityStatus_ACTIVATED,
-			createIdentity.Identity.Status)
+			createIdentity.GetIdentity().GetStatus())
 		require.WithinDuration(t, time.Now(),
-			createIdentity.Identity.CreatedAt.AsTime(), 2*time.Second)
+			createIdentity.GetIdentity().GetCreatedAt().AsTime(), 2*time.Second)
 		require.WithinDuration(t, time.Now(),
-			createIdentity.Identity.UpdatedAt.AsTime(), 2*time.Second)
-		require.Empty(t, createIdentity.Secret)
-		require.Empty(t, createIdentity.Qr)
-		require.Len(t, createIdentity.Passcodes,
-			int(identity.GetBackupCodesMethod().Passcodes))
+			createIdentity.GetIdentity().GetUpdatedAt().AsTime(), 2*time.Second)
+		require.Empty(t, createIdentity.GetSecret())
+		require.Empty(t, createIdentity.GetQr())
+		require.Len(t, createIdentity.GetPasscodes(),
+			int(identity.GetBackupCodesMethod().GetPasscodes()))
 	})
 
 	t.Run("Create valid security questions identity", func(t *testing.T) {
 		t.Parallel()
 
 		identity := random.SecurityQuestionsIdentity("api-identity",
-			uuid.NewString(), createApp.Id)
+			uuid.NewString(), createApp.GetId())
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -203,18 +203,18 @@ func TestCreateIdentity(t *testing.T) {
 			&api.CreateIdentityRequest{Identity: identity})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
-		require.NotEqual(t, identity.Id, createIdentity.Identity.Id)
+		require.NotEqual(t, identity.GetId(), createIdentity.GetIdentity().GetId())
 		require.Equal(t, api.IdentityStatus_ACTIVATED,
-			createIdentity.Identity.Status)
+			createIdentity.GetIdentity().GetStatus())
 		require.Equal(t, "********",
-			createIdentity.Identity.GetSecurityQuestionsMethod().Answer)
+			createIdentity.GetIdentity().GetSecurityQuestionsMethod().GetAnswer())
 		require.WithinDuration(t, time.Now(),
-			createIdentity.Identity.CreatedAt.AsTime(), 2*time.Second)
+			createIdentity.GetIdentity().GetCreatedAt().AsTime(), 2*time.Second)
 		require.WithinDuration(t, time.Now(),
-			createIdentity.Identity.UpdatedAt.AsTime(), 2*time.Second)
-		require.Empty(t, createIdentity.Secret)
-		require.Empty(t, createIdentity.Qr)
-		require.Empty(t, createIdentity.Passcodes)
+			createIdentity.GetIdentity().GetUpdatedAt().AsTime(), 2*time.Second)
+		require.Empty(t, createIdentity.GetSecret())
+		require.Empty(t, createIdentity.GetQr())
+		require.Empty(t, createIdentity.GetPasscodes())
 	})
 
 	t.Run("Create valid identity with insufficient role", func(t *testing.T) {
@@ -341,13 +341,13 @@ func TestActivateIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
-					createApp.Id),
+					createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		base32NoPad := base32.StdEncoding.WithPadding(base32.NoPadding)
-		secret, err := base32NoPad.DecodeString(createIdentity.Secret)
+		secret, err := base32NoPad.DecodeString(createIdentity.GetSecret())
 		require.NoError(t, err)
 
 		otp := &oath.OTP{
@@ -358,18 +358,18 @@ func TestActivateIdentity(t *testing.T) {
 
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
-				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 				Passcode: passcode,
 			})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
 		require.NoError(t, err)
-		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.Status)
+		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.GetStatus())
 		require.WithinDuration(t, time.Now(),
-			activateIdentity.UpdatedAt.AsTime(), 2*time.Second)
+			activateIdentity.GetUpdatedAt().AsTime(), 2*time.Second)
 
 		ok, counter, err := globalCache.GetI(ctx, key.HOTPCounter(
-			activateIdentity.OrgId, activateIdentity.AppId,
-			activateIdentity.Id))
+			activateIdentity.GetOrgId(), activateIdentity.GetAppId(),
+			activateIdentity.GetId()))
 		t.Logf("ok, counter, err: %v, %v, %v", ok, counter, err)
 		require.True(t, ok)
 		require.NoError(t, err)
@@ -378,24 +378,24 @@ func TestActivateIdentity(t *testing.T) {
 		// Verify event.
 		event := &api.Event{
 			OrgId:      globalAdminOrgID,
-			AppId:      createIdentity.Identity.AppId,
-			IdentityId: createIdentity.Identity.Id,
+			AppId:      createIdentity.GetIdentity().GetAppId(),
+			IdentityId: createIdentity.GetIdentity().GetId(),
 			Status:     api.EventStatus_ACTIVATE_SUCCESS,
 		}
 
 		listEvents, err := globalEvDAO.List(ctx, globalAdminOrgID,
-			createIdentity.Identity.Id, time.Now(),
+			createIdentity.GetIdentity().GetId(), time.Now(),
 			time.Now().Add(-testTimeout))
 		t.Logf("listEvents, err: %+v, %v", listEvents, err)
 		require.NoError(t, err)
 		require.Len(t, listEvents, 2)
 
 		// Normalize generated trace ID.
-		event.TraceId = listEvents[0].TraceId
+		event.TraceId = listEvents[0].GetTraceId()
 		// Normalize timestamp.
 		require.WithinDuration(t, time.Now(),
-			listEvents[0].CreatedAt.AsTime(), testTimeout)
-		event.CreatedAt = listEvents[0].CreatedAt
+			listEvents[0].GetCreatedAt().AsTime(), testTimeout)
+		event.CreatedAt = listEvents[0].GetCreatedAt()
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
@@ -408,7 +408,7 @@ func TestActivateIdentity(t *testing.T) {
 		t.Parallel()
 
 		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			createApp.Id)
+			createApp.GetId())
 		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{}
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
@@ -420,7 +420,7 @@ func TestActivateIdentity(t *testing.T) {
 		require.NoError(t, err)
 
 		base32NoPad := base32.StdEncoding.WithPadding(base32.NoPadding)
-		secret, err := base32NoPad.DecodeString(createIdentity.Secret)
+		secret, err := base32NoPad.DecodeString(createIdentity.GetSecret())
 		require.NoError(t, err)
 
 		otp := &oath.OTP{
@@ -431,18 +431,18 @@ func TestActivateIdentity(t *testing.T) {
 
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
-				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 				Passcode: passcode,
 			})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
 		require.NoError(t, err)
-		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.Status)
+		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.GetStatus())
 		require.WithinDuration(t, time.Now(),
-			activateIdentity.UpdatedAt.AsTime(), 2*time.Second)
+			activateIdentity.GetUpdatedAt().AsTime(), 2*time.Second)
 
 		ok, counter, err := globalCache.GetI(ctx, ikey.TOTPOffset(
-			activateIdentity.OrgId, activateIdentity.AppId,
-			activateIdentity.Id))
+			activateIdentity.GetOrgId(), activateIdentity.GetAppId(),
+			activateIdentity.GetId()))
 		t.Logf("ok, counter, err: %v, %v, %v", ok, counter, err)
 		require.True(t, ok)
 		require.NoError(t, err)
@@ -457,7 +457,7 @@ func TestActivateIdentity(t *testing.T) {
 		require.NoError(t, err)
 
 		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			createApp.Id)
+			createApp.GetId())
 		identity.MethodOneof = &api.Identity_HardwareTotpMethod{
 			HardwareTotpMethod: &api.HardwareTOTPMethod{
 				Digits: 7, Secret: randKey,
@@ -480,18 +480,18 @@ func TestActivateIdentity(t *testing.T) {
 
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
-				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 				Passcode: passcode,
 			})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
 		require.NoError(t, err)
-		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.Status)
+		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.GetStatus())
 		require.WithinDuration(t, time.Now(),
-			activateIdentity.UpdatedAt.AsTime(), 2*time.Second)
+			activateIdentity.GetUpdatedAt().AsTime(), 2*time.Second)
 
 		ok, counter, err := globalCache.GetI(ctx, ikey.TOTPOffset(
-			activateIdentity.OrgId, activateIdentity.AppId,
-			activateIdentity.Id))
+			activateIdentity.GetOrgId(), activateIdentity.GetAppId(),
+			activateIdentity.GetId()))
 		t.Logf("ok, counter, err: %v, %v, %v", ok, counter, err)
 		require.True(t, ok)
 		require.NoError(t, err)
@@ -507,38 +507,38 @@ func TestActivateIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.SMSIdentity("api-identity", uuid.NewString(),
-					createApp.Id),
+					createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
-		_, otp, err := globalIdentDAO.Read(ctx, createIdentity.Identity.Id,
-			createIdentity.Identity.OrgId, createIdentity.Identity.AppId)
+		_, otp, err := globalIdentDAO.Read(ctx, createIdentity.GetIdentity().GetId(),
+			createIdentity.GetIdentity().GetOrgId(), createIdentity.GetIdentity().GetAppId())
 		require.NoError(t, err)
 
 		passcode, err := otp.HOTP(5)
 		require.NoError(t, err)
 
 		ok, err := globalCache.SetIfNotExist(ctx, key.Expire(
-			createIdentity.Identity.OrgId, createIdentity.Identity.AppId,
-			createIdentity.Identity.Id, passcode), 1)
+			createIdentity.GetIdentity().GetOrgId(), createIdentity.GetIdentity().GetAppId(),
+			createIdentity.GetIdentity().GetId(), passcode), 1)
 		require.True(t, ok)
 		require.NoError(t, err)
 
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
-				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 				Passcode: passcode,
 			})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
 		require.NoError(t, err)
-		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.Status)
+		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.GetStatus())
 		require.WithinDuration(t, time.Now(),
-			activateIdentity.UpdatedAt.AsTime(), 2*time.Second)
+			activateIdentity.GetUpdatedAt().AsTime(), 2*time.Second)
 
 		ok, counter, err := globalCache.GetI(ctx, key.HOTPCounter(
-			activateIdentity.OrgId, activateIdentity.AppId,
-			activateIdentity.Id))
+			activateIdentity.GetOrgId(), activateIdentity.GetAppId(),
+			activateIdentity.GetId()))
 		t.Logf("ok, counter, err: %v, %v, %v", ok, counter, err)
 		require.True(t, ok)
 		require.NoError(t, err)
@@ -590,7 +590,7 @@ func TestActivateIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
-					createApp.Id),
+					createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -598,7 +598,7 @@ func TestActivateIdentity(t *testing.T) {
 		secCli := api.NewAppIdentityServiceClient(secondaryAdminGRPCConn)
 		activateIdentity, err := secCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
-				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 				Passcode: "000000",
 			})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
@@ -616,14 +616,14 @@ func TestActivateIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.BackupCodesIdentity("api-identity",
-					uuid.NewString(), createApp.Id),
+					uuid.NewString(), createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
-				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 				Passcode: "000000",
 			})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
@@ -634,25 +634,25 @@ func TestActivateIdentity(t *testing.T) {
 		// Verify event.
 		event := &api.Event{
 			OrgId:      globalAdminOrgID,
-			AppId:      createIdentity.Identity.AppId,
-			IdentityId: createIdentity.Identity.Id,
+			AppId:      createIdentity.GetIdentity().GetAppId(),
+			IdentityId: createIdentity.GetIdentity().GetId(),
 			Status:     api.EventStatus_ACTIVATE_FAIL,
 			Error:      "identity is not unverified",
 		}
 
 		listEvents, err := globalEvDAO.List(ctx, globalAdminOrgID,
-			createIdentity.Identity.Id, time.Now(),
+			createIdentity.GetIdentity().GetId(), time.Now(),
 			time.Now().Add(-testTimeout))
 		t.Logf("listEvents, err: %+v, %v", listEvents, err)
 		require.NoError(t, err)
 		require.Len(t, listEvents, 2)
 
 		// Normalize generated trace ID.
-		event.TraceId = listEvents[0].TraceId
+		event.TraceId = listEvents[0].GetTraceId()
 		// Normalize timestamp.
 		require.WithinDuration(t, time.Now(),
-			listEvents[0].CreatedAt.AsTime(), testTimeout)
-		event.CreatedAt = listEvents[0].CreatedAt
+			listEvents[0].GetCreatedAt().AsTime(), testTimeout)
+		event.CreatedAt = listEvents[0].GetCreatedAt()
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
@@ -670,14 +670,14 @@ func TestActivateIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.SMSIdentity("api-identity", uuid.NewString(),
-					createApp.Id),
+					createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
-				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 				Passcode: "000000",
 			})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
@@ -695,14 +695,14 @@ func TestActivateIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
-					createApp.Id),
+					createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
-				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 				Passcode: "0000000",
 			})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
@@ -734,13 +734,13 @@ func TestChallengeIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
-					createApp.Id),
+					createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		_, err = aiCli.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{
-			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 		})
 		t.Logf("err: %v", err)
 		require.NoError(t, err)
@@ -748,24 +748,24 @@ func TestChallengeIdentity(t *testing.T) {
 		// Verify event.
 		event := &api.Event{
 			OrgId:      globalAdminOrgID,
-			AppId:      createIdentity.Identity.AppId,
-			IdentityId: createIdentity.Identity.Id,
+			AppId:      createIdentity.GetIdentity().GetAppId(),
+			IdentityId: createIdentity.GetIdentity().GetId(),
 			Status:     api.EventStatus_CHALLENGE_NOOP,
 		}
 
 		listEvents, err := globalEvDAO.List(ctx, globalAdminOrgID,
-			createIdentity.Identity.Id, time.Now(),
+			createIdentity.GetIdentity().GetId(), time.Now(),
 			time.Now().Add(-testTimeout))
 		t.Logf("listEvents, err: %+v, %v", listEvents, err)
 		require.NoError(t, err)
 		require.Len(t, listEvents, 2)
 
 		// Normalize generated trace ID.
-		event.TraceId = listEvents[0].TraceId
+		event.TraceId = listEvents[0].GetTraceId()
 		// Normalize timestamp.
 		require.WithinDuration(t, time.Now(),
-			listEvents[0].CreatedAt.AsTime(), testTimeout)
-		event.CreatedAt = listEvents[0].CreatedAt
+			listEvents[0].GetCreatedAt().AsTime(), testTimeout)
+		event.CreatedAt = listEvents[0].GetCreatedAt()
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
@@ -781,13 +781,13 @@ func TestChallengeIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.SMSIdentity("api-identity", uuid.NewString(),
-					createApp.Id),
+					createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		_, err = aiCli.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{
-			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 		})
 		t.Logf("err: %v", err)
 		require.NoError(t, err)
@@ -804,10 +804,10 @@ func TestChallengeIdentity(t *testing.T) {
 
 			// Normalize generated trace ID.
 			nIn := &message.NotifierIn{
-				OrgId:      createIdentity.Identity.OrgId,
-				AppId:      createIdentity.Identity.AppId,
-				IdentityId: createIdentity.Identity.Id,
-				TraceId:    res.TraceId,
+				OrgId:      createIdentity.GetIdentity().GetOrgId(),
+				AppId:      createIdentity.GetIdentity().GetAppId(),
+				IdentityId: createIdentity.GetIdentity().GetId(),
+				TraceId:    res.GetTraceId(),
 			}
 
 			// Testify does not currently support protobuf equality:
@@ -859,14 +859,14 @@ func TestChallengeIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
-					createApp.Id),
+					createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		secCli := api.NewAppIdentityServiceClient(secondaryAdminGRPCConn)
 		_, err = secCli.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{
-			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 		})
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
@@ -893,7 +893,7 @@ func TestChallengeIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.SMSIdentity("api-identity", uuid.NewString(),
-					createApp.Id),
+					createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -909,10 +909,10 @@ func TestChallengeIdentity(t *testing.T) {
 		})
 		t.Logf("updateOrg, err: %+v, %v", updateOrg, err)
 		require.NoError(t, err)
-		require.Equal(t, part.Plan, updateOrg.Plan)
+		require.Equal(t, part.GetPlan(), updateOrg.GetPlan())
 
 		_, err = aiCli.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{
-			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 		})
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = PermissionDenied desc = "+
@@ -926,13 +926,13 @@ func TestChallengeIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.SMSIdentity("api-identity", uuid.NewString(),
-					createApp.Id),
+					createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		_, err = aiCli.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{
-			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 		})
 		t.Logf("err: %v", err)
 		require.NoError(t, err)
@@ -949,10 +949,10 @@ func TestChallengeIdentity(t *testing.T) {
 
 			// Normalize generated trace ID.
 			nIn := &message.NotifierIn{
-				OrgId:      createIdentity.Identity.OrgId,
-				AppId:      createIdentity.Identity.AppId,
-				IdentityId: createIdentity.Identity.Id,
-				TraceId:    res.TraceId,
+				OrgId:      createIdentity.GetIdentity().GetOrgId(),
+				AppId:      createIdentity.GetIdentity().GetAppId(),
+				IdentityId: createIdentity.GetIdentity().GetId(),
+				TraceId:    res.GetTraceId(),
 			}
 
 			// Testify does not currently support protobuf equality:
@@ -965,7 +965,7 @@ func TestChallengeIdentity(t *testing.T) {
 		}
 
 		_, err = aiCli.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{
-			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 		})
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = Unavailable desc = rate "+
@@ -974,25 +974,25 @@ func TestChallengeIdentity(t *testing.T) {
 		// Verify event.
 		event := &api.Event{
 			OrgId:      globalAdminOrgID,
-			AppId:      createIdentity.Identity.AppId,
-			IdentityId: createIdentity.Identity.Id,
+			AppId:      createIdentity.GetIdentity().GetAppId(),
+			IdentityId: createIdentity.GetIdentity().GetId(),
 			Status:     api.EventStatus_CHALLENGE_FAIL,
 			Error:      "rate limit exceeded",
 		}
 
 		listEvents, err := globalEvDAO.List(ctx, globalAdminOrgID,
-			createIdentity.Identity.Id, time.Now(),
+			createIdentity.GetIdentity().GetId(), time.Now(),
 			time.Now().Add(-testTimeout))
 		t.Logf("listEvents, err: %+v, %v", listEvents, err)
 		require.NoError(t, err)
 		require.Len(t, listEvents, 2)
 
 		// Normalize generated trace ID.
-		event.TraceId = listEvents[0].TraceId
+		event.TraceId = listEvents[0].GetTraceId()
 		// Normalize timestamp.
 		require.WithinDuration(t, time.Now(),
-			listEvents[0].CreatedAt.AsTime(), testTimeout)
-		event.CreatedAt = listEvents[0].CreatedAt
+			listEvents[0].GetCreatedAt().AsTime(), testTimeout)
+		event.CreatedAt = listEvents[0].GetCreatedAt()
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
@@ -1024,13 +1024,13 @@ func TestVerifyIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
-					createApp.Id),
+					createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		base32NoPad := base32.StdEncoding.WithPadding(base32.NoPadding)
-		secret, err := base32NoPad.DecodeString(createIdentity.Secret)
+		secret, err := base32NoPad.DecodeString(createIdentity.GetSecret())
 		require.NoError(t, err)
 
 		otp := &oath.OTP{
@@ -1041,20 +1041,20 @@ func TestVerifyIdentity(t *testing.T) {
 
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
-				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 				Passcode: passcode,
 			})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
 		require.NoError(t, err)
-		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.Status)
+		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.GetStatus())
 		require.WithinDuration(t, time.Now(),
-			activateIdentity.UpdatedAt.AsTime(), 2*time.Second)
+			activateIdentity.GetUpdatedAt().AsTime(), 2*time.Second)
 
 		passcode, err = otp.HOTP(6)
 		require.NoError(t, err)
 
 		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
-			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 			Passcode: passcode,
 		})
 		t.Logf("err: %v", err)
@@ -1063,24 +1063,24 @@ func TestVerifyIdentity(t *testing.T) {
 		// Verify event.
 		event := &api.Event{
 			OrgId:      globalAdminOrgID,
-			AppId:      createIdentity.Identity.AppId,
-			IdentityId: createIdentity.Identity.Id,
+			AppId:      createIdentity.GetIdentity().GetAppId(),
+			IdentityId: createIdentity.GetIdentity().GetId(),
 			Status:     api.EventStatus_VERIFY_SUCCESS,
 		}
 
 		listEvents, err := globalEvDAO.List(ctx, globalAdminOrgID,
-			createIdentity.Identity.Id, time.Now(),
+			createIdentity.GetIdentity().GetId(), time.Now(),
 			time.Now().Add(-testTimeout))
 		t.Logf("listEvents, err: %+v, %v", listEvents, err)
 		require.NoError(t, err)
 		require.Len(t, listEvents, 3)
 
 		// Normalize generated trace ID.
-		event.TraceId = listEvents[0].TraceId
+		event.TraceId = listEvents[0].GetTraceId()
 		// Normalize timestamp.
 		require.WithinDuration(t, time.Now(),
-			listEvents[0].CreatedAt.AsTime(), testTimeout)
-		event.CreatedAt = listEvents[0].CreatedAt
+			listEvents[0].GetCreatedAt().AsTime(), testTimeout)
+		event.CreatedAt = listEvents[0].GetCreatedAt()
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
@@ -1093,7 +1093,7 @@ func TestVerifyIdentity(t *testing.T) {
 		t.Parallel()
 
 		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			createApp.Id)
+			createApp.GetId())
 		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{}
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
@@ -1105,7 +1105,7 @@ func TestVerifyIdentity(t *testing.T) {
 		require.NoError(t, err)
 
 		base32NoPad := base32.StdEncoding.WithPadding(base32.NoPadding)
-		secret, err := base32NoPad.DecodeString(createIdentity.Secret)
+		secret, err := base32NoPad.DecodeString(createIdentity.GetSecret())
 		require.NoError(t, err)
 
 		otp := &oath.OTP{
@@ -1116,20 +1116,20 @@ func TestVerifyIdentity(t *testing.T) {
 
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
-				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 				Passcode: passcode,
 			})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
 		require.NoError(t, err)
-		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.Status)
+		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.GetStatus())
 		require.WithinDuration(t, time.Now(),
-			activateIdentity.UpdatedAt.AsTime(), 2*time.Second)
+			activateIdentity.GetUpdatedAt().AsTime(), 2*time.Second)
 
 		passcode, err = otp.TOTP(time.Now())
 		require.NoError(t, err)
 
 		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
-			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 			Passcode: passcode,
 		})
 		t.Logf("err: %v", err)
@@ -1144,7 +1144,7 @@ func TestVerifyIdentity(t *testing.T) {
 		require.NoError(t, err)
 
 		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			createApp.Id)
+			createApp.GetId())
 		identity.MethodOneof = &api.Identity_HardwareTotpMethod{
 			HardwareTotpMethod: &api.HardwareTOTPMethod{
 				Digits: 7, Secret: randKey,
@@ -1167,20 +1167,20 @@ func TestVerifyIdentity(t *testing.T) {
 
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
-				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 				Passcode: passcode,
 			})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
 		require.NoError(t, err)
-		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.Status)
+		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.GetStatus())
 		require.WithinDuration(t, time.Now(),
-			activateIdentity.UpdatedAt.AsTime(), 2*time.Second)
+			activateIdentity.GetUpdatedAt().AsTime(), 2*time.Second)
 
 		passcode, err = otp.TOTP(time.Now().Add(-60 * time.Second))
 		require.NoError(t, err)
 
 		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
-			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 			Passcode: passcode,
 		})
 		t.Logf("err: %v", err)
@@ -1196,46 +1196,46 @@ func TestVerifyIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.SMSIdentity("api-identity", uuid.NewString(),
-					createApp.Id),
+					createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
-		_, otp, err := globalIdentDAO.Read(ctx, createIdentity.Identity.Id,
-			createIdentity.Identity.OrgId, createIdentity.Identity.AppId)
+		_, otp, err := globalIdentDAO.Read(ctx, createIdentity.GetIdentity().GetId(),
+			createIdentity.GetIdentity().GetOrgId(), createIdentity.GetIdentity().GetAppId())
 		require.NoError(t, err)
 
 		passcode, err := otp.HOTP(5)
 		require.NoError(t, err)
 
 		ok, err := globalCache.SetIfNotExist(ctx, key.Expire(
-			createIdentity.Identity.OrgId, createIdentity.Identity.AppId,
-			createIdentity.Identity.Id, passcode), 1)
+			createIdentity.GetIdentity().GetOrgId(), createIdentity.GetIdentity().GetAppId(),
+			createIdentity.GetIdentity().GetId(), passcode), 1)
 		require.True(t, ok)
 		require.NoError(t, err)
 
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
-				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 				Passcode: passcode,
 			})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
 		require.NoError(t, err)
-		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.Status)
+		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.GetStatus())
 		require.WithinDuration(t, time.Now(),
-			activateIdentity.UpdatedAt.AsTime(), 2*time.Second)
+			activateIdentity.GetUpdatedAt().AsTime(), 2*time.Second)
 
 		passcode, err = otp.HOTP(6)
 		require.NoError(t, err)
 
 		ok, err = globalCache.SetIfNotExist(ctx, key.Expire(
-			createIdentity.Identity.OrgId, createIdentity.Identity.AppId,
-			createIdentity.Identity.Id, passcode), 1)
+			createIdentity.GetIdentity().GetOrgId(), createIdentity.GetIdentity().GetAppId(),
+			createIdentity.GetIdentity().GetId(), passcode), 1)
 		require.True(t, ok)
 		require.NoError(t, err)
 
 		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
-			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 			Passcode: passcode,
 		})
 		t.Logf("err: %v", err)
@@ -1251,16 +1251,16 @@ func TestVerifyIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.BackupCodesIdentity("api-identity",
-					uuid.NewString(), createApp.Id),
+					uuid.NewString(), createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		// Verify out of order.
-		for i := len(createIdentity.Passcodes) - 1; i >= 0; i-- {
+		for i := len(createIdentity.GetPasscodes()) - 1; i >= 0; i-- {
 			_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
-				Id: createIdentity.Identity.Id, AppId: createApp.Id,
-				Passcode: createIdentity.Passcodes[i],
+				Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
+				Passcode: createIdentity.GetPasscodes()[i],
 			})
 			t.Logf("err: %v", err)
 			require.NoError(t, err)
@@ -1271,7 +1271,7 @@ func TestVerifyIdentity(t *testing.T) {
 		t.Parallel()
 
 		identity := random.SecurityQuestionsIdentity("api-identity",
-			uuid.NewString(), createApp.Id)
+			uuid.NewString(), createApp.GetId())
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -1282,8 +1282,8 @@ func TestVerifyIdentity(t *testing.T) {
 		require.NoError(t, err)
 
 		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
-			Id: createIdentity.Identity.Id, AppId: createApp.Id,
-			Passcode: identity.GetSecurityQuestionsMethod().Answer,
+			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
+			Passcode: identity.GetSecurityQuestionsMethod().GetAnswer(),
 		})
 		t.Logf("err: %v", err)
 		require.NoError(t, err)
@@ -1330,7 +1330,7 @@ func TestVerifyIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
-					createApp.Id),
+					createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -1354,13 +1354,13 @@ func TestVerifyIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
-					createApp.Id),
+					createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		base32NoPad := base32.StdEncoding.WithPadding(base32.NoPadding)
-		secret, err := base32NoPad.DecodeString(createIdentity.Secret)
+		secret, err := base32NoPad.DecodeString(createIdentity.GetSecret())
 		require.NoError(t, err)
 
 		otp := &oath.OTP{
@@ -1370,7 +1370,7 @@ func TestVerifyIdentity(t *testing.T) {
 		require.NoError(t, err)
 
 		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
-			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 			Passcode: passcode,
 		})
 		t.Logf("err:%v", err)
@@ -1380,25 +1380,25 @@ func TestVerifyIdentity(t *testing.T) {
 		// Verify event.
 		event := &api.Event{
 			OrgId:      globalAdminOrgID,
-			AppId:      createIdentity.Identity.AppId,
-			IdentityId: createIdentity.Identity.Id,
+			AppId:      createIdentity.GetIdentity().GetAppId(),
+			IdentityId: createIdentity.GetIdentity().GetId(),
 			Status:     api.EventStatus_VERIFY_FAIL,
 			Error:      "identity is not activated",
 		}
 
 		listEvents, err := globalEvDAO.List(ctx, globalAdminOrgID,
-			createIdentity.Identity.Id, time.Now(),
+			createIdentity.GetIdentity().GetId(), time.Now(),
 			time.Now().Add(-testTimeout))
 		t.Logf("listEvents, err: %+v, %v", listEvents, err)
 		require.NoError(t, err)
 		require.Len(t, listEvents, 2)
 
 		// Normalize generated trace ID.
-		event.TraceId = listEvents[0].TraceId
+		event.TraceId = listEvents[0].GetTraceId()
 		// Normalize timestamp.
 		require.WithinDuration(t, time.Now(),
-			listEvents[0].CreatedAt.AsTime(), testTimeout)
-		event.CreatedAt = listEvents[0].CreatedAt
+			listEvents[0].GetCreatedAt().AsTime(), testTimeout)
+		event.CreatedAt = listEvents[0].GetCreatedAt()
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
@@ -1416,40 +1416,40 @@ func TestVerifyIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.SMSIdentity("api-identity", uuid.NewString(),
-					createApp.Id),
+					createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
-		_, otp, err := globalIdentDAO.Read(ctx, createIdentity.Identity.Id,
-			createIdentity.Identity.OrgId, createIdentity.Identity.AppId)
+		_, otp, err := globalIdentDAO.Read(ctx, createIdentity.GetIdentity().GetId(),
+			createIdentity.GetIdentity().GetOrgId(), createIdentity.GetIdentity().GetAppId())
 		require.NoError(t, err)
 
 		passcode, err := otp.HOTP(5)
 		require.NoError(t, err)
 
 		ok, err := globalCache.SetIfNotExist(ctx, key.Expire(
-			createIdentity.Identity.OrgId, createIdentity.Identity.AppId,
-			createIdentity.Identity.Id, passcode), 1)
+			createIdentity.GetIdentity().GetOrgId(), createIdentity.GetIdentity().GetAppId(),
+			createIdentity.GetIdentity().GetId(), passcode), 1)
 		require.True(t, ok)
 		require.NoError(t, err)
 
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
-				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 				Passcode: passcode,
 			})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
 		require.NoError(t, err)
-		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.Status)
+		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.GetStatus())
 		require.WithinDuration(t, time.Now(),
-			activateIdentity.UpdatedAt.AsTime(), 2*time.Second)
+			activateIdentity.GetUpdatedAt().AsTime(), 2*time.Second)
 
 		passcode, err = otp.HOTP(6)
 		require.NoError(t, err)
 
 		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
-			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 			Passcode: passcode,
 		})
 		t.Logf("err: %v", err)
@@ -1466,21 +1466,21 @@ func TestVerifyIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.BackupCodesIdentity("api-identity",
-					uuid.NewString(), createApp.Id),
+					uuid.NewString(), createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
-			Id: createIdentity.Identity.Id, AppId: createApp.Id,
-			Passcode: createIdentity.Passcodes[0],
+			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
+			Passcode: createIdentity.GetPasscodes()[0],
 		})
 		t.Logf("err: %v", err)
 		require.NoError(t, err)
 
 		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
-			Id: createIdentity.Identity.Id, AppId: createApp.Id,
-			Passcode: createIdentity.Passcodes[0],
+			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
+			Passcode: createIdentity.GetPasscodes()[0],
 		})
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+
@@ -1491,7 +1491,7 @@ func TestVerifyIdentity(t *testing.T) {
 		t.Parallel()
 
 		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			createApp.Id)
+			createApp.GetId())
 		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{}
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
@@ -1503,7 +1503,7 @@ func TestVerifyIdentity(t *testing.T) {
 		require.NoError(t, err)
 
 		base32NoPad := base32.StdEncoding.WithPadding(base32.NoPadding)
-		secret, err := base32NoPad.DecodeString(createIdentity.Secret)
+		secret, err := base32NoPad.DecodeString(createIdentity.GetSecret())
 		require.NoError(t, err)
 
 		otp := &oath.OTP{
@@ -1514,17 +1514,17 @@ func TestVerifyIdentity(t *testing.T) {
 
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
-				Id: createIdentity.Identity.Id, AppId: createApp.Id,
+				Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 				Passcode: passcode,
 			})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
 		require.NoError(t, err)
-		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.Status)
+		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.GetStatus())
 		require.WithinDuration(t, time.Now(),
-			activateIdentity.UpdatedAt.AsTime(), 2*time.Second)
+			activateIdentity.GetUpdatedAt().AsTime(), 2*time.Second)
 
 		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
-			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 			Passcode: "000000",
 		})
 		t.Logf("err: %v", err)
@@ -1541,13 +1541,13 @@ func TestVerifyIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.SecurityQuestionsIdentity("api-identity",
-					uuid.NewString(), createApp.Id),
+					uuid.NewString(), createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
-			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 			Passcode: random.String(80),
 		})
 		t.Logf("err: %v", err)
@@ -1571,7 +1571,7 @@ func TestGetIdentity(t *testing.T) {
 
 	createIdentity, err := aiCli.CreateIdentity(ctx, &api.CreateIdentityRequest{
 		Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
-			createApp.Id),
+			createApp.GetId()),
 	})
 	t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 	require.NoError(t, err)
@@ -1584,15 +1584,15 @@ func TestGetIdentity(t *testing.T) {
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		getIdentity, err := aiCli.GetIdentity(ctx, &api.GetIdentityRequest{
-			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 		})
 		t.Logf("getIdentity, err: %+v, %v", getIdentity, err)
 		require.NoError(t, err)
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(createIdentity.Identity, getIdentity) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", createIdentity.Identity,
+		if !proto.Equal(createIdentity.GetIdentity(), getIdentity) {
+			t.Fatalf("\nExpect: %+v\nActual: %+v", createIdentity.GetIdentity(),
 				getIdentity)
 		}
 	})
@@ -1605,7 +1605,7 @@ func TestGetIdentity(t *testing.T) {
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		getIdentity, err := aiCli.GetIdentity(ctx,
-			&api.GetIdentityRequest{Id: uuid.NewString(), AppId: createApp.Id})
+			&api.GetIdentityRequest{Id: uuid.NewString(), AppId: createApp.GetId()})
 		t.Logf("getIdentity, err: %+v, %v", getIdentity, err)
 		require.Nil(t, getIdentity)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
@@ -1620,7 +1620,7 @@ func TestGetIdentity(t *testing.T) {
 
 		secCli := api.NewAppIdentityServiceClient(secondaryAdminGRPCConn)
 		getIdentity, err := secCli.GetIdentity(ctx, &api.GetIdentityRequest{
-			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 		})
 		t.Logf("getIdentity, err: %+v, %v", getIdentity, err)
 		require.Nil(t, getIdentity)
@@ -1648,13 +1648,13 @@ func TestDeleteIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
-					createApp.Id),
+					createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		_, err = aiCli.DeleteIdentity(ctx, &api.DeleteIdentityRequest{
-			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 		})
 		t.Logf("err: %v", err)
 		require.NoError(t, err)
@@ -1662,24 +1662,24 @@ func TestDeleteIdentity(t *testing.T) {
 		// Verify event.
 		event := &api.Event{
 			OrgId:      globalAdminOrgID,
-			AppId:      createIdentity.Identity.AppId,
-			IdentityId: createIdentity.Identity.Id,
+			AppId:      createIdentity.GetIdentity().GetAppId(),
+			IdentityId: createIdentity.GetIdentity().GetId(),
 			Status:     api.EventStatus_IDENTITY_DELETED,
 		}
 
 		listEvents, err := globalEvDAO.List(ctx, globalAdminOrgID,
-			createIdentity.Identity.Id, time.Now(),
+			createIdentity.GetIdentity().GetId(), time.Now(),
 			time.Now().Add(-testTimeout))
 		t.Logf("listEvents, err: %+v, %v", listEvents, err)
 		require.NoError(t, err)
 		require.Len(t, listEvents, 2)
 
 		// Normalize generated trace ID.
-		event.TraceId = listEvents[0].TraceId
+		event.TraceId = listEvents[0].GetTraceId()
 		// Normalize timestamp.
 		require.WithinDuration(t, time.Now(),
-			listEvents[0].CreatedAt.AsTime(), testTimeout)
-		event.CreatedAt = listEvents[0].CreatedAt
+			listEvents[0].GetCreatedAt().AsTime(), testTimeout)
+		event.CreatedAt = listEvents[0].GetCreatedAt()
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
@@ -1696,7 +1696,7 @@ func TestDeleteIdentity(t *testing.T) {
 
 			aiCli := api.NewAppIdentityServiceClient(globalAdminKeyGRPCConn)
 			getIdentity, err := aiCli.GetIdentity(ctx, &api.GetIdentityRequest{
-				Id: createIdentity.Identity.Id, AppId: uuid.NewString(),
+				Id: createIdentity.GetIdentity().GetId(), AppId: uuid.NewString(),
 			})
 			t.Logf("getIdentity, err: %+v, %v", getIdentity, err)
 			require.Nil(t, getIdentity)
@@ -1751,14 +1751,14 @@ func TestDeleteIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
-					createApp.Id),
+					createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		secCli := api.NewAppIdentityServiceClient(secondaryAdminGRPCConn)
 		_, err = secCli.DeleteIdentity(ctx, &api.DeleteIdentityRequest{
-			Id: createIdentity.Identity.Id, AppId: createApp.Id,
+			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 		})
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
@@ -1783,7 +1783,7 @@ func TestListIdentities(t *testing.T) {
 	identityComments := []string{}
 	for i := 0; i < 3; i++ {
 		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			createApp.Id)
+			createApp.GetId())
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -1791,9 +1791,9 @@ func TestListIdentities(t *testing.T) {
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
-		identityIDs = append(identityIDs, createIdentity.Identity.Id)
+		identityIDs = append(identityIDs, createIdentity.GetIdentity().GetId())
 		identityComments = append(identityComments,
-			createIdentity.Identity.Comment)
+			createIdentity.GetIdentity().GetComment())
 	}
 
 	t.Run("List identities by valid org ID", func(t *testing.T) {
@@ -1807,13 +1807,13 @@ func TestListIdentities(t *testing.T) {
 			&api.ListIdentitiesRequest{PageSize: 250})
 		t.Logf("listIdentities, err: %+v, %v", listIdentities, err)
 		require.NoError(t, err)
-		require.GreaterOrEqual(t, len(listIdentities.Identities), 3)
-		require.GreaterOrEqual(t, listIdentities.TotalSize, int32(3))
+		require.GreaterOrEqual(t, len(listIdentities.GetIdentities()), 3)
+		require.GreaterOrEqual(t, listIdentities.GetTotalSize(), int32(3))
 
 		var found bool
-		for _, identity := range listIdentities.Identities {
-			if identity.Id == identityIDs[len(identityIDs)-1] &&
-				identity.Comment == identityComments[len(identityComments)-1] {
+		for _, identity := range listIdentities.GetIdentities() {
+			if identity.GetId() == identityIDs[len(identityIDs)-1] &&
+				identity.GetComment() == identityComments[len(identityComments)-1] {
 				found = true
 			}
 		}
@@ -1831,18 +1831,18 @@ func TestListIdentities(t *testing.T) {
 			&api.ListIdentitiesRequest{PageSize: 2})
 		t.Logf("listIdentities, err: %+v, %v", listIdentities, err)
 		require.NoError(t, err)
-		require.Len(t, listIdentities.Identities, 2)
-		require.NotEmpty(t, listIdentities.NextPageToken)
-		require.GreaterOrEqual(t, listIdentities.TotalSize, int32(3))
+		require.Len(t, listIdentities.GetIdentities(), 2)
+		require.NotEmpty(t, listIdentities.GetNextPageToken())
+		require.GreaterOrEqual(t, listIdentities.GetTotalSize(), int32(3))
 
 		nextIdentities, err := aiCli.ListIdentities(ctx,
 			&api.ListIdentitiesRequest{
-				PageSize: 2, PageToken: listIdentities.NextPageToken,
+				PageSize: 2, PageToken: listIdentities.GetNextPageToken(),
 			})
 		t.Logf("nextIdentities, err: %+v, %v", nextIdentities, err)
 		require.NoError(t, err)
-		require.GreaterOrEqual(t, len(nextIdentities.Identities), 1)
-		require.GreaterOrEqual(t, nextIdentities.TotalSize, int32(3))
+		require.GreaterOrEqual(t, len(nextIdentities.GetIdentities()), 1)
+		require.GreaterOrEqual(t, nextIdentities.GetTotalSize(), int32(3))
 	})
 
 	t.Run("List identities with app filter", func(t *testing.T) {
@@ -1853,16 +1853,16 @@ func TestListIdentities(t *testing.T) {
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		listIdentities, err := aiCli.ListIdentities(ctx,
-			&api.ListIdentitiesRequest{AppId: createApp.Id})
+			&api.ListIdentitiesRequest{AppId: createApp.GetId()})
 		t.Logf("listIdentities, err: %+v, %v", listIdentities, err)
 		require.NoError(t, err)
-		require.Len(t, listIdentities.Identities, 3)
-		require.Equal(t, int32(3), listIdentities.TotalSize)
+		require.Len(t, listIdentities.GetIdentities(), 3)
+		require.Equal(t, int32(3), listIdentities.GetTotalSize())
 
 		var found bool
-		for _, identity := range listIdentities.Identities {
-			if identity.Id == identityIDs[len(identityIDs)-1] &&
-				identity.Comment == identityComments[len(identityComments)-1] {
+		for _, identity := range listIdentities.GetIdentities() {
+			if identity.GetId() == identityIDs[len(identityIDs)-1] &&
+				identity.GetComment() == identityComments[len(identityComments)-1] {
 				found = true
 			}
 		}
@@ -1880,8 +1880,8 @@ func TestListIdentities(t *testing.T) {
 			&api.ListIdentitiesRequest{})
 		t.Logf("listIdentities, err: %+v, %v", listIdentities, err)
 		require.NoError(t, err)
-		require.Len(t, listIdentities.Identities, 0)
-		require.Equal(t, int32(0), listIdentities.TotalSize)
+		require.Len(t, listIdentities.GetIdentities(), 0)
+		require.Equal(t, int32(0), listIdentities.GetTotalSize())
 	})
 
 	t.Run("List identities by invalid page token", func(t *testing.T) {

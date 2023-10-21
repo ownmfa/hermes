@@ -30,7 +30,7 @@ func TestCreate(t *testing.T) {
 	t.Run("Create valid app", func(t *testing.T) {
 		t.Parallel()
 
-		app := random.App("dao-app", createOrg.Id)
+		app := random.App("dao-app", createOrg.GetId())
 		createApp, _ := proto.Clone(app).(*api.App)
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
@@ -39,17 +39,17 @@ func TestCreate(t *testing.T) {
 		createApp, err := globalAppDAO.Create(ctx, createApp)
 		t.Logf("app, createApp, err: %+v, %+v, %v", app, createApp, err)
 		require.NoError(t, err)
-		require.NotEqual(t, app.Id, createApp.Id)
-		require.WithinDuration(t, time.Now(), createApp.CreatedAt.AsTime(),
+		require.NotEqual(t, app.GetId(), createApp.GetId())
+		require.WithinDuration(t, time.Now(), createApp.GetCreatedAt().AsTime(),
 			2*time.Second)
-		require.WithinDuration(t, time.Now(), createApp.UpdatedAt.AsTime(),
+		require.WithinDuration(t, time.Now(), createApp.GetUpdatedAt().AsTime(),
 			2*time.Second)
 	})
 
 	t.Run("Create invalid app", func(t *testing.T) {
 		t.Parallel()
 
-		app := random.App("dao-app", createOrg.Id)
+		app := random.App("dao-app", createOrg.GetId())
 		app.Name = "dao-app-" + random.String(40)
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
@@ -73,7 +73,7 @@ func TestRead(t *testing.T) {
 	require.NoError(t, err)
 
 	createApp, err := globalAppDAO.Create(ctx, random.App("dao-app",
-		createOrg.Id))
+		createOrg.GetId()))
 	t.Logf("createApp, err: %+v, %v", createApp, err)
 	require.NoError(t, err)
 
@@ -83,7 +83,7 @@ func TestRead(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		readApp, err := globalAppDAO.Read(ctx, createApp.Id, createApp.OrgId)
+		readApp, err := globalAppDAO.Read(ctx, createApp.GetId(), createApp.GetOrgId())
 		t.Logf("readApp, err: %+v, %v", readApp, err)
 		require.NoError(t, err)
 		require.Equal(t, createApp, readApp)
@@ -108,7 +108,7 @@ func TestRead(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		readApp, err := globalAppDAO.Read(ctx, createApp.Id,
+		readApp, err := globalAppDAO.Read(ctx, createApp.GetId(),
 			uuid.NewString())
 		t.Logf("readApp, err: %+v, %v", readApp, err)
 		require.Nil(t, readApp)
@@ -122,7 +122,7 @@ func TestRead(t *testing.T) {
 		defer cancel()
 
 		readApp, err := globalAppDAO.Read(ctx, random.String(10),
-			createApp.OrgId)
+			createApp.GetOrgId())
 		t.Logf("readApp, err: %+v, %v", readApp, err)
 		require.Nil(t, readApp)
 		require.ErrorIs(t, err, dao.ErrInvalidFormat)
@@ -146,7 +146,7 @@ func TestUpdate(t *testing.T) {
 		defer cancel()
 
 		createApp, err := globalAppDAO.Create(ctx, random.App("dao-app",
-			createOrg.Id))
+			createOrg.GetId()))
 		t.Logf("createApp, err: %+v, %v", createApp, err)
 		require.NoError(t, err)
 
@@ -161,16 +161,16 @@ func TestUpdate(t *testing.T) {
 		t.Logf("createApp, updateApp, err: %+v, %+v, %v", createApp, updateApp,
 			err)
 		require.NoError(t, err)
-		require.Equal(t, createApp.Name, updateApp.Name)
-		require.Equal(t, createApp.DisplayName, updateApp.DisplayName)
-		require.Equal(t, createApp.Email, updateApp.Email)
-		require.Equal(t, createApp.PushoverKey, updateApp.PushoverKey)
-		require.True(t, updateApp.UpdatedAt.AsTime().After(
-			updateApp.CreatedAt.AsTime()))
-		require.WithinDuration(t, createApp.CreatedAt.AsTime(),
-			updateApp.UpdatedAt.AsTime(), 2*time.Second)
+		require.Equal(t, createApp.GetName(), updateApp.GetName())
+		require.Equal(t, createApp.GetDisplayName(), updateApp.GetDisplayName())
+		require.Equal(t, createApp.GetEmail(), updateApp.GetEmail())
+		require.Equal(t, createApp.GetPushoverKey(), updateApp.GetPushoverKey())
+		require.True(t, updateApp.GetUpdatedAt().AsTime().After(
+			updateApp.GetCreatedAt().AsTime()))
+		require.WithinDuration(t, createApp.GetCreatedAt().AsTime(),
+			updateApp.GetUpdatedAt().AsTime(), 2*time.Second)
 
-		readApp, err := globalAppDAO.Read(ctx, createApp.Id, createApp.OrgId)
+		readApp, err := globalAppDAO.Read(ctx, createApp.GetId(), createApp.GetOrgId())
 		t.Logf("readApp, err: %+v, %v", readApp, err)
 		require.NoError(t, err)
 		require.Equal(t, updateApp, readApp)
@@ -183,7 +183,7 @@ func TestUpdate(t *testing.T) {
 		defer cancel()
 
 		updateApp, err := globalAppDAO.Update(ctx, random.App("dao-app",
-			createOrg.Id))
+			createOrg.GetId()))
 		t.Logf("updateApp, err: %+v, %v", updateApp, err)
 		require.Nil(t, updateApp)
 		require.Equal(t, dao.ErrNotFound, err)
@@ -196,7 +196,7 @@ func TestUpdate(t *testing.T) {
 		defer cancel()
 
 		createApp, err := globalAppDAO.Create(ctx, random.App("dao-app",
-			createOrg.Id))
+			createOrg.GetId()))
 		t.Logf("createApp, err: %+v, %v", createApp, err)
 		require.NoError(t, err)
 
@@ -218,7 +218,7 @@ func TestUpdate(t *testing.T) {
 		defer cancel()
 
 		createApp, err := globalAppDAO.Create(ctx, random.App("dao-app",
-			createOrg.Id))
+			createOrg.GetId()))
 		t.Logf("createApp, err: %+v, %v", createApp, err)
 		require.NoError(t, err)
 
@@ -250,11 +250,11 @@ func TestDelete(t *testing.T) {
 		defer cancel()
 
 		createApp, err := globalAppDAO.Create(ctx, random.App("dao-app",
-			createOrg.Id))
+			createOrg.GetId()))
 		t.Logf("createApp, err: %+v, %v", createApp, err)
 		require.NoError(t, err)
 
-		err = globalAppDAO.Delete(ctx, createApp.Id, createOrg.Id)
+		err = globalAppDAO.Delete(ctx, createApp.GetId(), createOrg.GetId())
 		t.Logf("err: %v", err)
 		require.NoError(t, err)
 
@@ -265,8 +265,8 @@ func TestDelete(t *testing.T) {
 				testTimeout)
 			defer cancel()
 
-			readApp, err := globalAppDAO.Read(ctx, createApp.Id,
-				createOrg.Id)
+			readApp, err := globalAppDAO.Read(ctx, createApp.GetId(),
+				createOrg.GetId())
 			t.Logf("readApp, err: %+v, %v", readApp, err)
 			require.Nil(t, readApp)
 			require.Equal(t, dao.ErrNotFound, err)
@@ -279,7 +279,7 @@ func TestDelete(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		err := globalAppDAO.Delete(ctx, uuid.NewString(), createOrg.Id)
+		err := globalAppDAO.Delete(ctx, uuid.NewString(), createOrg.GetId())
 		t.Logf("err: %v", err)
 		require.Equal(t, dao.ErrNotFound, err)
 	})
@@ -291,11 +291,11 @@ func TestDelete(t *testing.T) {
 		defer cancel()
 
 		createApp, err := globalAppDAO.Create(ctx, random.App("dao-app",
-			createOrg.Id))
+			createOrg.GetId()))
 		t.Logf("createApp, err: %+v, %v", createApp, err)
 		require.NoError(t, err)
 
-		err = globalAppDAO.Delete(ctx, createApp.Id, uuid.NewString())
+		err = globalAppDAO.Delete(ctx, createApp.GetId(), uuid.NewString())
 		t.Logf("err: %v", err)
 		require.Equal(t, dao.ErrNotFound, err)
 	})
@@ -318,15 +318,15 @@ func TestList(t *testing.T) {
 	appTSes := []time.Time{}
 	for i := 0; i < 3; i++ {
 		createApp, err := globalAppDAO.Create(ctx, random.App("dao-app",
-			createOrg.Id))
+			createOrg.GetId()))
 		t.Logf("createApp, err: %+v, %v", createApp, err)
 		require.NoError(t, err)
 
-		appIDs = append(appIDs, createApp.Id)
-		appNames = append(appNames, createApp.Name)
-		appEmails = append(appEmails, createApp.Email)
-		appPushoverKeys = append(appPushoverKeys, createApp.PushoverKey)
-		appTSes = append(appTSes, createApp.CreatedAt.AsTime())
+		appIDs = append(appIDs, createApp.GetId())
+		appNames = append(appNames, createApp.GetName())
+		appEmails = append(appEmails, createApp.GetEmail())
+		appPushoverKeys = append(appPushoverKeys, createApp.GetPushoverKey())
+		appTSes = append(appTSes, createApp.GetCreatedAt().AsTime())
 	}
 
 	t.Run("List apps by valid org ID", func(t *testing.T) {
@@ -335,7 +335,7 @@ func TestList(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		listApps, listCount, err := globalAppDAO.List(ctx, createOrg.Id,
+		listApps, listCount, err := globalAppDAO.List(ctx, createOrg.GetId(),
 			time.Time{}, "", 0)
 		t.Logf("listApps, listCount, err: %+v, %v, %v", listApps, listCount,
 			err)
@@ -345,10 +345,10 @@ func TestList(t *testing.T) {
 
 		var found bool
 		for _, app := range listApps {
-			if app.Id == appIDs[len(appIDs)-1] &&
-				app.Name == appNames[len(appNames)-1] &&
-				app.Email == appEmails[len(appEmails)-1] &&
-				app.PushoverKey == appPushoverKeys[len(appPushoverKeys)-1] {
+			if app.GetId() == appIDs[len(appIDs)-1] &&
+				app.GetName() == appNames[len(appNames)-1] &&
+				app.GetEmail() == appEmails[len(appEmails)-1] &&
+				app.GetPushoverKey() == appPushoverKeys[len(appPushoverKeys)-1] {
 				found = true
 			}
 		}
@@ -361,7 +361,7 @@ func TestList(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		listApps, listCount, err := globalAppDAO.List(ctx, createOrg.Id,
+		listApps, listCount, err := globalAppDAO.List(ctx, createOrg.GetId(),
 			appTSes[0], appIDs[0], 5)
 		t.Logf("listApps, listCount, err: %+v, %v, %v", listApps, listCount,
 			err)
@@ -371,10 +371,10 @@ func TestList(t *testing.T) {
 
 		var found bool
 		for _, app := range listApps {
-			if app.Id == appIDs[len(appIDs)-1] &&
-				app.Name == appNames[len(appNames)-1] &&
-				app.Email == appEmails[len(appEmails)-1] &&
-				app.PushoverKey == appPushoverKeys[len(appPushoverKeys)-1] {
+			if app.GetId() == appIDs[len(appIDs)-1] &&
+				app.GetName() == appNames[len(appNames)-1] &&
+				app.GetEmail() == appEmails[len(appEmails)-1] &&
+				app.GetPushoverKey() == appPushoverKeys[len(appPushoverKeys)-1] {
 				found = true
 			}
 		}
@@ -387,7 +387,7 @@ func TestList(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		listApps, listCount, err := globalAppDAO.List(ctx, createOrg.Id,
+		listApps, listCount, err := globalAppDAO.List(ctx, createOrg.GetId(),
 			time.Time{}, "", 1)
 		t.Logf("listApps, listCount, err: %+v, %v, %v", listApps, listCount,
 			err)

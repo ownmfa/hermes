@@ -28,11 +28,11 @@ func TestLogin(t *testing.T) {
 		t.Parallel()
 
 		org := random.Org("api-session")
-		user := random.User("api-session", org.Id)
+		user := random.User("api-session", org.GetId())
 		user.Role = api.Role_ADMIN
 
 		userer := NewMockUserer(gomock.NewController(t))
-		userer.EXPECT().ReadByEmail(gomock.Any(), user.Email, org.Name).
+		userer.EXPECT().ReadByEmail(gomock.Any(), user.GetEmail(), org.GetName()).
 			Return(user, globalHash, nil).Times(1)
 
 		pwtKey := make([]byte, 32)
@@ -44,13 +44,13 @@ func TestLogin(t *testing.T) {
 
 		sessSvc := NewSession(userer, nil, nil, pwtKey)
 		loginResp, err := sessSvc.Login(ctx, &api.LoginRequest{
-			Email: user.Email, OrgName: org.Name, Password: globalPass,
+			Email: user.GetEmail(), OrgName: org.GetName(), Password: globalPass,
 		})
 		t.Logf("loginResp, err: %+v, %v", loginResp, err)
 		require.NoError(t, err)
-		require.Greater(t, len(loginResp.Token), 90)
+		require.Greater(t, len(loginResp.GetToken()), 90)
 		require.WithinDuration(t, time.Now().Add(
-			session.WebTokenExp*time.Second), loginResp.ExpiresAt.AsTime(),
+			session.WebTokenExp*time.Second), loginResp.GetExpiresAt().AsTime(),
 			2*time.Second)
 	})
 
@@ -58,10 +58,10 @@ func TestLogin(t *testing.T) {
 		t.Parallel()
 
 		org := random.Org("api-session")
-		user := random.User("api-session", org.Id)
+		user := random.User("api-session", org.GetId())
 
 		userer := NewMockUserer(gomock.NewController(t))
-		userer.EXPECT().ReadByEmail(gomock.Any(), user.Email, org.Name).
+		userer.EXPECT().ReadByEmail(gomock.Any(), user.GetEmail(), org.GetName()).
 			Return(nil, nil, dao.ErrNotFound).Times(1)
 
 		pwtKey := make([]byte, 32)
@@ -73,7 +73,7 @@ func TestLogin(t *testing.T) {
 
 		sessSvc := NewSession(userer, nil, nil, pwtKey)
 		loginResp, err := sessSvc.Login(ctx, &api.LoginRequest{
-			Email: user.Email, OrgName: org.Name, Password: globalPass,
+			Email: user.GetEmail(), OrgName: org.GetName(), Password: globalPass,
 		})
 		t.Logf("loginResp, err: %+v, %v", loginResp, err)
 		require.Nil(t, loginResp)
@@ -85,10 +85,10 @@ func TestLogin(t *testing.T) {
 		t.Parallel()
 
 		org := random.Org("api-session")
-		user := random.User("api-session", org.Id)
+		user := random.User("api-session", org.GetId())
 
 		userer := NewMockUserer(gomock.NewController(t))
-		userer.EXPECT().ReadByEmail(gomock.Any(), user.Email, org.Name).
+		userer.EXPECT().ReadByEmail(gomock.Any(), user.GetEmail(), org.GetName()).
 			Return(user, globalHash, nil).Times(1)
 
 		pwtKey := make([]byte, 32)
@@ -100,7 +100,7 @@ func TestLogin(t *testing.T) {
 
 		sessSvc := NewSession(userer, nil, nil, pwtKey)
 		loginResp, err := sessSvc.Login(ctx, &api.LoginRequest{
-			Email: user.Email, OrgName: org.Name, Password: random.String(10),
+			Email: user.GetEmail(), OrgName: org.GetName(), Password: random.String(10),
 		})
 		t.Logf("loginResp, err: %+v, %v", loginResp, err)
 		require.Nil(t, loginResp)
@@ -112,11 +112,11 @@ func TestLogin(t *testing.T) {
 		t.Parallel()
 
 		org := random.Org("api-session")
-		user := random.User("api-session", org.Id)
+		user := random.User("api-session", org.GetId())
 		user.Role = api.Role_ROLE_UNSPECIFIED
 
 		userer := NewMockUserer(gomock.NewController(t))
-		userer.EXPECT().ReadByEmail(gomock.Any(), user.Email, org.Name).
+		userer.EXPECT().ReadByEmail(gomock.Any(), user.GetEmail(), org.GetName()).
 			Return(user, globalHash, nil).Times(1)
 
 		pwtKey := make([]byte, 32)
@@ -128,7 +128,7 @@ func TestLogin(t *testing.T) {
 
 		sessSvc := NewSession(userer, nil, nil, pwtKey)
 		loginResp, err := sessSvc.Login(ctx, &api.LoginRequest{
-			Email: user.Email, OrgName: org.Name, Password: globalPass,
+			Email: user.GetEmail(), OrgName: org.GetName(), Password: globalPass,
 		})
 		t.Logf("loginResp, err: %+v, %v", loginResp, err)
 		require.Nil(t, loginResp)
@@ -140,11 +140,11 @@ func TestLogin(t *testing.T) {
 		t.Parallel()
 
 		org := random.Org("api-session")
-		user := random.User("api-session", org.Id)
+		user := random.User("api-session", org.GetId())
 		user.Role = api.Role_ADMIN
 
 		userer := NewMockUserer(gomock.NewController(t))
-		userer.EXPECT().ReadByEmail(gomock.Any(), user.Email, org.Name).
+		userer.EXPECT().ReadByEmail(gomock.Any(), user.GetEmail(), org.GetName()).
 			Return(user, globalHash, nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
@@ -152,7 +152,7 @@ func TestLogin(t *testing.T) {
 
 		sessSvc := NewSession(userer, nil, nil, nil)
 		loginResp, err := sessSvc.Login(ctx, &api.LoginRequest{
-			Email: user.Email, OrgName: org.Name, Password: globalPass,
+			Email: user.GetEmail(), OrgName: org.GetName(), Password: globalPass,
 		})
 		t.Logf("loginResp, err: %+v, %v", loginResp, err)
 		require.Nil(t, loginResp)
@@ -180,7 +180,7 @@ func TestCreateKey(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: key.OrgId, Role: api.Role_ADMIN,
+				OrgID: key.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -190,7 +190,7 @@ func TestCreateKey(t *testing.T) {
 		require.NoError(t, err)
 
 		// Normalize token.
-		resp := &api.CreateKeyResponse{Key: key, Token: createKey.Token}
+		resp := &api.CreateKeyResponse{Key: key, Token: createKey.GetToken()}
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
@@ -260,7 +260,7 @@ func TestCreateKey(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: key.OrgId, Role: api.Role_ADMIN,
+				OrgID: key.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -423,7 +423,7 @@ func TestListKeys(t *testing.T) {
 		listKeys, err := keySvc.ListKeys(ctx, &api.ListKeysRequest{})
 		t.Logf("listKeys, err: %+v, %v", listKeys, err)
 		require.NoError(t, err)
-		require.Equal(t, int32(3), listKeys.TotalSize)
+		require.Equal(t, int32(3), listKeys.GetTotalSize())
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
@@ -445,8 +445,8 @@ func TestListKeys(t *testing.T) {
 			random.Key("api-key", uuid.NewString()),
 		}
 
-		next, err := session.GeneratePageToken(keys[1].CreatedAt.AsTime(),
-			keys[1].Id)
+		next, err := session.GeneratePageToken(keys[1].GetCreatedAt().AsTime(),
+			keys[1].GetId())
 		require.NoError(t, err)
 
 		keyer := NewMockKeyer(gomock.NewController(t))
@@ -463,7 +463,7 @@ func TestListKeys(t *testing.T) {
 		listKeys, err := keySvc.ListKeys(ctx, &api.ListKeysRequest{PageSize: 2})
 		t.Logf("listKeys, err: %+v, %v", listKeys, err)
 		require.NoError(t, err)
-		require.Equal(t, int32(3), listKeys.TotalSize)
+		require.Equal(t, int32(3), listKeys.GetTotalSize())
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
@@ -555,7 +555,7 @@ func TestListKeys(t *testing.T) {
 		listKeys, err := keySvc.ListKeys(ctx, &api.ListKeysRequest{PageSize: 2})
 		t.Logf("listKeys, err: %+v, %v", listKeys, err)
 		require.NoError(t, err)
-		require.Equal(t, int32(3), listKeys.TotalSize)
+		require.Equal(t, int32(3), listKeys.GetTotalSize())
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758

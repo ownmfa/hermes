@@ -78,7 +78,7 @@ func (ai *AppIdentity) CreateApp(
 
 	req.App.OrgId = sess.OrgID
 
-	app, err := ai.appDAO.Create(ctx, req.App)
+	app, err := ai.appDAO.Create(ctx, req.GetApp())
 	if err != nil {
 		return nil, errToStatus(err)
 	}
@@ -101,7 +101,7 @@ func (ai *AppIdentity) GetApp(ctx context.Context, req *api.GetAppRequest) (
 		return nil, errPerm(api.Role_VIEWER)
 	}
 
-	app, err := ai.appDAO.Read(ctx, req.Id, sess.OrgID)
+	app, err := ai.appDAO.Read(ctx, req.GetId(), sess.OrgID)
 	if err != nil {
 		return nil, errToStatus(err)
 	}
@@ -119,28 +119,28 @@ func (ai *AppIdentity) UpdateApp(
 		return nil, errPerm(api.Role_ADMIN)
 	}
 
-	if req.App == nil {
+	if req.GetApp() == nil {
 		return nil, status.Error(codes.InvalidArgument,
 			req.Validate().Error())
 	}
 	req.App.OrgId = sess.OrgID
 
 	// Perform partial update if directed.
-	if req.UpdateMask != nil && len(req.UpdateMask.Paths) > 0 {
+	if len(req.GetUpdateMask().GetPaths()) > 0 {
 		// Normalize and validate field mask.
-		req.UpdateMask.Normalize()
-		if !req.UpdateMask.IsValid(req.App) {
+		req.GetUpdateMask().Normalize()
+		if !req.GetUpdateMask().IsValid(req.GetApp()) {
 			return nil, status.Error(codes.InvalidArgument,
 				"invalid field mask")
 		}
 
-		app, err := ai.appDAO.Read(ctx, req.App.Id, sess.OrgID)
+		app, err := ai.appDAO.Read(ctx, req.GetApp().GetId(), sess.OrgID)
 		if err != nil {
 			return nil, errToStatus(err)
 		}
 
-		fmutils.Filter(req.App, req.UpdateMask.Paths)
-		proto.Merge(app, req.App)
+		fmutils.Filter(req.GetApp(), req.GetUpdateMask().GetPaths())
+		proto.Merge(app, req.GetApp())
 		req.App = app
 	}
 
@@ -149,7 +149,7 @@ func (ai *AppIdentity) UpdateApp(
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	app, err := ai.appDAO.Update(ctx, req.App)
+	app, err := ai.appDAO.Update(ctx, req.GetApp())
 	if err != nil {
 		return nil, errToStatus(err)
 	}
@@ -166,7 +166,7 @@ func (ai *AppIdentity) DeleteApp(
 		return nil, errPerm(api.Role_ADMIN)
 	}
 
-	if err := ai.appDAO.Delete(ctx, req.Id, sess.OrgID); err != nil {
+	if err := ai.appDAO.Delete(ctx, req.GetId(), sess.OrgID); err != nil {
 		return nil, errToStatus(err)
 	}
 
@@ -188,18 +188,18 @@ func (ai *AppIdentity) ListApps(ctx context.Context, req *api.ListAppsRequest) (
 		return nil, errPerm(api.Role_VIEWER)
 	}
 
-	if req.PageSize == 0 {
+	if req.GetPageSize() == 0 {
 		req.PageSize = defaultPageSize
 	}
 
-	lBoundTS, prevID, err := session.ParsePageToken(req.PageToken)
+	lBoundTS, prevID, err := session.ParsePageToken(req.GetPageToken())
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid page token")
 	}
 
 	// Retrieve PageSize+1 entries to find last page.
 	apps, count, err := ai.appDAO.List(ctx, sess.OrgID, lBoundTS, prevID,
-		req.PageSize+1)
+		req.GetPageSize()+1)
 	if err != nil {
 		return nil, errToStatus(err)
 	}
@@ -207,12 +207,12 @@ func (ai *AppIdentity) ListApps(ctx context.Context, req *api.ListAppsRequest) (
 	resp := &api.ListAppsResponse{Apps: apps, TotalSize: count}
 
 	// Populate next page token.
-	if len(apps) == int(req.PageSize+1) {
+	if len(apps) == int(req.GetPageSize()+1) {
 		resp.Apps = apps[:len(apps)-1]
 
 		if resp.NextPageToken, err = session.GeneratePageToken(
-			apps[len(apps)-2].CreatedAt.AsTime(),
-			apps[len(apps)-2].Id); err != nil {
+			apps[len(apps)-2].GetCreatedAt().AsTime(),
+			apps[len(apps)-2].GetId()); err != nil {
 			// GeneratePageToken should not error based on a DB-derived UUID.
 			// Log the error and include the usable empty token.
 			logger := hlog.FromContext(ctx)

@@ -37,8 +37,8 @@ func TestAuth(t *testing.T) {
 	t.Logf("webToken, err: %v, %v", webToken, err)
 	require.NoError(t, err)
 
-	keyToken, err := session.GenerateKeyToken(key, uuid.NewString(), user.OrgId,
-		user.Role)
+	keyToken, err := session.GenerateKeyToken(key, uuid.NewString(), user.GetOrgId(),
+		user.GetRole())
 	t.Logf("keyToken, err: %v, %v", keyToken, err)
 	require.NoError(t, err)
 
@@ -61,13 +61,13 @@ func TestAuth(t *testing.T) {
 			[]string{"authorization", "Bearer " + webToken},
 			nil, nil,
 			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, false, nil, 0,
-			&api.Org{Id: user.OrgId, Status: api.Status_ACTIVE}, nil, 1, nil,
+			&api.Org{Id: user.GetOrgId(), Status: api.Status_ACTIVE}, nil, 1, nil,
 		},
 		{
 			[]string{"authorization", "Bearer " + keyToken},
 			nil, nil,
 			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, false, nil, 1,
-			&api.Org{Id: user.OrgId, Status: api.Status_ACTIVE}, nil, 1, nil,
+			&api.Org{Id: user.GetOrgId(), Status: api.Status_ACTIVE}, nil, 1, nil,
 		},
 		{
 			nil, errTestFunc,
@@ -112,14 +112,14 @@ func TestAuth(t *testing.T) {
 			[]string{"authorization", "Bearer " + webToken},
 			errTestFunc, nil,
 			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, false, nil, 0,
-			&api.Org{Id: user.OrgId, Status: api.Status_ACTIVE}, errTestFunc, 1,
+			&api.Org{Id: user.GetOrgId(), Status: api.Status_ACTIVE}, errTestFunc, 1,
 			status.Error(codes.Unauthenticated, "unauthorized"),
 		},
 		{
 			[]string{"authorization", "Bearer " + webToken},
 			errTestFunc, nil,
 			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, false, nil, 0,
-			&api.Org{Id: user.OrgId, Status: api.Status_DISABLED}, nil, 1,
+			&api.Org{Id: user.GetOrgId(), Status: api.Status_DISABLED}, nil, 1,
 			status.Error(codes.Unauthenticated, "unauthorized"),
 		},
 	}
@@ -136,7 +136,7 @@ func TestAuth(t *testing.T) {
 				Return(lTest.inpCache, "", lTest.inpCacheErr).
 				Times(lTest.inpCacheTimes)
 			orger := service.NewMockOrger(ctrl)
-			orger.EXPECT().Read(gomock.Any(), lTest.inpOrg.Id).
+			orger.EXPECT().Read(gomock.Any(), lTest.inpOrg.GetId()).
 				Return(lTest.inpOrg, lTest.inpOrgErr).Times(lTest.inpOrgTimes)
 
 			ctx, cancel := context.WithTimeout(context.Background(),

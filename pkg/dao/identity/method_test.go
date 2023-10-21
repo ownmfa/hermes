@@ -154,7 +154,7 @@ func TestMethodToOTP(t *testing.T) {
 
 			identity := random.HOTPIdentity("dao-identity", uuid.NewString(),
 				uuid.NewString())
-			identity.MethodOneof = lTest.inp.MethodOneof
+			identity.MethodOneof = lTest.inp.GetMethodOneof()
 
 			otp, meta, err := methodToOTP(identity)
 			t.Logf("otp, meta, err: %#v, %#v, %v", otp, meta, err)

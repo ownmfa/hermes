@@ -35,7 +35,7 @@ func TestCreateApp(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: app.OrgId, Role: api.Role_ADMIN,
+				OrgID: app.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -92,7 +92,7 @@ func TestCreateApp(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: app.OrgId, Role: api.Role_ADMIN,
+				OrgID: app.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -115,17 +115,17 @@ func TestGetApp(t *testing.T) {
 		retApp, _ := proto.Clone(app).(*api.App)
 
 		apper := NewMockApper(gomock.NewController(t))
-		apper.EXPECT().Read(gomock.Any(), app.Id, app.OrgId).Return(retApp,
+		apper.EXPECT().Read(gomock.Any(), app.GetId(), app.GetOrgId()).Return(retApp,
 			nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: app.OrgId, Role: api.Role_ADMIN,
+				OrgID: app.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(apper, nil, nil, nil, nil, nil, "")
-		getApp, err := aiSvc.GetApp(ctx, &api.GetAppRequest{Id: app.Id})
+		getApp, err := aiSvc.GetApp(ctx, &api.GetAppRequest{Id: app.GetId()})
 		t.Logf("app, getApp, err: %+v, %+v, %v", app, getApp, err)
 		require.NoError(t, err)
 
@@ -201,7 +201,7 @@ func TestUpdateApp(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: app.OrgId, Role: api.Role_ADMIN,
+				OrgID: app.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -225,27 +225,27 @@ func TestUpdateApp(t *testing.T) {
 		app := random.App("api-app", uuid.NewString())
 		retApp, _ := proto.Clone(app).(*api.App)
 		part := &api.App{
-			Id: app.Id, Name: random.String(10), DisplayName: random.String(10),
+			Id: app.GetId(), Name: random.String(10), DisplayName: random.String(10),
 			PushoverKey: random.String(30),
 		}
 		merged := &api.App{
-			Id: app.Id, OrgId: app.OrgId, Name: part.Name,
-			DisplayName: part.DisplayName, Email: app.Email,
-			PushoverKey: part.PushoverKey, SubjectTemplate: app.SubjectTemplate,
-			TextBodyTemplate: app.TextBodyTemplate,
-			HtmlBodyTemplate: app.HtmlBodyTemplate,
+			Id: app.GetId(), OrgId: app.GetOrgId(), Name: part.GetName(),
+			DisplayName: part.GetDisplayName(), Email: app.GetEmail(),
+			PushoverKey: part.GetPushoverKey(), SubjectTemplate: app.GetSubjectTemplate(),
+			TextBodyTemplate: app.GetTextBodyTemplate(),
+			HtmlBodyTemplate: app.GetHtmlBodyTemplate(),
 		}
 		retMerged, _ := proto.Clone(merged).(*api.App)
 
 		apper := NewMockApper(gomock.NewController(t))
-		apper.EXPECT().Read(gomock.Any(), app.Id, app.OrgId).Return(retApp,
+		apper.EXPECT().Read(gomock.Any(), app.GetId(), app.GetOrgId()).Return(retApp,
 			nil).Times(1)
 		apper.EXPECT().Update(gomock.Any(), matcher.NewProtoMatcher(merged)).
 			Return(retMerged, nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: app.OrgId, Role: api.Role_ADMIN,
+				OrgID: app.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -341,7 +341,7 @@ func TestUpdateApp(t *testing.T) {
 		part := &api.App{Id: uuid.NewString(), Name: random.String(10)}
 
 		apper := NewMockApper(gomock.NewController(t))
-		apper.EXPECT().Read(gomock.Any(), part.Id, orgID).
+		apper.EXPECT().Read(gomock.Any(), part.GetId(), orgID).
 			Return(nil, dao.ErrNotFound).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
@@ -369,7 +369,7 @@ func TestUpdateApp(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: app.OrgId, Role: api.Role_ADMIN,
+				OrgID: app.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -396,7 +396,7 @@ func TestUpdateApp(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: app.OrgId, Role: api.Role_ADMIN,
+				OrgID: app.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -510,7 +510,7 @@ func TestListApps(t *testing.T) {
 		listApps, err := aiSvc.ListApps(ctx, &api.ListAppsRequest{})
 		t.Logf("listApps, err: %+v, %v", listApps, err)
 		require.NoError(t, err)
-		require.Equal(t, int32(3), listApps.TotalSize)
+		require.Equal(t, int32(3), listApps.GetTotalSize())
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
@@ -532,8 +532,8 @@ func TestListApps(t *testing.T) {
 			random.App("api-app", uuid.NewString()),
 		}
 
-		next, err := session.GeneratePageToken(apps[1].CreatedAt.AsTime(),
-			apps[1].Id)
+		next, err := session.GeneratePageToken(apps[1].GetCreatedAt().AsTime(),
+			apps[1].GetId())
 		require.NoError(t, err)
 
 		apper := NewMockApper(gomock.NewController(t))
@@ -550,7 +550,7 @@ func TestListApps(t *testing.T) {
 		listApps, err := aiSvc.ListApps(ctx, &api.ListAppsRequest{PageSize: 2})
 		t.Logf("listApps, err: %+v, %v", listApps, err)
 		require.NoError(t, err)
-		require.Equal(t, int32(3), listApps.TotalSize)
+		require.Equal(t, int32(3), listApps.GetTotalSize())
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
@@ -657,7 +657,7 @@ func TestListApps(t *testing.T) {
 		listApps, err := aiSvc.ListApps(ctx, &api.ListAppsRequest{PageSize: 2})
 		t.Logf("listApps, err: %+v, %v", listApps, err)
 		require.NoError(t, err)
-		require.Equal(t, int32(3), listApps.TotalSize)
+		require.Equal(t, int32(3), listApps.GetTotalSize())
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758

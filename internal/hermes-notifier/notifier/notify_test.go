@@ -32,14 +32,14 @@ func TestNotifyMessages(t *testing.T) {
 
 	app := random.App("not", uuid.NewString())
 	app.PushoverKey = ""
-	smsIdentity := random.SMSIdentity("not", app.OrgId, app.Id)
-	pushoverIdentity := random.PushoverIdentity("not", app.OrgId, app.Id)
-	emailIdentity := random.EmailIdentity("not", app.OrgId, app.Id)
+	smsIdentity := random.SMSIdentity("not", app.GetOrgId(), app.GetId())
+	pushoverIdentity := random.PushoverIdentity("not", app.GetOrgId(), app.GetId())
+	emailIdentity := random.EmailIdentity("not", app.GetOrgId(), app.GetId())
 	traceID := uuid.New()
 
 	appByKey := random.App("not", uuid.NewString())
 	appByKey.PushoverKey = random.String(30)
-	identityByKey := random.PushoverIdentity("not", appByKey.OrgId, appByKey.Id)
+	identityByKey := random.PushoverIdentity("not", appByKey.GetOrgId(), appByKey.GetId())
 
 	knownKey, err := hex.DecodeString("b76c5da0d71b5646ed38b483532cded2622d07" +
 		"2a5d175030b6540169b7380d58")
@@ -57,25 +57,25 @@ func TestNotifyMessages(t *testing.T) {
 	}{
 		{
 			&message.NotifierIn{
-				OrgId: app.OrgId, AppId: app.Id, IdentityId: smsIdentity.Id,
+				OrgId: app.GetOrgId(), AppId: app.GetId(), IdentityId: smsIdentity.GetId(),
 				TraceId: traceID[:],
 			}, app, smsIdentity, smsPushoverExpire, 1, 0, 0, 0,
 		},
 		{
 			&message.NotifierIn{
-				OrgId: app.OrgId, AppId: app.Id,
-				IdentityId: pushoverIdentity.Id, TraceId: traceID[:],
+				OrgId: app.GetOrgId(), AppId: app.GetId(),
+				IdentityId: pushoverIdentity.GetId(), TraceId: traceID[:],
 			}, app, pushoverIdentity, smsPushoverExpire, 0, 1, 0, 0,
 		},
 		{
 			&message.NotifierIn{
-				OrgId: appByKey.OrgId, AppId: appByKey.Id,
-				IdentityId: identityByKey.Id, TraceId: traceID[:],
+				OrgId: appByKey.GetOrgId(), AppId: appByKey.GetId(),
+				IdentityId: identityByKey.GetId(), TraceId: traceID[:],
 			}, appByKey, identityByKey, smsPushoverExpire, 0, 0, 1, 0,
 		},
 		{
 			&message.NotifierIn{
-				OrgId: app.OrgId, AppId: app.Id, IdentityId: emailIdentity.Id,
+				OrgId: app.GetOrgId(), AppId: app.GetId(), IdentityId: emailIdentity.GetId(),
 				TraceId: traceID[:],
 			}, app, emailIdentity, emailExpire, 0, 0, 0, 1,
 		},
@@ -101,36 +101,36 @@ func TestNotifyMessages(t *testing.T) {
 
 			ctrl := gomock.NewController(t)
 			identityer := NewMockidentityer(ctrl)
-			identityer.EXPECT().Read(gomock.Any(), lTest.inpNIn.IdentityId,
-				lTest.inpNIn.OrgId, lTest.inpNIn.AppId).
+			identityer.EXPECT().Read(gomock.Any(), lTest.inpNIn.GetIdentityId(),
+				lTest.inpNIn.GetOrgId(), lTest.inpNIn.GetAppId()).
 				Return(lTest.inpIdentity, otp, nil).Times(1)
 
 			cacher := cache.NewMockCacher(ctrl)
 			cacher.EXPECT().Incr(gomock.Any(), key.HOTPCounter(
-				lTest.inpNIn.OrgId, lTest.inpNIn.AppId,
-				lTest.inpNIn.IdentityId)).Return(int64(5), nil).Times(1)
+				lTest.inpNIn.GetOrgId(), lTest.inpNIn.GetAppId(),
+				lTest.inpNIn.GetIdentityId())).Return(int64(5), nil).Times(1)
 			cacher.EXPECT().SetIfNotExistTTL(gomock.Any(), key.Expire(
-				lTest.inpNIn.OrgId, lTest.inpNIn.AppId, lTest.inpNIn.IdentityId,
+				lTest.inpNIn.GetOrgId(), lTest.inpNIn.GetAppId(), lTest.inpNIn.GetIdentityId(),
 				"861821"), 1, lTest.inpExpire).Return(true, nil).Times(1)
 
 			apper := NewMockapper(ctrl)
-			apper.EXPECT().Read(gomock.Any(), lTest.inpNIn.AppId,
-				lTest.inpNIn.OrgId).Return(lTest.inpApp, nil).Times(1)
+			apper.EXPECT().Read(gomock.Any(), lTest.inpNIn.GetAppId(),
+				lTest.inpNIn.GetOrgId()).Return(lTest.inpApp, nil).Times(1)
 
 			notifier := notify.NewMockNotifier(ctrl)
 			notifier.EXPECT().SMS(gomock.Any(),
-				smsIdentity.GetSmsMethod().Phone, lTest.inpApp.DisplayName,
+				smsIdentity.GetSmsMethod().GetPhone(), lTest.inpApp.GetDisplayName(),
 				"861821").Return(nil).Times(lTest.inpSMSTimes)
 			notifier.EXPECT().Pushover(gomock.Any(),
-				pushoverIdentity.GetPushoverMethod().PushoverKey,
-				lTest.inpApp.DisplayName, "861821").Return(nil).
+				pushoverIdentity.GetPushoverMethod().GetPushoverKey(),
+				lTest.inpApp.GetDisplayName(), "861821").Return(nil).
 				Times(lTest.inpPushoverTimes)
 			notifier.EXPECT().PushoverByApp(gomock.Any(),
-				lTest.inpApp.PushoverKey,
-				identityByKey.GetPushoverMethod().PushoverKey, gomock.Any(),
+				lTest.inpApp.GetPushoverKey(),
+				identityByKey.GetPushoverMethod().GetPushoverKey(), gomock.Any(),
 				gomock.Any()).Return(nil).Times(lTest.inpPushoverByAppTimes)
-			notifier.EXPECT().Email(gomock.Any(), lTest.inpApp.DisplayName,
-				lTest.inpApp.Email, emailIdentity.GetEmailMethod().Email,
+			notifier.EXPECT().Email(gomock.Any(), lTest.inpApp.GetDisplayName(),
+				lTest.inpApp.GetEmail(), emailIdentity.GetEmailMethod().GetEmail(),
 				gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).
 				Times(lTest.inpEmailTimes)
 
@@ -172,9 +172,9 @@ func TestNotifyMessagesError(t *testing.T) {
 
 	app := random.App("not", uuid.NewString())
 	app.PushoverKey = ""
-	smsIdentity := random.SMSIdentity("not", app.OrgId, app.Id)
-	pushoverIdentity := random.PushoverIdentity("not", app.OrgId, app.Id)
-	emailIdentity := random.EmailIdentity("not", app.OrgId, app.Id)
+	smsIdentity := random.SMSIdentity("not", app.GetOrgId(), app.GetId())
+	pushoverIdentity := random.PushoverIdentity("not", app.GetOrgId(), app.GetId())
+	emailIdentity := random.EmailIdentity("not", app.GetOrgId(), app.GetId())
 
 	badTemplApp := random.App("not", uuid.NewString())
 	badTemplApp.SubjectTemplate = `{{if`
@@ -295,7 +295,7 @@ func TestNotifyMessagesError(t *testing.T) {
 
 			notifier := notify.NewMockNotifier(ctrl)
 			notifier.EXPECT().SMS(gomock.Any(),
-				smsIdentity.GetSmsMethod().Phone, app.DisplayName, "861821").
+				smsIdentity.GetSmsMethod().GetPhone(), app.GetDisplayName(), "861821").
 				DoAndReturn(func(
 					ctx interface{}, phone interface{}, displayName interface{},
 					passcode interface{},
@@ -305,8 +305,8 @@ func TestNotifyMessagesError(t *testing.T) {
 					return lTest.inpSMSErr
 				}).Times(lTest.inpSMSTimes)
 			notifier.EXPECT().Pushover(gomock.Any(),
-				pushoverIdentity.GetPushoverMethod().PushoverKey,
-				app.DisplayName, "861821").DoAndReturn(func(
+				pushoverIdentity.GetPushoverMethod().GetPushoverKey(),
+				app.GetDisplayName(), "861821").DoAndReturn(func(
 				ctx interface{}, userKey interface{}, displayName interface{},
 				passcode interface{},
 			) error {
@@ -314,8 +314,8 @@ func TestNotifyMessagesError(t *testing.T) {
 
 				return lTest.inpPushoverErr
 			}).Times(lTest.inpPushoverTimes)
-			notifier.EXPECT().Email(gomock.Any(), app.DisplayName, app.Email,
-				emailIdentity.GetEmailMethod().Email, gomock.Any(),
+			notifier.EXPECT().Email(gomock.Any(), app.GetDisplayName(), app.GetEmail(),
+				emailIdentity.GetEmailMethod().GetEmail(), gomock.Any(),
 				gomock.Any(), gomock.Any()).DoAndReturn(func(
 				ctx interface{}, displayName interface{}, from interface{},
 				to interface{}, subject interface{}, body interface{},

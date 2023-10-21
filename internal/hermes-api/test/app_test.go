@@ -31,10 +31,10 @@ func TestCreateApp(t *testing.T) {
 			&api.CreateAppRequest{App: app})
 		t.Logf("createApp, err: %+v, %v", createApp, err)
 		require.NoError(t, err)
-		require.NotEqual(t, app.Id, createApp.Id)
-		require.WithinDuration(t, time.Now(), createApp.CreatedAt.AsTime(),
+		require.NotEqual(t, app.GetId(), createApp.GetId())
+		require.WithinDuration(t, time.Now(), createApp.GetCreatedAt().AsTime(),
 			2*time.Second)
-		require.WithinDuration(t, time.Now(), createApp.UpdatedAt.AsTime(),
+		require.WithinDuration(t, time.Now(), createApp.GetUpdatedAt().AsTime(),
 			2*time.Second)
 	})
 
@@ -96,7 +96,7 @@ func TestGetApp(t *testing.T) {
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		getApp, err := aiCli.GetApp(ctx,
-			&api.GetAppRequest{Id: createApp.Id})
+			&api.GetAppRequest{Id: createApp.GetId()})
 		t.Logf("getApp, err: %+v, %v", getApp, err)
 		require.NoError(t, err)
 
@@ -130,7 +130,7 @@ func TestGetApp(t *testing.T) {
 
 		secCli := api.NewAppIdentityServiceClient(secondaryAdminGRPCConn)
 		getApp, err := secCli.GetApp(ctx,
-			&api.GetAppRequest{Id: createApp.Id})
+			&api.GetAppRequest{Id: createApp.GetId()})
 		t.Logf("getApp, err: %+v, %v", getApp, err)
 		require.Nil(t, getApp)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
@@ -165,17 +165,17 @@ func TestUpdateApp(t *testing.T) {
 			&api.UpdateAppRequest{App: createApp})
 		t.Logf("updateApp, err: %+v, %v", updateApp, err)
 		require.NoError(t, err)
-		require.Equal(t, createApp.Name, updateApp.Name)
-		require.Equal(t, createApp.DisplayName, updateApp.DisplayName)
-		require.Equal(t, createApp.Email, updateApp.Email)
-		require.Equal(t, createApp.PushoverKey, updateApp.PushoverKey)
-		require.True(t, updateApp.UpdatedAt.AsTime().After(
-			updateApp.CreatedAt.AsTime()))
-		require.WithinDuration(t, createApp.CreatedAt.AsTime(),
-			updateApp.UpdatedAt.AsTime(), 2*time.Second)
+		require.Equal(t, createApp.GetName(), updateApp.GetName())
+		require.Equal(t, createApp.GetDisplayName(), updateApp.GetDisplayName())
+		require.Equal(t, createApp.GetEmail(), updateApp.GetEmail())
+		require.Equal(t, createApp.GetPushoverKey(), updateApp.GetPushoverKey())
+		require.True(t, updateApp.GetUpdatedAt().AsTime().After(
+			updateApp.GetCreatedAt().AsTime()))
+		require.WithinDuration(t, createApp.GetCreatedAt().AsTime(),
+			updateApp.GetUpdatedAt().AsTime(), 2*time.Second)
 
 		getApp, err := aiCli.GetApp(ctx,
-			&api.GetAppRequest{Id: createApp.Id})
+			&api.GetAppRequest{Id: createApp.GetId()})
 		t.Logf("getApp, err: %+v, %v", getApp, err)
 		require.NoError(t, err)
 
@@ -202,7 +202,7 @@ func TestUpdateApp(t *testing.T) {
 
 		// Update app fields.
 		part := &api.App{
-			Id: createApp.Id, Name: "api-app-" + random.String(10),
+			Id: createApp.GetId(), Name: "api-app-" + random.String(10),
 			DisplayName: "api-app-" + random.String(10), Email: "api-app-" +
 				random.Email(), PushoverKey: "api-app-" + random.String(30),
 		}
@@ -214,17 +214,17 @@ func TestUpdateApp(t *testing.T) {
 		})
 		t.Logf("updateApp, err: %+v, %v", updateApp, err)
 		require.NoError(t, err)
-		require.Equal(t, part.Name, updateApp.Name)
-		require.Equal(t, part.DisplayName, updateApp.DisplayName)
-		require.Equal(t, part.Email, updateApp.Email)
-		require.Equal(t, part.PushoverKey, updateApp.PushoverKey)
-		require.True(t, updateApp.UpdatedAt.AsTime().After(
-			updateApp.CreatedAt.AsTime()))
-		require.WithinDuration(t, createApp.CreatedAt.AsTime(),
-			updateApp.UpdatedAt.AsTime(), 2*time.Second)
+		require.Equal(t, part.GetName(), updateApp.GetName())
+		require.Equal(t, part.GetDisplayName(), updateApp.GetDisplayName())
+		require.Equal(t, part.GetEmail(), updateApp.GetEmail())
+		require.Equal(t, part.GetPushoverKey(), updateApp.GetPushoverKey())
+		require.True(t, updateApp.GetUpdatedAt().AsTime().After(
+			updateApp.GetCreatedAt().AsTime()))
+		require.WithinDuration(t, createApp.GetCreatedAt().AsTime(),
+			updateApp.GetUpdatedAt().AsTime(), 2*time.Second)
 
 		getApp, err := aiCli.GetApp(ctx,
-			&api.GetAppRequest{Id: createApp.Id})
+			&api.GetAppRequest{Id: createApp.GetId()})
 		t.Logf("getApp, err: %+v, %v", getApp, err)
 		require.NoError(t, err)
 
@@ -411,7 +411,7 @@ func TestDeleteApp(t *testing.T) {
 		require.NoError(t, err)
 
 		_, err = aiCli.DeleteApp(ctx,
-			&api.DeleteAppRequest{Id: createApp.Id})
+			&api.DeleteAppRequest{Id: createApp.GetId()})
 		t.Logf("err: %v", err)
 		require.NoError(t, err)
 
@@ -424,7 +424,7 @@ func TestDeleteApp(t *testing.T) {
 
 			aiCli := api.NewAppIdentityServiceClient(globalAdminKeyGRPCConn)
 			getApp, err := aiCli.GetApp(ctx,
-				&api.GetAppRequest{Id: createApp.Id})
+				&api.GetAppRequest{Id: createApp.GetId()})
 			t.Logf("getApp, err: %+v, %v", getApp, err)
 			require.Nil(t, getApp)
 			require.EqualError(t, err, "rpc error: code = NotFound desc = "+
@@ -475,7 +475,7 @@ func TestDeleteApp(t *testing.T) {
 
 		secCli := api.NewAppIdentityServiceClient(secondaryAdminGRPCConn)
 		_, err = secCli.DeleteApp(ctx,
-			&api.DeleteAppRequest{Id: createApp.Id})
+			&api.DeleteAppRequest{Id: createApp.GetId()})
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
 			"not found")
@@ -499,8 +499,8 @@ func TestListApps(t *testing.T) {
 		t.Logf("createApp, err: %+v, %v", createApp, err)
 		require.NoError(t, err)
 
-		appIDs = append(appIDs, createApp.Id)
-		appNames = append(appNames, createApp.Name)
+		appIDs = append(appIDs, createApp.GetId())
+		appNames = append(appNames, createApp.GetName())
 	}
 
 	t.Run("List apps by valid org ID", func(t *testing.T) {
@@ -513,13 +513,13 @@ func TestListApps(t *testing.T) {
 		listApps, err := aiCli.ListApps(ctx, &api.ListAppsRequest{})
 		t.Logf("listApps, err: %+v, %v", listApps, err)
 		require.NoError(t, err)
-		require.GreaterOrEqual(t, len(listApps.Apps), 3)
-		require.GreaterOrEqual(t, listApps.TotalSize, int32(3))
+		require.GreaterOrEqual(t, len(listApps.GetApps()), 3)
+		require.GreaterOrEqual(t, listApps.GetTotalSize(), int32(3))
 
 		var found bool
-		for _, app := range listApps.Apps {
-			if app.Id == appIDs[len(appIDs)-1] &&
-				app.Name == appNames[len(appNames)-1] {
+		for _, app := range listApps.GetApps() {
+			if app.GetId() == appIDs[len(appIDs)-1] &&
+				app.GetName() == appNames[len(appNames)-1] {
 				found = true
 			}
 		}
@@ -537,17 +537,17 @@ func TestListApps(t *testing.T) {
 			&api.ListAppsRequest{PageSize: 2})
 		t.Logf("listApps, err: %+v, %v", listApps, err)
 		require.NoError(t, err)
-		require.Len(t, listApps.Apps, 2)
-		require.NotEmpty(t, listApps.NextPageToken)
-		require.GreaterOrEqual(t, listApps.TotalSize, int32(3))
+		require.Len(t, listApps.GetApps(), 2)
+		require.NotEmpty(t, listApps.GetNextPageToken())
+		require.GreaterOrEqual(t, listApps.GetTotalSize(), int32(3))
 
 		nextApps, err := aiCli.ListApps(ctx, &api.ListAppsRequest{
-			PageSize: 2, PageToken: listApps.NextPageToken,
+			PageSize: 2, PageToken: listApps.GetNextPageToken(),
 		})
 		t.Logf("nextApps, err: %+v, %v", nextApps, err)
 		require.NoError(t, err)
-		require.GreaterOrEqual(t, len(nextApps.Apps), 1)
-		require.GreaterOrEqual(t, nextApps.TotalSize, int32(3))
+		require.GreaterOrEqual(t, len(nextApps.GetApps()), 1)
+		require.GreaterOrEqual(t, nextApps.GetTotalSize(), int32(3))
 	})
 
 	t.Run("Lists are isolated by org ID", func(t *testing.T) {
@@ -560,8 +560,8 @@ func TestListApps(t *testing.T) {
 		listApps, err := secCli.ListApps(ctx, &api.ListAppsRequest{})
 		t.Logf("listApps, err: %+v, %v", listApps, err)
 		require.NoError(t, err)
-		require.Len(t, listApps.Apps, 0)
-		require.Equal(t, int32(0), listApps.TotalSize)
+		require.Len(t, listApps.GetApps(), 0)
+		require.Equal(t, int32(0), listApps.GetTotalSize())
 	})
 
 	t.Run("List apps by invalid page token", func(t *testing.T) {

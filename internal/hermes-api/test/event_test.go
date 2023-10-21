@@ -35,7 +35,7 @@ func TestListEvents(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.HOTPIdentity("api-event", uuid.NewString(),
-					createApp.Id),
+					createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -44,8 +44,8 @@ func TestListEvents(t *testing.T) {
 
 		for i := 0; i < 5; i++ {
 			event := random.Event("api-event", globalAdminOrgID)
-			event.AppId = createApp.Id
-			event.IdentityId = createIdentity.Identity.Id
+			event.AppId = createApp.GetId()
+			event.IdentityId = createIdentity.GetIdentity().GetId()
 			events = append(events, event)
 
 			ctx, cancel := context.WithTimeout(context.Background(),
@@ -58,8 +58,8 @@ func TestListEvents(t *testing.T) {
 		}
 
 		sort.Slice(events, func(i, j int) bool {
-			return events[i].CreatedAt.AsTime().After(
-				events[j].CreatedAt.AsTime())
+			return events[i].GetCreatedAt().AsTime().After(
+				events[j].GetCreatedAt().AsTime())
 		})
 
 		ctx, cancel = context.WithTimeout(context.Background(), testTimeout)
@@ -68,14 +68,13 @@ func TestListEvents(t *testing.T) {
 		// Verify results by identity ID.
 		evCli := api.NewEventServiceClient(globalAdminGRPCConn)
 		listEvents, err := evCli.ListEvents(ctx, &api.ListEventsRequest{
-			IdentityId: createIdentity.Identity.Id,
-			EndTime:    events[0].CreatedAt,
-			StartTime: timestamppb.New(events[len(events)-1].CreatedAt.
-				AsTime().Add(-time.Microsecond)),
+			IdentityId: createIdentity.GetIdentity().GetId(),
+			EndTime:    events[0].GetCreatedAt(),
+			StartTime:  timestamppb.New(events[len(events)-1].GetCreatedAt().AsTime().Add(-time.Microsecond)),
 		})
 		t.Logf("listEvents, err: %+v, %v", listEvents, err)
 		require.NoError(t, err)
-		require.Len(t, listEvents.Events, len(events))
+		require.Len(t, listEvents.GetEvents(), len(events))
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
@@ -86,12 +85,12 @@ func TestListEvents(t *testing.T) {
 
 		// Verify results by identity ID without oldest event.
 		listEventsTS, err := evCli.ListEvents(ctx, &api.ListEventsRequest{
-			IdentityId: createIdentity.Identity.Id,
-			StartTime:  events[len(events)-1].CreatedAt,
+			IdentityId: createIdentity.GetIdentity().GetId(),
+			StartTime:  events[len(events)-1].GetCreatedAt(),
 		})
 		t.Logf("listEventsTS, err: %+v, %v", listEventsTS, err)
 		require.NoError(t, err)
-		require.Len(t, listEventsTS.Events, len(events)-1)
+		require.Len(t, listEventsTS.GetEvents(), len(events)-1)
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
@@ -113,7 +112,7 @@ func TestListEvents(t *testing.T) {
 		t.Logf("createOrg, err: %+v, %v", createOrg, err)
 		require.NoError(t, err)
 
-		event := random.Event("api-event", createOrg.Id)
+		event := random.Event("api-event", createOrg.GetId())
 
 		err = globalEvDAO.Create(ctx, event)
 		t.Logf("err: %#v", err)
@@ -121,11 +120,11 @@ func TestListEvents(t *testing.T) {
 
 		evCli := api.NewEventServiceClient(globalAdminGRPCConn)
 		listEvents, err := evCli.ListEvents(ctx, &api.ListEventsRequest{
-			IdentityId: event.IdentityId,
+			IdentityId: event.GetIdentityId(),
 		})
 		t.Logf("listEvents, err: %+v, %v", listEvents, err)
 		require.NoError(t, err)
-		require.Len(t, listEvents.Events, 0)
+		require.Len(t, listEvents.GetEvents(), 0)
 	})
 
 	t.Run("List events by invalid time range", func(t *testing.T) {
@@ -185,8 +184,8 @@ func TestLatestEvents(t *testing.T) {
 		}
 
 		sort.Slice(events, func(i, j int) bool {
-			return events[i].CreatedAt.AsTime().After(
-				events[j].CreatedAt.AsTime())
+			return events[i].GetCreatedAt().AsTime().After(
+				events[j].GetCreatedAt().AsTime())
 		})
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
@@ -197,12 +196,12 @@ func TestLatestEvents(t *testing.T) {
 		latEvents, err := evCli.LatestEvents(ctx, &api.LatestEventsRequest{})
 		t.Logf("latEvents, err: %+v, %v", latEvents, err)
 		require.NoError(t, err)
-		require.GreaterOrEqual(t, len(latEvents.Events), 5)
+		require.GreaterOrEqual(t, len(latEvents.GetEvents()), 5)
 
 		var found bool
-		for _, event := range latEvents.Events {
-			if event.AppId == events[len(events)-1].AppId &&
-				event.IdentityId == events[len(events)-1].IdentityId {
+		for _, event := range latEvents.GetEvents() {
+			if event.GetAppId() == events[len(events)-1].GetAppId() &&
+				event.GetIdentityId() == events[len(events)-1].GetIdentityId() {
 				found = true
 			}
 		}
@@ -211,13 +210,13 @@ func TestLatestEvents(t *testing.T) {
 		// Verify results by app ID and identity ID.
 		latEventsAppIDIdentityID, err := evCli.LatestEvents(ctx,
 			&api.LatestEventsRequest{
-				AppId:      events[len(events)-1].AppId,
-				IdentityId: events[len(events)-1].IdentityId,
+				AppId:      events[len(events)-1].GetAppId(),
+				IdentityId: events[len(events)-1].GetIdentityId(),
 			})
 		t.Logf("latEventsAppIDIdentityID, err: %+v, %v",
 			latEventsAppIDIdentityID, err)
 		require.NoError(t, err)
-		require.Len(t, latEventsAppIDIdentityID.Events, 1)
+		require.Len(t, latEventsAppIDIdentityID.GetEvents(), 1)
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
@@ -231,10 +230,10 @@ func TestLatestEvents(t *testing.T) {
 
 		// Verify results by app ID.
 		latEventsAppID, err := evCli.LatestEvents(ctx,
-			&api.LatestEventsRequest{AppId: events[0].AppId})
+			&api.LatestEventsRequest{AppId: events[0].GetAppId()})
 		t.Logf("latEventsAppID, err: %+v, %v", latEventsAppID, err)
 		require.NoError(t, err)
-		require.Len(t, latEventsAppID.Events, 1)
+		require.Len(t, latEventsAppID.GetEvents(), 1)
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
@@ -248,10 +247,10 @@ func TestLatestEvents(t *testing.T) {
 
 		// Verify results by identity ID.
 		latEventsIdentityID, err := evCli.LatestEvents(ctx,
-			&api.LatestEventsRequest{IdentityId: events[1].IdentityId})
+			&api.LatestEventsRequest{IdentityId: events[1].GetIdentityId()})
 		t.Logf("latEventsIdentityID, err: %+v, %v", latEventsIdentityID, err)
 		require.NoError(t, err)
-		require.Len(t, latEventsIdentityID.Events, 1)
+		require.Len(t, latEventsIdentityID.GetEvents(), 1)
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
@@ -274,7 +273,7 @@ func TestLatestEvents(t *testing.T) {
 		t.Logf("createOrg, err: %+v, %v", createOrg, err)
 		require.NoError(t, err)
 
-		event := random.Event("api-event", createOrg.Id)
+		event := random.Event("api-event", createOrg.GetId())
 
 		err = globalEvDAO.Create(ctx, event)
 		t.Logf("err: %#v", err)
@@ -284,7 +283,7 @@ func TestLatestEvents(t *testing.T) {
 		latEvents, err := evCli.LatestEvents(ctx, &api.LatestEventsRequest{})
 		t.Logf("latEvents, err: %+v, %v", latEvents, err)
 		require.NoError(t, err)
-		require.Len(t, latEvents.Events, 0)
+		require.Len(t, latEvents.GetEvents(), 0)
 	})
 
 	t.Run("Latest events by invalid identity ID", func(t *testing.T) {

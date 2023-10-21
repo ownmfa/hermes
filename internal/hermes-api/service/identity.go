@@ -56,18 +56,18 @@ type Identityer interface {
 func (ai *AppIdentity) validatePlan(
 	ctx context.Context, orgPlan api.Plan, i *api.Identity,
 ) error {
-	switch m := i.MethodOneof.(type) {
+	switch m := i.GetMethodOneof().(type) {
 	case *api.Identity_SmsMethod:
 		if orgPlan < api.Plan_PRO {
 			return errPlan(api.Plan_PRO)
 		}
 
-		if !rePhone.MatchString(m.SmsMethod.Phone) {
+		if !rePhone.MatchString(m.SmsMethod.GetPhone()) {
 			return status.Error(codes.InvalidArgument,
 				"invalid E.164 phone number")
 		}
 
-		if err := ai.notify.ValidateSMS(ctx, m.SmsMethod.Phone); err != nil {
+		if err := ai.notify.ValidateSMS(ctx, m.SmsMethod.GetPhone()); err != nil {
 			return errToStatus(err)
 		}
 	case *api.Identity_PushoverMethod:
@@ -76,7 +76,7 @@ func (ai *AppIdentity) validatePlan(
 		}
 
 		if err := ai.notify.ValidatePushover(
-			m.PushoverMethod.PushoverKey); err != nil {
+			m.PushoverMethod.GetPushoverKey()); err != nil {
 			return errToStatus(err)
 		}
 	case *api.Identity_EmailMethod:
@@ -107,13 +107,13 @@ func (ai *AppIdentity) CreateIdentity(
 	}
 
 	// Validate notification methods and apply plan limits.
-	if err := ai.validatePlan(ctx, sess.OrgPlan, req.Identity); err != nil {
+	if err := ai.validatePlan(ctx, sess.OrgPlan, req.GetIdentity()); err != nil {
 		return nil, err
 	}
 
 	req.Identity.OrgId = sess.OrgID
 
-	identity, otp, retSecret, err := ai.identDAO.Create(ctx, req.Identity)
+	identity, otp, retSecret, err := ai.identDAO.Create(ctx, req.GetIdentity())
 	if err != nil {
 		return nil, errToStatus(err)
 	}
@@ -122,35 +122,35 @@ func (ai *AppIdentity) CreateIdentity(
 	if retSecret {
 		resp.Secret = otp.Secret()
 
-		app, err := ai.appDAO.Read(ctx, identity.AppId, sess.OrgID)
+		app, err := ai.appDAO.Read(ctx, identity.GetAppId(), sess.OrgID)
 		if err != nil {
 			return nil, errToStatus(err)
 		}
 
-		resp.Qr, err = otp.QR(app.DisplayName)
+		resp.Qr, err = otp.QR(app.GetDisplayName())
 		if err != nil {
 			return nil, errToStatus(err)
 		}
 	}
 
 	// Populate pregenerated backup codes.
-	if m, ok := identity.MethodOneof.(*api.Identity_BackupCodesMethod); ok {
-		for i := 0; i < int(m.BackupCodesMethod.Passcodes); i++ {
+	if m, ok := identity.GetMethodOneof().(*api.Identity_BackupCodesMethod); ok {
+		for i := 0; i < int(m.BackupCodesMethod.GetPasscodes()); i++ {
 			passcode, err := otp.HOTP(int64(i + 10))
 			if err != nil {
 				return nil, errToStatus(err)
 			}
 
-			resp.Passcodes = append(resp.Passcodes, passcode)
+			resp.Passcodes = append(resp.GetPasscodes(), passcode)
 		}
 	}
 
 	// Failure to write an event is non-fatal, but should be logged for
 	// investigation.
 	event := &api.Event{
-		OrgId:      identity.OrgId,
-		AppId:      identity.AppId,
-		IdentityId: identity.Id,
+		OrgId:      identity.GetOrgId(),
+		AppId:      identity.GetAppId(),
+		IdentityId: identity.GetId(),
 		Status:     api.EventStatus_IDENTITY_CREATED,
 		TraceId:    sess.TraceID.String(),
 	}
@@ -177,18 +177,18 @@ func (ai *AppIdentity) verify(
 		return err
 	}
 
-	if identity.Status != expStatus {
+	if identity.GetStatus() != expStatus {
 		return fmt.Errorf("%w %s", errExpStatus,
 			strings.ToLower(expStatus.String()))
 	}
 
 	// Check passcode expiration for methods that utilize it. Continue to
 	// verification, even if found, to keep HOTP counters in sync.
-	switch identity.MethodOneof.(type) {
+	switch identity.GetMethodOneof().(type) {
 	case *api.Identity_SmsMethod, *api.Identity_PushoverMethod,
 		*api.Identity_EmailMethod:
-		ok, _, err := ai.cache.GetI(ctx, key.Expire(identity.OrgId,
-			identity.AppId, identity.Id, passcode))
+		ok, _, err := ai.cache.GetI(ctx, key.Expire(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId(), passcode))
 		if err != nil {
 			return err
 		}
@@ -199,9 +199,9 @@ func (ai *AppIdentity) verify(
 
 	// Disallow passcode reuse, even when counter tracking would prevent it. Do
 	// not expire to support backup codes.
-	if _, ok := identity.MethodOneof.(*api.Identity_SecurityQuestionsMethod); !ok {
-		ok, err := ai.cache.SetIfNotExist(ctx, ikey.Reuse(identity.OrgId,
-			identity.AppId, identity.Id, passcode), 1)
+	if _, ok := identity.GetMethodOneof().(*api.Identity_SecurityQuestionsMethod); !ok {
+		ok, err := ai.cache.SetIfNotExist(ctx, ikey.Reuse(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId(), passcode), 1)
 		if err != nil {
 			return err
 		}
@@ -212,21 +212,21 @@ func (ai *AppIdentity) verify(
 
 	// Add logging fields.
 	logger := hlog.FromContext(ctx)
-	logger.Logger = logger.WithField("appID", identity.AppId)
-	logger.Logger = logger.WithField("identityID", identity.Id)
+	logger.Logger = logger.WithField("appID", identity.GetAppId())
+	logger.Logger = logger.WithField("identityID", identity.GetId())
 
 	// Verify passcode and calculate HOTP counter or TOTP window offset.
 	var counter int64
 	var offset int
 
-	switch identity.MethodOneof.(type) {
+	switch identity.GetMethodOneof().(type) {
 	case *api.Identity_SoftwareHotpMethod, *api.Identity_GoogleAuthHotpMethod,
 		*api.Identity_HardwareHotpMethod, *api.Identity_SmsMethod,
 		*api.Identity_PushoverMethod, *api.Identity_EmailMethod:
 		// Retrieve current HOTP counter. If not found, use the zero value.
 		var curr int64
-		_, curr, err = ai.cache.GetI(ctx, key.HOTPCounter(identity.OrgId,
-			identity.AppId, identity.Id))
+		_, curr, err = ai.cache.GetI(ctx, key.HOTPCounter(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId()))
 		if err != nil {
 			return err
 		}
@@ -236,8 +236,8 @@ func (ai *AppIdentity) verify(
 		*api.Identity_AppleIosTotpMethod:
 		// Retrieve TOTP window offset. If not found, use the zero value.
 		var off int64
-		_, off, err = ai.cache.GetI(ctx, ikey.TOTPOffset(identity.OrgId,
-			identity.AppId, identity.Id))
+		_, off, err = ai.cache.GetI(ctx, ikey.TOTPOffset(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId()))
 		if err != nil {
 			return err
 		}
@@ -246,8 +246,8 @@ func (ai *AppIdentity) verify(
 	case *api.Identity_HardwareTotpMethod:
 		// Retrieve TOTP window offset. If not found, use the zero value.
 		var off int64
-		_, off, err = ai.cache.GetI(ctx, ikey.TOTPOffset(identity.OrgId,
-			identity.AppId, identity.Id))
+		_, off, err = ai.cache.GetI(ctx, ikey.TOTPOffset(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId()))
 		if err != nil {
 			return err
 		}
@@ -275,13 +275,13 @@ func (ai *AppIdentity) verify(
 	// Store HOTP counter or TOTP window offset for future verifications.
 	switch {
 	case counter != 0:
-		if err = ai.cache.Set(ctx, key.HOTPCounter(identity.OrgId,
-			identity.AppId, identity.Id), counter); err != nil {
+		if err = ai.cache.Set(ctx, key.HOTPCounter(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId()), counter); err != nil {
 			return err
 		}
 	case offset != 0:
-		if err = ai.cache.Set(ctx, ikey.TOTPOffset(identity.OrgId,
-			identity.AppId, identity.Id), offset); err != nil {
+		if err = ai.cache.Set(ctx, ikey.TOTPOffset(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId()), offset); err != nil {
 			return err
 		}
 	}
@@ -305,8 +305,8 @@ func (ai *AppIdentity) ActivateIdentity(
 	writeEvent := func(status api.EventStatus, err string) {
 		event := &api.Event{
 			OrgId:      sess.OrgID,
-			AppId:      req.AppId,
-			IdentityId: req.Id,
+			AppId:      req.GetAppId(),
+			IdentityId: req.GetId(),
 			Status:     status,
 			Error:      err,
 			TraceId:    sess.TraceID.String(),
@@ -317,8 +317,8 @@ func (ai *AppIdentity) ActivateIdentity(
 		}
 	}
 
-	if err := ai.verify(ctx, req.Id, sess.OrgID, req.AppId,
-		api.IdentityStatus_UNVERIFIED, req.Passcode, 1000, 6, 20); err != nil {
+	if err := ai.verify(ctx, req.GetId(), sess.OrgID, req.GetAppId(),
+		api.IdentityStatus_UNVERIFIED, req.GetPasscode(), 1000, 6, 20); err != nil {
 		if errors.Is(err, errExpStatus) ||
 			errors.Is(err, oath.ErrInvalidPasscode) {
 			writeEvent(api.EventStatus_ACTIVATE_FAIL, err.Error())
@@ -327,8 +327,8 @@ func (ai *AppIdentity) ActivateIdentity(
 		return nil, errToStatus(err)
 	}
 
-	identity, err := ai.identDAO.UpdateStatus(ctx, req.Id, sess.OrgID,
-		req.AppId, api.IdentityStatus_ACTIVATED)
+	identity, err := ai.identDAO.UpdateStatus(ctx, req.GetId(), sess.OrgID,
+		req.GetAppId(), api.IdentityStatus_ACTIVATED)
 	if err != nil {
 		return nil, errToStatus(err)
 	}
@@ -348,8 +348,8 @@ func (ai *AppIdentity) ChallengeIdentity(
 		return nil, errPerm(api.Role_AUTHENTICATOR)
 	}
 
-	identity, _, err := ai.identDAO.Read(ctx, req.Id, sess.OrgID,
-		req.AppId)
+	identity, _, err := ai.identDAO.Read(ctx, req.GetId(), sess.OrgID,
+		req.GetAppId())
 	if err != nil {
 		return nil, errToStatus(err)
 	}
@@ -358,9 +358,9 @@ func (ai *AppIdentity) ChallengeIdentity(
 	// is non-fatal, but should be logged for investigation.
 	writeEvent := func(status api.EventStatus, err string) {
 		event := &api.Event{
-			OrgId:      identity.OrgId,
-			AppId:      identity.AppId,
-			IdentityId: identity.Id,
+			OrgId:      identity.GetOrgId(),
+			AppId:      identity.GetAppId(),
+			IdentityId: identity.GetId(),
 			Status:     status,
 			Error:      err,
 			TraceId:    sess.TraceID.String(),
@@ -372,7 +372,7 @@ func (ai *AppIdentity) ChallengeIdentity(
 	}
 
 	// Build and publish NotifierIn message for methods that utilize it.
-	switch identity.MethodOneof.(type) {
+	switch identity.GetMethodOneof().(type) {
 	case *api.Identity_SmsMethod, *api.Identity_PushoverMethod,
 		*api.Identity_EmailMethod:
 		// Apply plan limits, in the event that the organization's plan was
@@ -382,7 +382,7 @@ func (ai *AppIdentity) ChallengeIdentity(
 		}
 
 		// Rate limit.
-		notifyKey := ikey.Challenge(identity.OrgId, identity.AppId, identity.Id)
+		notifyKey := ikey.Challenge(identity.GetOrgId(), identity.GetAppId(), identity.GetId())
 		ok, err := ai.cache.SetIfNotExistTTL(ctx, notifyKey, 1, notifyRate)
 		if err != nil {
 			return nil, errToStatus(err)
@@ -399,13 +399,13 @@ func (ai *AppIdentity) ChallengeIdentity(
 		}
 
 		// Add logging fields.
-		logger.Logger = logger.WithField("appID", identity.AppId)
-		logger.Logger = logger.WithField("identityID", identity.Id)
+		logger.Logger = logger.WithField("appID", identity.GetAppId())
+		logger.Logger = logger.WithField("identityID", identity.GetId())
 
 		nIn := &message.NotifierIn{
-			OrgId:      identity.OrgId,
-			AppId:      identity.AppId,
-			IdentityId: identity.Id,
+			OrgId:      identity.GetOrgId(),
+			AppId:      identity.GetAppId(),
+			IdentityId: identity.GetId(),
 			TraceId:    sess.TraceID[:],
 		}
 
@@ -459,8 +459,8 @@ func (ai *AppIdentity) VerifyIdentity(
 	writeEvent := func(status api.EventStatus, err string) {
 		event := &api.Event{
 			OrgId:      sess.OrgID,
-			AppId:      req.AppId,
-			IdentityId: req.Id,
+			AppId:      req.GetAppId(),
+			IdentityId: req.GetId(),
 			Status:     status,
 			Error:      err,
 			TraceId:    sess.TraceID.String(),
@@ -471,8 +471,8 @@ func (ai *AppIdentity) VerifyIdentity(
 		}
 	}
 
-	if err := ai.verify(ctx, req.Id, sess.OrgID, req.AppId,
-		api.IdentityStatus_ACTIVATED, req.Passcode, oath.DefaultHOTPLookAhead,
+	if err := ai.verify(ctx, req.GetId(), sess.OrgID, req.GetAppId(),
+		api.IdentityStatus_ACTIVATED, req.GetPasscode(), oath.DefaultHOTPLookAhead,
 		oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead); err != nil {
 		if errors.Is(err, errExpStatus) ||
 			errors.Is(err, oath.ErrInvalidPasscode) {
@@ -496,7 +496,7 @@ func (ai *AppIdentity) GetIdentity(
 		return nil, errPerm(api.Role_VIEWER)
 	}
 
-	identity, _, err := ai.identDAO.Read(ctx, req.Id, sess.OrgID, req.AppId)
+	identity, _, err := ai.identDAO.Read(ctx, req.GetId(), sess.OrgID, req.GetAppId())
 	if err != nil {
 		return nil, errToStatus(err)
 	}
@@ -514,8 +514,8 @@ func (ai *AppIdentity) DeleteIdentity(
 		return nil, errPerm(api.Role_AUTHENTICATOR)
 	}
 
-	if err := ai.identDAO.Delete(ctx, req.Id, sess.OrgID,
-		req.AppId); err != nil {
+	if err := ai.identDAO.Delete(ctx, req.GetId(), sess.OrgID,
+		req.GetAppId()); err != nil {
 		return nil, errToStatus(err)
 	}
 
@@ -523,8 +523,8 @@ func (ai *AppIdentity) DeleteIdentity(
 	// investigation.
 	event := &api.Event{
 		OrgId:      sess.OrgID,
-		AppId:      req.AppId,
-		IdentityId: req.Id,
+		AppId:      req.GetAppId(),
+		IdentityId: req.GetId(),
 		Status:     api.EventStatus_IDENTITY_DELETED,
 		TraceId:    sess.TraceID.String(),
 	}
@@ -549,18 +549,18 @@ func (ai *AppIdentity) ListIdentities(
 		return nil, errPerm(api.Role_VIEWER)
 	}
 
-	if req.PageSize == 0 {
+	if req.GetPageSize() == 0 {
 		req.PageSize = defaultPageSize
 	}
 
-	lBoundTS, prevID, err := session.ParsePageToken(req.PageToken)
+	lBoundTS, prevID, err := session.ParsePageToken(req.GetPageToken())
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid page token")
 	}
 
 	// Retrieve PageSize+1 entries to find last page.
 	identities, count, err := ai.identDAO.List(ctx, sess.OrgID, lBoundTS,
-		prevID, req.PageSize+1, req.AppId)
+		prevID, req.GetPageSize()+1, req.GetAppId())
 	if err != nil {
 		return nil, errToStatus(err)
 	}
@@ -570,12 +570,12 @@ func (ai *AppIdentity) ListIdentities(
 	}
 
 	// Populate next page token.
-	if len(identities) == int(req.PageSize+1) {
+	if len(identities) == int(req.GetPageSize()+1) {
 		resp.Identities = identities[:len(identities)-1]
 
 		if resp.NextPageToken, err = session.GeneratePageToken(
-			identities[len(identities)-2].CreatedAt.AsTime(),
-			identities[len(identities)-2].Id); err != nil {
+			identities[len(identities)-2].GetCreatedAt().AsTime(),
+			identities[len(identities)-2].GetId()); err != nil {
 			// GeneratePageToken should not error based on a DB-derived UUID.
 			// Log the error and include the usable empty token.
 			logger := hlog.FromContext(ctx)

@@ -28,15 +28,15 @@ func TestCreate(t *testing.T) {
 	require.NoError(t, err)
 
 	createApp, err := globalAppDAO.Create(ctx, random.App("dao-identity",
-		createOrg.Id))
+		createOrg.GetId()))
 	t.Logf("createApp, err: %+v, %v", createApp, err)
 	require.NoError(t, err)
 
 	t.Run("Create valid HOTP identity", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.HOTPIdentity("dao-identity", createOrg.Id,
-			createApp.Id)
+		identity := random.HOTPIdentity("dao-identity", createOrg.GetId(),
+			createApp.GetId())
 		createIdentity, _ := proto.Clone(identity).(*api.Identity)
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
@@ -48,11 +48,11 @@ func TestCreate(t *testing.T) {
 			"%+v, %#v, %v, %v", identity, createIdentity, createOTP, retSecret,
 			err)
 		require.NoError(t, err)
-		require.NotEqual(t, identity.Id, createIdentity.Id)
-		require.Equal(t, api.IdentityStatus_UNVERIFIED, createIdentity.Status)
-		require.WithinDuration(t, time.Now(), createIdentity.CreatedAt.AsTime(),
+		require.NotEqual(t, identity.GetId(), createIdentity.GetId())
+		require.Equal(t, api.IdentityStatus_UNVERIFIED, createIdentity.GetStatus())
+		require.WithinDuration(t, time.Now(), createIdentity.GetCreatedAt().AsTime(),
 			2*time.Second)
-		require.WithinDuration(t, time.Now(), createIdentity.UpdatedAt.AsTime(),
+		require.WithinDuration(t, time.Now(), createIdentity.GetUpdatedAt().AsTime(),
 			2*time.Second)
 		require.NotNil(t, createOTP)
 		require.True(t, retSecret)
@@ -61,8 +61,8 @@ func TestCreate(t *testing.T) {
 	t.Run("Create valid SMS identity", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.SMSIdentity("dao-identity", createOrg.Id,
-			createApp.Id)
+		identity := random.SMSIdentity("dao-identity", createOrg.GetId(),
+			createApp.GetId())
 		createIdentity, _ := proto.Clone(identity).(*api.Identity)
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
@@ -74,11 +74,11 @@ func TestCreate(t *testing.T) {
 			"%+v, %#v, %v, %v", identity, createIdentity, createOTP, retSecret,
 			err)
 		require.NoError(t, err)
-		require.NotEqual(t, identity.Id, createIdentity.Id)
-		require.Equal(t, api.IdentityStatus_UNVERIFIED, createIdentity.Status)
-		require.WithinDuration(t, time.Now(), createIdentity.CreatedAt.AsTime(),
+		require.NotEqual(t, identity.GetId(), createIdentity.GetId())
+		require.Equal(t, api.IdentityStatus_UNVERIFIED, createIdentity.GetStatus())
+		require.WithinDuration(t, time.Now(), createIdentity.GetCreatedAt().AsTime(),
 			2*time.Second)
-		require.WithinDuration(t, time.Now(), createIdentity.UpdatedAt.AsTime(),
+		require.WithinDuration(t, time.Now(), createIdentity.GetUpdatedAt().AsTime(),
 			2*time.Second)
 		require.NotNil(t, createOTP)
 		require.False(t, retSecret)
@@ -87,8 +87,8 @@ func TestCreate(t *testing.T) {
 	t.Run("Create valid Pushover identity", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.PushoverIdentity("dao-identity", createOrg.Id,
-			createApp.Id)
+		identity := random.PushoverIdentity("dao-identity", createOrg.GetId(),
+			createApp.GetId())
 		createIdentity, _ := proto.Clone(identity).(*api.Identity)
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
@@ -100,11 +100,11 @@ func TestCreate(t *testing.T) {
 			"%+v, %#v, %v, %v", identity, createIdentity, createOTP, retSecret,
 			err)
 		require.NoError(t, err)
-		require.NotEqual(t, identity.Id, createIdentity.Id)
-		require.Equal(t, api.IdentityStatus_UNVERIFIED, createIdentity.Status)
-		require.WithinDuration(t, time.Now(), createIdentity.CreatedAt.AsTime(),
+		require.NotEqual(t, identity.GetId(), createIdentity.GetId())
+		require.Equal(t, api.IdentityStatus_UNVERIFIED, createIdentity.GetStatus())
+		require.WithinDuration(t, time.Now(), createIdentity.GetCreatedAt().AsTime(),
 			2*time.Second)
-		require.WithinDuration(t, time.Now(), createIdentity.UpdatedAt.AsTime(),
+		require.WithinDuration(t, time.Now(), createIdentity.GetUpdatedAt().AsTime(),
 			2*time.Second)
 		require.NotNil(t, createOTP)
 		require.False(t, retSecret)
@@ -113,8 +113,8 @@ func TestCreate(t *testing.T) {
 	t.Run("Create valid email identity", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.EmailIdentity("dao-identity", createOrg.Id,
-			createApp.Id)
+		identity := random.EmailIdentity("dao-identity", createOrg.GetId(),
+			createApp.GetId())
 		createIdentity, _ := proto.Clone(identity).(*api.Identity)
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
@@ -126,11 +126,11 @@ func TestCreate(t *testing.T) {
 			"%+v, %#v, %v, %v", identity, createIdentity, createOTP, retSecret,
 			err)
 		require.NoError(t, err)
-		require.NotEqual(t, identity.Id, createIdentity.Id)
-		require.Equal(t, api.IdentityStatus_UNVERIFIED, createIdentity.Status)
-		require.WithinDuration(t, time.Now(), createIdentity.CreatedAt.AsTime(),
+		require.NotEqual(t, identity.GetId(), createIdentity.GetId())
+		require.Equal(t, api.IdentityStatus_UNVERIFIED, createIdentity.GetStatus())
+		require.WithinDuration(t, time.Now(), createIdentity.GetCreatedAt().AsTime(),
 			2*time.Second)
-		require.WithinDuration(t, time.Now(), createIdentity.UpdatedAt.AsTime(),
+		require.WithinDuration(t, time.Now(), createIdentity.GetUpdatedAt().AsTime(),
 			2*time.Second)
 		require.NotNil(t, createOTP)
 		require.False(t, retSecret)
@@ -139,8 +139,8 @@ func TestCreate(t *testing.T) {
 	t.Run("Create valid backup codes identity", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.BackupCodesIdentity("dao-identity", createOrg.Id,
-			createApp.Id)
+		identity := random.BackupCodesIdentity("dao-identity", createOrg.GetId(),
+			createApp.GetId())
 		createIdentity, _ := proto.Clone(identity).(*api.Identity)
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
@@ -152,11 +152,11 @@ func TestCreate(t *testing.T) {
 			"%+v, %#v, %v, %v", identity, createIdentity, createOTP, retSecret,
 			err)
 		require.NoError(t, err)
-		require.NotEqual(t, identity.Id, createIdentity.Id)
-		require.Equal(t, api.IdentityStatus_ACTIVATED, createIdentity.Status)
-		require.WithinDuration(t, time.Now(), createIdentity.CreatedAt.AsTime(),
+		require.NotEqual(t, identity.GetId(), createIdentity.GetId())
+		require.Equal(t, api.IdentityStatus_ACTIVATED, createIdentity.GetStatus())
+		require.WithinDuration(t, time.Now(), createIdentity.GetCreatedAt().AsTime(),
 			2*time.Second)
-		require.WithinDuration(t, time.Now(), createIdentity.UpdatedAt.AsTime(),
+		require.WithinDuration(t, time.Now(), createIdentity.GetUpdatedAt().AsTime(),
 			2*time.Second)
 		require.NotNil(t, createOTP)
 		require.False(t, retSecret)
@@ -166,7 +166,7 @@ func TestCreate(t *testing.T) {
 		t.Parallel()
 
 		identity := random.SecurityQuestionsIdentity("dao-identity",
-			createOrg.Id, createApp.Id)
+			createOrg.GetId(), createApp.GetId())
 		createIdentity, _ := proto.Clone(identity).(*api.Identity)
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
@@ -178,13 +178,13 @@ func TestCreate(t *testing.T) {
 			"%+v, %#v, %v, %v", identity, createIdentity, createOTP, retSecret,
 			err)
 		require.NoError(t, err)
-		require.NotEqual(t, identity.Id, createIdentity.Id)
-		require.Equal(t, api.IdentityStatus_ACTIVATED, createIdentity.Status)
+		require.NotEqual(t, identity.GetId(), createIdentity.GetId())
+		require.Equal(t, api.IdentityStatus_ACTIVATED, createIdentity.GetStatus())
 		require.Equal(t, defaultAnswer,
-			createIdentity.GetSecurityQuestionsMethod().Answer)
-		require.WithinDuration(t, time.Now(), createIdentity.CreatedAt.AsTime(),
+			createIdentity.GetSecurityQuestionsMethod().GetAnswer())
+		require.WithinDuration(t, time.Now(), createIdentity.GetCreatedAt().AsTime(),
 			2*time.Second)
-		require.WithinDuration(t, time.Now(), createIdentity.UpdatedAt.AsTime(),
+		require.WithinDuration(t, time.Now(), createIdentity.GetUpdatedAt().AsTime(),
 			2*time.Second)
 		require.NotNil(t, createOTP)
 		require.False(t, retSecret)
@@ -193,8 +193,8 @@ func TestCreate(t *testing.T) {
 	t.Run("Create invalid identity", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.HOTPIdentity("dao-identity", createOrg.Id,
-			createApp.Id)
+		identity := random.HOTPIdentity("dao-identity", createOrg.GetId(),
+			createApp.GetId())
 		identity.Comment = "dao-identity-" + random.String(80)
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
@@ -218,7 +218,7 @@ func TestCreate(t *testing.T) {
 		defer cancel()
 
 		createIdentity, createOTP, retSecret, err := globalIdentDAO.Create(
-			ctx, random.HOTPIdentity("dao-identity", createOrg.Id,
+			ctx, random.HOTPIdentity("dao-identity", createOrg.GetId(),
 				uuid.NewString()))
 		t.Logf("createIdentity, createOTP, retSecret, err: %+v, %#v, %v, %v",
 			createIdentity, createOTP, retSecret, err)
@@ -240,12 +240,12 @@ func TestRead(t *testing.T) {
 	require.NoError(t, err)
 
 	createApp, err := globalAppDAO.Create(ctx, random.App("dao-identity",
-		createOrg.Id))
+		createOrg.GetId()))
 	t.Logf("createApp, err: %+v, %v", createApp, err)
 	require.NoError(t, err)
 
 	createIdentity, createOTP, _, err := globalIdentDAO.Create(ctx,
-		random.HOTPIdentity("dao-identity", createOrg.Id, createApp.Id))
+		random.HOTPIdentity("dao-identity", createOrg.GetId(), createApp.GetId()))
 	t.Logf("createIdentity, createOTP, err: %+v, %#v, %v", createIdentity,
 		createOTP, err)
 	require.NoError(t, err)
@@ -257,7 +257,7 @@ func TestRead(t *testing.T) {
 		defer cancel()
 
 		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
-			createIdentity.Id, createIdentity.OrgId, createIdentity.AppId)
+			createIdentity.GetId(), createIdentity.GetOrgId(), createIdentity.GetAppId())
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
 		require.NoError(t, err)
@@ -269,9 +269,9 @@ func TestRead(t *testing.T) {
 		}
 
 		require.Equal(t, createOTP, readOTP)
-		require.Equal(t, createIdentity.GetSoftwareHotpMethod().Hash,
+		require.Equal(t, createIdentity.GetSoftwareHotpMethod().GetHash(),
 			hashCryptoToAPI[readOTP.Hash])
-		require.Equal(t, createIdentity.GetSoftwareHotpMethod().Digits,
+		require.Equal(t, createIdentity.GetSoftwareHotpMethod().GetDigits(),
 			int32(readOTP.Digits))
 	})
 
@@ -282,13 +282,13 @@ func TestRead(t *testing.T) {
 		defer cancel()
 
 		createIdentity, createOTP, _, err := globalIdentDAO.Create(ctx,
-			random.SMSIdentity("dao-identity", createOrg.Id, createApp.Id))
+			random.SMSIdentity("dao-identity", createOrg.GetId(), createApp.GetId()))
 		t.Logf("createIdentity, createOTP, err: %+v, %#v, %v", createIdentity,
 			createOTP, err)
 		require.NoError(t, err)
 
 		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
-			createIdentity.Id, createIdentity.OrgId, createIdentity.AppId)
+			createIdentity.GetId(), createIdentity.GetOrgId(), createIdentity.GetAppId())
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
 		require.NoError(t, err)
@@ -310,13 +310,13 @@ func TestRead(t *testing.T) {
 		defer cancel()
 
 		createIdentity, createOTP, _, err := globalIdentDAO.Create(ctx,
-			random.PushoverIdentity("dao-identity", createOrg.Id, createApp.Id))
+			random.PushoverIdentity("dao-identity", createOrg.GetId(), createApp.GetId()))
 		t.Logf("createIdentity, createOTP, err: %+v, %#v, %v", createIdentity,
 			createOTP, err)
 		require.NoError(t, err)
 
 		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
-			createIdentity.Id, createIdentity.OrgId, createIdentity.AppId)
+			createIdentity.GetId(), createIdentity.GetOrgId(), createIdentity.GetAppId())
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
 		require.NoError(t, err)
@@ -338,13 +338,13 @@ func TestRead(t *testing.T) {
 		defer cancel()
 
 		createIdentity, createOTP, _, err := globalIdentDAO.Create(ctx,
-			random.EmailIdentity("dao-identity", createOrg.Id, createApp.Id))
+			random.EmailIdentity("dao-identity", createOrg.GetId(), createApp.GetId()))
 		t.Logf("createIdentity, createOTP, err: %+v, %#v, %v", createIdentity,
 			createOTP, err)
 		require.NoError(t, err)
 
 		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
-			createIdentity.Id, createIdentity.OrgId, createIdentity.AppId)
+			createIdentity.GetId(), createIdentity.GetOrgId(), createIdentity.GetAppId())
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
 		require.NoError(t, err)
@@ -366,14 +366,14 @@ func TestRead(t *testing.T) {
 		defer cancel()
 
 		createIdentity, createOTP, _, err := globalIdentDAO.Create(ctx,
-			random.BackupCodesIdentity("dao-identity", createOrg.Id,
-				createApp.Id))
+			random.BackupCodesIdentity("dao-identity", createOrg.GetId(),
+				createApp.GetId()))
 		t.Logf("createIdentity, createOTP, err: %+v, %#v, %v", createIdentity,
 			createOTP, err)
 		require.NoError(t, err)
 
 		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
-			createIdentity.Id, createIdentity.OrgId, createIdentity.AppId)
+			createIdentity.GetId(), createIdentity.GetOrgId(), createIdentity.GetAppId())
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
 		require.NoError(t, err)
@@ -395,14 +395,14 @@ func TestRead(t *testing.T) {
 		defer cancel()
 
 		createIdentity, createOTP, _, err := globalIdentDAO.Create(ctx,
-			random.SecurityQuestionsIdentity("dao-identity", createOrg.Id,
-				createApp.Id))
+			random.SecurityQuestionsIdentity("dao-identity", createOrg.GetId(),
+				createApp.GetId()))
 		t.Logf("createIdentity, createOTP, err: %+v, %#v, %v", createIdentity,
 			createOTP, err)
 		require.NoError(t, err)
 
 		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
-			createIdentity.Id, createIdentity.OrgId, createIdentity.AppId)
+			createIdentity.GetId(), createIdentity.GetOrgId(), createIdentity.GetAppId())
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
 		require.NoError(t, err)
@@ -424,7 +424,7 @@ func TestRead(t *testing.T) {
 		defer cancel()
 
 		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
-			uuid.NewString(), createIdentity.OrgId, createIdentity.AppId)
+			uuid.NewString(), createIdentity.GetOrgId(), createIdentity.GetAppId())
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
 		require.Nil(t, readIdentity)
@@ -439,7 +439,7 @@ func TestRead(t *testing.T) {
 		defer cancel()
 
 		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
-			createIdentity.Id, createIdentity.OrgId, uuid.NewString())
+			createIdentity.GetId(), createIdentity.GetOrgId(), uuid.NewString())
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
 		require.Nil(t, readIdentity)
@@ -454,7 +454,7 @@ func TestRead(t *testing.T) {
 		defer cancel()
 
 		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
-			createIdentity.Id, uuid.NewString(), createIdentity.AppId)
+			createIdentity.GetId(), uuid.NewString(), createIdentity.GetAppId())
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
 		require.Nil(t, readIdentity)
@@ -469,7 +469,7 @@ func TestRead(t *testing.T) {
 		defer cancel()
 
 		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
-			random.String(10), createIdentity.OrgId, createIdentity.AppId)
+			random.String(10), createIdentity.GetOrgId(), createIdentity.GetAppId())
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
 		require.Nil(t, readIdentity)
@@ -489,7 +489,7 @@ func TestUpdateStatus(t *testing.T) {
 	require.NoError(t, err)
 
 	createApp, err := globalAppDAO.Create(ctx, random.App("dao-identity",
-		createOrg.Id))
+		createOrg.GetId()))
 	t.Logf("createApp, err: %+v, %v", createApp, err)
 	require.NoError(t, err)
 
@@ -500,17 +500,17 @@ func TestUpdateStatus(t *testing.T) {
 		defer cancel()
 
 		createIdentity, _, _, err := globalIdentDAO.Create(ctx,
-			random.HOTPIdentity("dao-identity", createOrg.Id, createApp.Id))
+			random.HOTPIdentity("dao-identity", createOrg.GetId(), createApp.GetId()))
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		updateIdentity, err := globalIdentDAO.UpdateStatus(ctx,
-			createIdentity.Id, createOrg.Id, createApp.Id,
+			createIdentity.GetId(), createOrg.GetId(), createApp.GetId(),
 			api.IdentityStatus_ACTIVATED)
 		t.Logf("updateIdentity, err: %+v, %v", updateIdentity, err)
 		require.NoError(t, err)
-		require.Equal(t, api.IdentityStatus_ACTIVATED, updateIdentity.Status)
-		require.WithinDuration(t, time.Now(), createIdentity.UpdatedAt.AsTime(),
+		require.Equal(t, api.IdentityStatus_ACTIVATED, updateIdentity.GetStatus())
+		require.WithinDuration(t, time.Now(), createIdentity.GetUpdatedAt().AsTime(),
 			2*time.Second)
 	})
 
@@ -521,7 +521,7 @@ func TestUpdateStatus(t *testing.T) {
 		defer cancel()
 
 		updateIdentity, err := globalIdentDAO.UpdateStatus(ctx,
-			uuid.NewString(), createOrg.Id, createApp.Id,
+			uuid.NewString(), createOrg.GetId(), createApp.GetId(),
 			api.IdentityStatus_ACTIVATED)
 		t.Logf("updateIdentity, err: %+v, %v", updateIdentity, err)
 		require.Nil(t, updateIdentity)
@@ -535,12 +535,12 @@ func TestUpdateStatus(t *testing.T) {
 		defer cancel()
 
 		createIdentity, _, _, err := globalIdentDAO.Create(ctx,
-			random.HOTPIdentity("dao-identity", createOrg.Id, createApp.Id))
+			random.HOTPIdentity("dao-identity", createOrg.GetId(), createApp.GetId()))
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		updateIdentity, err := globalIdentDAO.UpdateStatus(ctx,
-			createIdentity.Id, uuid.NewString(), createApp.Id,
+			createIdentity.GetId(), uuid.NewString(), createApp.GetId(),
 			api.IdentityStatus_ACTIVATED)
 		t.Logf("updateIdentity, err: %+v, %v", updateIdentity, err)
 		require.Nil(t, updateIdentity)
@@ -559,7 +559,7 @@ func TestDelete(t *testing.T) {
 	require.NoError(t, err)
 
 	createApp, err := globalAppDAO.Create(ctx, random.App("dao-identity",
-		createOrg.Id))
+		createOrg.GetId()))
 	t.Logf("createApp, err: %+v, %v", createApp, err)
 	require.NoError(t, err)
 
@@ -570,12 +570,12 @@ func TestDelete(t *testing.T) {
 		defer cancel()
 
 		createIdentity, _, _, err := globalIdentDAO.Create(ctx,
-			random.HOTPIdentity("dao-identity", createOrg.Id, createApp.Id))
+			random.HOTPIdentity("dao-identity", createOrg.GetId(), createApp.GetId()))
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
-		err = globalIdentDAO.Delete(ctx, createIdentity.Id, createOrg.Id,
-			createIdentity.AppId)
+		err = globalIdentDAO.Delete(ctx, createIdentity.GetId(), createOrg.GetId(),
+			createIdentity.GetAppId())
 		t.Logf("err: %v", err)
 		require.NoError(t, err)
 
@@ -587,7 +587,7 @@ func TestDelete(t *testing.T) {
 			defer cancel()
 
 			readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
-				createIdentity.Id, createOrg.Id, createIdentity.AppId)
+				createIdentity.GetId(), createOrg.GetId(), createIdentity.GetAppId())
 			t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 				readOTP, err)
 			require.Nil(t, readIdentity)
@@ -602,8 +602,8 @@ func TestDelete(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
 
-		err := globalIdentDAO.Delete(ctx, uuid.NewString(), createOrg.Id,
-			createApp.Id)
+		err := globalIdentDAO.Delete(ctx, uuid.NewString(), createOrg.GetId(),
+			createApp.GetId())
 		t.Logf("err: %v", err)
 		require.Equal(t, dao.ErrNotFound, err)
 	})
@@ -615,11 +615,11 @@ func TestDelete(t *testing.T) {
 		defer cancel()
 
 		createIdentity, _, _, err := globalIdentDAO.Create(ctx,
-			random.HOTPIdentity("dao-identity", createOrg.Id, createApp.Id))
+			random.HOTPIdentity("dao-identity", createOrg.GetId(), createApp.GetId()))
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
-		err = globalIdentDAO.Delete(ctx, createIdentity.Id, createOrg.Id,
+		err = globalIdentDAO.Delete(ctx, createIdentity.GetId(), createOrg.GetId(),
 			uuid.NewString())
 		t.Logf("err: %v", err)
 		require.Equal(t, dao.ErrNotFound, err)
@@ -632,12 +632,12 @@ func TestDelete(t *testing.T) {
 		defer cancel()
 
 		createIdentity, _, _, err := globalIdentDAO.Create(ctx,
-			random.HOTPIdentity("dao-identity", createOrg.Id, createApp.Id))
+			random.HOTPIdentity("dao-identity", createOrg.GetId(), createApp.GetId()))
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
-		err = globalIdentDAO.Delete(ctx, createIdentity.Id, uuid.NewString(),
-			createApp.Id)
+		err = globalIdentDAO.Delete(ctx, createIdentity.GetId(), uuid.NewString(),
+			createApp.GetId())
 		t.Logf("err: %v", err)
 		require.Equal(t, dao.ErrNotFound, err)
 	})
@@ -654,7 +654,7 @@ func TestList(t *testing.T) {
 	require.NoError(t, err)
 
 	createApp, err := globalAppDAO.Create(ctx, random.App("dao-identity",
-		createOrg.Id))
+		createOrg.GetId()))
 	t.Logf("createApp, err: %+v, %v", createApp, err)
 	require.NoError(t, err)
 
@@ -663,60 +663,60 @@ func TestList(t *testing.T) {
 	identityTSes := []time.Time{}
 	for i := 0; i < 3; i++ {
 		createIdentity, _, _, err := globalIdentDAO.Create(ctx,
-			random.HOTPIdentity("dao-identity", createOrg.Id, createApp.Id))
+			random.HOTPIdentity("dao-identity", createOrg.GetId(), createApp.GetId()))
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
-		identityIDs = append(identityIDs, createIdentity.Id)
-		identityComments = append(identityComments, createIdentity.Comment)
-		identityTSes = append(identityTSes, createIdentity.CreatedAt.AsTime())
+		identityIDs = append(identityIDs, createIdentity.GetId())
+		identityComments = append(identityComments, createIdentity.GetComment())
+		identityTSes = append(identityTSes, createIdentity.GetCreatedAt().AsTime())
 
 		createIdentity, _, _, err = globalIdentDAO.Create(ctx,
-			random.SMSIdentity("dao-identity", createOrg.Id, createApp.Id))
+			random.SMSIdentity("dao-identity", createOrg.GetId(), createApp.GetId()))
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
-		identityIDs = append(identityIDs, createIdentity.Id)
-		identityComments = append(identityComments, createIdentity.Comment)
-		identityTSes = append(identityTSes, createIdentity.CreatedAt.AsTime())
+		identityIDs = append(identityIDs, createIdentity.GetId())
+		identityComments = append(identityComments, createIdentity.GetComment())
+		identityTSes = append(identityTSes, createIdentity.GetCreatedAt().AsTime())
 
 		createIdentity, _, _, err = globalIdentDAO.Create(ctx,
-			random.PushoverIdentity("dao-identity", createOrg.Id, createApp.Id))
+			random.PushoverIdentity("dao-identity", createOrg.GetId(), createApp.GetId()))
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
-		identityIDs = append(identityIDs, createIdentity.Id)
-		identityComments = append(identityComments, createIdentity.Comment)
-		identityTSes = append(identityTSes, createIdentity.CreatedAt.AsTime())
+		identityIDs = append(identityIDs, createIdentity.GetId())
+		identityComments = append(identityComments, createIdentity.GetComment())
+		identityTSes = append(identityTSes, createIdentity.GetCreatedAt().AsTime())
 
 		createIdentity, _, _, err = globalIdentDAO.Create(ctx,
-			random.EmailIdentity("dao-identity", createOrg.Id, createApp.Id))
+			random.EmailIdentity("dao-identity", createOrg.GetId(), createApp.GetId()))
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
-		identityIDs = append(identityIDs, createIdentity.Id)
-		identityComments = append(identityComments, createIdentity.Comment)
-		identityTSes = append(identityTSes, createIdentity.CreatedAt.AsTime())
+		identityIDs = append(identityIDs, createIdentity.GetId())
+		identityComments = append(identityComments, createIdentity.GetComment())
+		identityTSes = append(identityTSes, createIdentity.GetCreatedAt().AsTime())
 
 		createIdentity, _, _, err = globalIdentDAO.Create(ctx,
-			random.BackupCodesIdentity("dao-identity", createOrg.Id,
-				createApp.Id))
+			random.BackupCodesIdentity("dao-identity", createOrg.GetId(),
+				createApp.GetId()))
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
-		identityIDs = append(identityIDs, createIdentity.Id)
-		identityComments = append(identityComments, createIdentity.Comment)
-		identityTSes = append(identityTSes, createIdentity.CreatedAt.AsTime())
+		identityIDs = append(identityIDs, createIdentity.GetId())
+		identityComments = append(identityComments, createIdentity.GetComment())
+		identityTSes = append(identityTSes, createIdentity.GetCreatedAt().AsTime())
 
 		createIdentity, _, _, err = globalIdentDAO.Create(ctx,
-			random.SecurityQuestionsIdentity("dao-identity", createOrg.Id,
-				createApp.Id))
+			random.SecurityQuestionsIdentity("dao-identity", createOrg.GetId(),
+				createApp.GetId()))
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
-		identityIDs = append(identityIDs, createIdentity.Id)
-		identityComments = append(identityComments, createIdentity.Comment)
-		identityTSes = append(identityTSes, createIdentity.CreatedAt.AsTime())
+		identityIDs = append(identityIDs, createIdentity.GetId())
+		identityComments = append(identityComments, createIdentity.GetComment())
+		identityTSes = append(identityTSes, createIdentity.GetCreatedAt().AsTime())
 	}
 
 	t.Run("List identities by valid org ID", func(t *testing.T) {
@@ -726,7 +726,7 @@ func TestList(t *testing.T) {
 		defer cancel()
 
 		listIdentities, listCount, err := globalIdentDAO.List(ctx,
-			createOrg.Id, time.Time{}, "", 0, "")
+			createOrg.GetId(), time.Time{}, "", 0, "")
 		t.Logf("listIdentities, listCount, err: %+v, %v, %v", listIdentities,
 			listCount, err)
 		require.NoError(t, err)
@@ -735,8 +735,8 @@ func TestList(t *testing.T) {
 
 		var found bool
 		for _, identity := range listIdentities {
-			if identity.Id == identityIDs[len(identityIDs)-1] &&
-				identity.Comment == identityComments[len(identityComments)-1] {
+			if identity.GetId() == identityIDs[len(identityIDs)-1] &&
+				identity.GetComment() == identityComments[len(identityComments)-1] {
 				found = true
 			}
 		}
@@ -750,7 +750,7 @@ func TestList(t *testing.T) {
 		defer cancel()
 
 		listIdentities, listCount, err := globalIdentDAO.List(ctx,
-			createOrg.Id, identityTSes[0], identityIDs[0], 23, "")
+			createOrg.GetId(), identityTSes[0], identityIDs[0], 23, "")
 		t.Logf("listIdentities, listCount, err: %+v, %v, %v", listIdentities,
 			listCount, err)
 		require.NoError(t, err)
@@ -759,8 +759,8 @@ func TestList(t *testing.T) {
 
 		var found bool
 		for _, identity := range listIdentities {
-			if identity.Id == identityIDs[len(identityIDs)-1] &&
-				identity.Comment == identityComments[len(identityComments)-1] {
+			if identity.GetId() == identityIDs[len(identityIDs)-1] &&
+				identity.GetComment() == identityComments[len(identityComments)-1] {
 				found = true
 			}
 		}
@@ -774,7 +774,7 @@ func TestList(t *testing.T) {
 		defer cancel()
 
 		listIdentities, listCount, err := globalIdentDAO.List(ctx,
-			createOrg.Id, time.Time{}, "", 1, "")
+			createOrg.GetId(), time.Time{}, "", 1, "")
 		t.Logf("listIdentities, listCount, err: %+v, %v, %v", listIdentities,
 			listCount, err)
 		require.NoError(t, err)
@@ -789,7 +789,7 @@ func TestList(t *testing.T) {
 		defer cancel()
 
 		listIdentities, listCount, err := globalIdentDAO.List(ctx,
-			createOrg.Id, time.Time{}, "", 0, createApp.Id)
+			createOrg.GetId(), time.Time{}, "", 0, createApp.GetId())
 		t.Logf("listIdentities, listCount, err: %+v, %v, %v", listIdentities,
 			listCount, err)
 		require.NoError(t, err)
@@ -798,8 +798,8 @@ func TestList(t *testing.T) {
 
 		var found bool
 		for _, identity := range listIdentities {
-			if identity.Id == identityIDs[len(identityIDs)-1] &&
-				identity.Comment == identityComments[len(identityComments)-1] {
+			if identity.GetId() == identityIDs[len(identityIDs)-1] &&
+				identity.GetComment() == identityComments[len(identityComments)-1] {
 				found = true
 			}
 		}
@@ -813,7 +813,7 @@ func TestList(t *testing.T) {
 		defer cancel()
 
 		listIdentities, listCount, err := globalIdentDAO.List(ctx,
-			createOrg.Id, identityTSes[0], identityIDs[0], 23, createApp.Id)
+			createOrg.GetId(), identityTSes[0], identityIDs[0], 23, createApp.GetId())
 		t.Logf("listIdentities, listCount, err: %+v, %v, %v", listIdentities,
 			listCount, err)
 		require.NoError(t, err)
@@ -822,8 +822,8 @@ func TestList(t *testing.T) {
 
 		var found bool
 		for _, identity := range listIdentities {
-			if identity.Id == identityIDs[len(identityIDs)-1] &&
-				identity.Comment == identityComments[len(identityComments)-1] {
+			if identity.GetId() == identityIDs[len(identityIDs)-1] &&
+				identity.GetComment() == identityComments[len(identityComments)-1] {
 				found = true
 			}
 		}

@@ -35,7 +35,7 @@ func TestCreateOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: org.Id, Role: api.Role_SYS_ADMIN,
+				OrgID: org.GetId(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -91,7 +91,7 @@ func TestCreateOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: org.Id, Role: api.Role_SYS_ADMIN,
+				OrgID: org.GetId(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -114,16 +114,16 @@ func TestGetOrg(t *testing.T) {
 		retOrg, _ := proto.Clone(org).(*api.Org)
 
 		orger := NewMockOrger(gomock.NewController(t))
-		orger.EXPECT().Read(gomock.Any(), org.Id).Return(retOrg, nil).Times(1)
+		orger.EXPECT().Read(gomock.Any(), org.GetId()).Return(retOrg, nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: org.Id, Role: api.Role_SYS_ADMIN,
+				OrgID: org.GetId(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
 		orgSvc := NewOrg(orger)
-		getOrg, err := orgSvc.GetOrg(ctx, &api.GetOrgRequest{Id: org.Id})
+		getOrg, err := orgSvc.GetOrg(ctx, &api.GetOrgRequest{Id: org.GetId()})
 		t.Logf("org, getOrg, err: %+v, %+v, %v", org, getOrg, err)
 		require.NoError(t, err)
 
@@ -199,7 +199,7 @@ func TestUpdateOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: org.Id, Role: api.Role_SYS_ADMIN,
+				OrgID: org.GetId(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -221,21 +221,21 @@ func TestUpdateOrg(t *testing.T) {
 		org := random.Org("api-org")
 		retOrg, _ := proto.Clone(org).(*api.Org)
 		part := &api.Org{
-			Id: org.Id, Name: random.String(10), Status: api.Status_DISABLED,
+			Id: org.GetId(), Name: random.String(10), Status: api.Status_DISABLED,
 		}
 		merged := &api.Org{
-			Id: org.Id, Name: part.Name, Status: part.Status, Plan: org.Plan,
+			Id: org.GetId(), Name: part.GetName(), Status: part.GetStatus(), Plan: org.GetPlan(),
 		}
 		retMerged, _ := proto.Clone(merged).(*api.Org)
 
 		orger := NewMockOrger(gomock.NewController(t))
-		orger.EXPECT().Read(gomock.Any(), org.Id).Return(retOrg, nil).Times(1)
+		orger.EXPECT().Read(gomock.Any(), org.GetId()).Return(retOrg, nil).Times(1)
 		orger.EXPECT().Update(gomock.Any(), matcher.NewProtoMatcher(merged)).
 			Return(retMerged, nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: org.Id, Role: api.Role_SYS_ADMIN,
+				OrgID: org.GetId(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -292,7 +292,7 @@ func TestUpdateOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: org.Id, Role: api.Role_AUTHENTICATOR,
+				OrgID: org.GetId(), Role: api.Role_AUTHENTICATOR,
 			}), testTimeout)
 		defer cancel()
 
@@ -349,7 +349,7 @@ func TestUpdateOrg(t *testing.T) {
 		part := &api.Org{Id: uuid.NewString(), Name: random.String(10)}
 
 		orger := NewMockOrger(gomock.NewController(t))
-		orger.EXPECT().Read(gomock.Any(), part.Id).Return(nil, dao.ErrNotFound).
+		orger.EXPECT().Read(gomock.Any(), part.GetId()).Return(nil, dao.ErrNotFound).
 			Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
@@ -376,7 +376,7 @@ func TestUpdateOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: org.Id, Role: api.Role_SYS_ADMIN,
+				OrgID: org.GetId(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -401,7 +401,7 @@ func TestUpdateOrg(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: org.Id, Role: api.Role_SYS_ADMIN,
+				OrgID: org.GetId(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -512,7 +512,7 @@ func TestListOrgs(t *testing.T) {
 		listOrgs, err := orgSvc.ListOrgs(ctx, &api.ListOrgsRequest{})
 		t.Logf("listOrgs, err: %+v, %v", listOrgs, err)
 		require.NoError(t, err)
-		require.Equal(t, int32(3), listOrgs.TotalSize)
+		require.Equal(t, int32(3), listOrgs.GetTotalSize())
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
@@ -534,8 +534,8 @@ func TestListOrgs(t *testing.T) {
 			random.Org("api-org"),
 		}
 
-		next, err := session.GeneratePageToken(orgs[1].CreatedAt.AsTime(),
-			orgs[1].Id)
+		next, err := session.GeneratePageToken(orgs[1].GetCreatedAt().AsTime(),
+			orgs[1].GetId())
 		require.NoError(t, err)
 
 		orger := NewMockOrger(gomock.NewController(t))
@@ -552,7 +552,7 @@ func TestListOrgs(t *testing.T) {
 		listOrgs, err := orgSvc.ListOrgs(ctx, &api.ListOrgsRequest{PageSize: 2})
 		t.Logf("listOrgs, err: %+v, %v", listOrgs, err)
 		require.NoError(t, err)
-		require.Equal(t, int32(3), listOrgs.TotalSize)
+		require.Equal(t, int32(3), listOrgs.GetTotalSize())
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
@@ -584,11 +584,11 @@ func TestListOrgs(t *testing.T) {
 		org := random.Org("api-org")
 
 		orger := NewMockOrger(gomock.NewController(t))
-		orger.EXPECT().Read(gomock.Any(), org.Id).Return(org, nil).Times(1)
+		orger.EXPECT().Read(gomock.Any(), org.GetId()).Return(org, nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: org.Id, Role: api.Role_ADMIN,
+				OrgID: org.GetId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -619,7 +619,7 @@ func TestListOrgs(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: org.Id, Role: api.Role_ADMIN,
+				OrgID: org.GetId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -695,7 +695,7 @@ func TestListOrgs(t *testing.T) {
 		listOrgs, err := orgSvc.ListOrgs(ctx, &api.ListOrgsRequest{PageSize: 2})
 		t.Logf("listOrgs, err: %+v, %v", listOrgs, err)
 		require.NoError(t, err)
-		require.Equal(t, int32(3), listOrgs.TotalSize)
+		require.Equal(t, int32(3), listOrgs.GetTotalSize())
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
