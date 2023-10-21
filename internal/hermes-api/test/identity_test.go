@@ -1841,7 +1841,7 @@ func TestListIdentities(t *testing.T) {
 			})
 		t.Logf("nextIdentities, err: %+v, %v", nextIdentities, err)
 		require.NoError(t, err)
-		require.GreaterOrEqual(t, len(nextIdentities.GetIdentities()), 1)
+		require.NotEmpty(t, nextIdentities.GetIdentities())
 		require.GreaterOrEqual(t, nextIdentities.GetTotalSize(), int32(3))
 	})
 
@@ -1880,7 +1880,7 @@ func TestListIdentities(t *testing.T) {
 			&api.ListIdentitiesRequest{})
 		t.Logf("listIdentities, err: %+v, %v", listIdentities, err)
 		require.NoError(t, err)
-		require.Len(t, listIdentities.GetIdentities(), 0)
+		require.Empty(t, listIdentities.GetIdentities())
 		require.Equal(t, int32(0), listIdentities.GetTotalSize())
 	})
 
