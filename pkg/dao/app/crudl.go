@@ -25,9 +25,9 @@ func (d *DAO) Create(ctx context.Context, app *api.App) (*api.App, error) {
 	app.CreatedAt = timestamppb.New(now)
 	app.UpdatedAt = timestamppb.New(now)
 
-	if err := d.pg.QueryRowContext(ctx, createApp, app.OrgId, app.Name,
-		app.DisplayName, app.Email, app.PushoverKey, app.SubjectTemplate,
-		app.TextBodyTemplate, app.HtmlBodyTemplate, now).Scan(
+	if err := d.pg.QueryRowContext(ctx, createApp, app.GetOrgId(), app.GetName(),
+		app.GetDisplayName(), app.GetEmail(), app.GetPushoverKey(), app.GetSubjectTemplate(),
+		app.GetTextBodyTemplate(), app.GetHtmlBodyTemplate(), now).Scan(
 		&app.Id); err != nil {
 		return nil, dao.DBToSentinel(err)
 	}
@@ -76,9 +76,9 @@ func (d *DAO) Update(ctx context.Context, app *api.App) (*api.App, error) {
 	updatedAt := time.Now().UTC().Truncate(time.Microsecond)
 	app.UpdatedAt = timestamppb.New(updatedAt)
 
-	if err := d.pg.QueryRowContext(ctx, updateApp, app.Name, app.DisplayName,
-		app.Email, app.PushoverKey, app.SubjectTemplate, app.TextBodyTemplate,
-		app.HtmlBodyTemplate, updatedAt, app.Id, app.OrgId).Scan(
+	if err := d.pg.QueryRowContext(ctx, updateApp, app.GetName(), app.GetDisplayName(),
+		app.GetEmail(), app.GetPushoverKey(), app.GetSubjectTemplate(), app.GetTextBodyTemplate(),
+		app.GetHtmlBodyTemplate(), updatedAt, app.GetId(), app.GetOrgId()).Scan(
 		&createdAt); err != nil {
 		return nil, dao.DBToSentinel(err)
 	}

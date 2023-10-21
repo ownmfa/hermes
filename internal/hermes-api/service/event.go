@@ -46,13 +46,13 @@ func (e *Event) ListEvents(ctx context.Context, req *api.ListEventsRequest) (
 	}
 
 	end := time.Now().UTC()
-	if req.EndTime != nil {
-		end = req.EndTime.AsTime()
+	if req.GetEndTime() != nil {
+		end = req.GetEndTime().AsTime()
 	}
 
 	start := end.Add(-24 * time.Hour)
-	if req.StartTime != nil && req.StartTime.AsTime().Before(end) {
-		start = req.StartTime.AsTime()
+	if req.GetStartTime() != nil && req.GetStartTime().AsTime().Before(end) {
+		start = req.GetStartTime().AsTime()
 	}
 
 	if end.Sub(start) > 90*24*time.Hour {
@@ -60,7 +60,7 @@ func (e *Event) ListEvents(ctx context.Context, req *api.ListEventsRequest) (
 			"maximum time range exceeded")
 	}
 
-	events, err := e.evDAO.List(ctx, sess.OrgID, req.IdentityId, end, start)
+	events, err := e.evDAO.List(ctx, sess.OrgID, req.GetIdentityId(), end, start)
 	if err != nil {
 		return nil, errToStatus(err)
 	}
@@ -78,7 +78,7 @@ func (e *Event) LatestEvents(
 		return nil, errPerm(api.Role_VIEWER)
 	}
 
-	events, err := e.evDAO.Latest(ctx, sess.OrgID, req.AppId, req.IdentityId)
+	events, err := e.evDAO.Latest(ctx, sess.OrgID, req.GetAppId(), req.GetIdentityId())
 	if err != nil {
 		return nil, errToStatus(err)
 	}

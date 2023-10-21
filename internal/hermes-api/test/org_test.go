@@ -32,11 +32,11 @@ func TestCreateOrg(t *testing.T) {
 			&api.CreateOrgRequest{Org: org})
 		t.Logf("createOrg, err: %+v, %v", createOrg, err)
 		require.NoError(t, err)
-		require.NotEqual(t, org.Id, createOrg.Id)
-		require.Equal(t, org.Name, createOrg.Name)
-		require.WithinDuration(t, time.Now(), createOrg.CreatedAt.AsTime(),
+		require.NotEqual(t, org.GetId(), createOrg.GetId())
+		require.Equal(t, org.GetName(), createOrg.GetName())
+		require.WithinDuration(t, time.Now(), createOrg.GetCreatedAt().AsTime(),
 			2*time.Second)
-		require.WithinDuration(t, time.Now(), createOrg.UpdatedAt.AsTime(),
+		require.WithinDuration(t, time.Now(), createOrg.GetUpdatedAt().AsTime(),
 			2*time.Second)
 	})
 
@@ -44,7 +44,7 @@ func TestCreateOrg(t *testing.T) {
 		t.Parallel()
 
 		org := random.Org("api-org")
-		org.Name = strings.ToUpper(org.Name)
+		org.Name = strings.ToUpper(org.GetName())
 
 		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
 		defer cancel()
@@ -54,11 +54,11 @@ func TestCreateOrg(t *testing.T) {
 			&api.CreateOrgRequest{Org: org})
 		t.Logf("createOrg, err: %+v, %v", createOrg, err)
 		require.NoError(t, err)
-		require.NotEqual(t, org.Id, createOrg.Id)
-		require.Equal(t, strings.ToLower(org.Name), createOrg.Name)
-		require.WithinDuration(t, time.Now(), createOrg.CreatedAt.AsTime(),
+		require.NotEqual(t, org.GetId(), createOrg.GetId())
+		require.Equal(t, strings.ToLower(org.GetName()), createOrg.GetName())
+		require.WithinDuration(t, time.Now(), createOrg.GetCreatedAt().AsTime(),
 			2*time.Second)
-		require.WithinDuration(t, time.Now(), createOrg.UpdatedAt.AsTime(),
+		require.WithinDuration(t, time.Now(), createOrg.GetUpdatedAt().AsTime(),
 			2*time.Second)
 	})
 
@@ -117,7 +117,7 @@ func TestGetOrg(t *testing.T) {
 		defer cancel()
 
 		orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
-		getOrg, err := orgCli.GetOrg(ctx, &api.GetOrgRequest{Id: createOrg.Id})
+		getOrg, err := orgCli.GetOrg(ctx, &api.GetOrgRequest{Id: createOrg.GetId()})
 		t.Logf("getOrg, err: %+v, %v", getOrg, err)
 		require.NoError(t, err)
 
@@ -136,7 +136,7 @@ func TestGetOrg(t *testing.T) {
 
 		orgCli := api.NewOrgServiceClient(globalAdminGRPCConn)
 		getOrg, err := orgCli.GetOrg(ctx,
-			&api.GetOrgRequest{Id: createOrg.Id})
+			&api.GetOrgRequest{Id: createOrg.GetId()})
 		t.Logf("getOrg, err: %+v, %v", getOrg, err)
 		require.Nil(t, getOrg)
 		require.EqualError(t, err, "rpc error: code = PermissionDenied desc = "+
@@ -183,16 +183,16 @@ func TestUpdateOrg(t *testing.T) {
 			&api.UpdateOrgRequest{Org: createOrg})
 		t.Logf("updateOrg, err: %+v, %v", updateOrg, err)
 		require.NoError(t, err)
-		require.Equal(t, createOrg.Name, updateOrg.Name)
-		require.Equal(t, createOrg.Status, updateOrg.Status)
-		require.Equal(t, createOrg.Plan, updateOrg.Plan)
-		require.True(t, updateOrg.UpdatedAt.AsTime().After(
-			updateOrg.CreatedAt.AsTime()))
-		require.WithinDuration(t, createOrg.CreatedAt.AsTime(),
-			updateOrg.UpdatedAt.AsTime(), 2*time.Second)
+		require.Equal(t, createOrg.GetName(), updateOrg.GetName())
+		require.Equal(t, createOrg.GetStatus(), updateOrg.GetStatus())
+		require.Equal(t, createOrg.GetPlan(), updateOrg.GetPlan())
+		require.True(t, updateOrg.GetUpdatedAt().AsTime().After(
+			updateOrg.GetCreatedAt().AsTime()))
+		require.WithinDuration(t, createOrg.GetCreatedAt().AsTime(),
+			updateOrg.GetUpdatedAt().AsTime(), 2*time.Second)
 
 		getOrg, err := orgCli.GetOrg(ctx,
-			&api.GetOrgRequest{Id: createOrg.Id})
+			&api.GetOrgRequest{Id: createOrg.GetId()})
 		t.Logf("getOrg, err: %+v, %v", getOrg, err)
 		require.NoError(t, err)
 
@@ -217,7 +217,7 @@ func TestUpdateOrg(t *testing.T) {
 
 		// Update org fields.
 		part := &api.Org{
-			Id: createOrg.Id, Name: "api-org-" + random.String(10),
+			Id: createOrg.GetId(), Name: "api-org-" + random.String(10),
 			Status: api.Status_DISABLED,
 		}
 
@@ -228,14 +228,14 @@ func TestUpdateOrg(t *testing.T) {
 		})
 		t.Logf("updateOrg, err: %+v, %v", updateOrg, err)
 		require.NoError(t, err)
-		require.Equal(t, part.Name, updateOrg.Name)
-		require.Equal(t, part.Status, updateOrg.Status)
-		require.True(t, updateOrg.UpdatedAt.AsTime().After(
-			updateOrg.CreatedAt.AsTime()))
-		require.WithinDuration(t, createOrg.CreatedAt.AsTime(),
-			updateOrg.UpdatedAt.AsTime(), 2*time.Second)
+		require.Equal(t, part.GetName(), updateOrg.GetName())
+		require.Equal(t, part.GetStatus(), updateOrg.GetStatus())
+		require.True(t, updateOrg.GetUpdatedAt().AsTime().After(
+			updateOrg.GetCreatedAt().AsTime()))
+		require.WithinDuration(t, createOrg.GetCreatedAt().AsTime(),
+			updateOrg.GetUpdatedAt().AsTime(), 2*time.Second)
 
-		getOrg, err := orgCli.GetOrg(ctx, &api.GetOrgRequest{Id: createOrg.Id})
+		getOrg, err := orgCli.GetOrg(ctx, &api.GetOrgRequest{Id: createOrg.GetId()})
 		t.Logf("getOrg, err: %+v, %v", getOrg, err)
 		require.NoError(t, err)
 
@@ -268,7 +268,7 @@ func TestUpdateOrg(t *testing.T) {
 		})
 		t.Logf("updateOrg, err: %+v, %v", updateOrg, err)
 		require.NoError(t, err)
-		require.Equal(t, part.Status, updateOrg.Status)
+		require.Equal(t, part.GetStatus(), updateOrg.GetStatus())
 
 		updateOrg, err = orgCli.UpdateOrg(ctx, &api.UpdateOrgRequest{
 			Org: part, UpdateMask: &fieldmaskpb.FieldMask{
@@ -402,7 +402,7 @@ func TestDeleteOrg(t *testing.T) {
 		t.Logf("createOrg, err: %+v, %v", createOrg, err)
 		require.NoError(t, err)
 
-		_, err = orgCli.DeleteOrg(ctx, &api.DeleteOrgRequest{Id: createOrg.Id})
+		_, err = orgCli.DeleteOrg(ctx, &api.DeleteOrgRequest{Id: createOrg.GetId()})
 		t.Logf("err: %v", err)
 		require.NoError(t, err)
 
@@ -415,7 +415,7 @@ func TestDeleteOrg(t *testing.T) {
 
 			orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
 			getOrg, err := orgCli.GetOrg(ctx,
-				&api.GetOrgRequest{Id: createOrg.Id})
+				&api.GetOrgRequest{Id: createOrg.GetId()})
 			t.Logf("getOrg, err: %+v, %v", getOrg, err)
 			require.Nil(t, getOrg)
 			require.EqualError(t, err, "rpc error: code = NotFound desc = "+
@@ -468,9 +468,9 @@ func TestListOrgs(t *testing.T) {
 		t.Logf("createOrg, err: %+v, %v", createOrg, err)
 		require.NoError(t, err)
 
-		orgIDs = append(orgIDs, createOrg.Id)
-		orgNames = append(orgNames, createOrg.Name)
-		orgPlans = append(orgPlans, createOrg.Plan)
+		orgIDs = append(orgIDs, createOrg.GetId())
+		orgNames = append(orgNames, createOrg.GetName())
+		orgPlans = append(orgPlans, createOrg.GetPlan())
 	}
 
 	t.Run("List orgs by valid org ID", func(t *testing.T) {
@@ -484,14 +484,14 @@ func TestListOrgs(t *testing.T) {
 			&api.ListOrgsRequest{PageSize: 250})
 		t.Logf("listOrgs, err: %+v, %v", listOrgs, err)
 		require.NoError(t, err)
-		require.GreaterOrEqual(t, len(listOrgs.Orgs), 3)
-		require.GreaterOrEqual(t, listOrgs.TotalSize, int32(3))
+		require.GreaterOrEqual(t, len(listOrgs.GetOrgs()), 3)
+		require.GreaterOrEqual(t, listOrgs.GetTotalSize(), int32(3))
 
 		var found bool
-		for _, org := range listOrgs.Orgs {
-			if org.Id == orgIDs[len(orgIDs)-1] &&
-				org.Name == orgNames[len(orgNames)-1] &&
-				org.Plan == orgPlans[len(orgPlans)-1] {
+		for _, org := range listOrgs.GetOrgs() {
+			if org.GetId() == orgIDs[len(orgIDs)-1] &&
+				org.GetName() == orgNames[len(orgNames)-1] &&
+				org.GetPlan() == orgPlans[len(orgPlans)-1] {
 				found = true
 			}
 		}
@@ -508,17 +508,17 @@ func TestListOrgs(t *testing.T) {
 		listOrgs, err := orgCli.ListOrgs(ctx, &api.ListOrgsRequest{PageSize: 2})
 		t.Logf("listOrgs, err: %+v, %v", listOrgs, err)
 		require.NoError(t, err)
-		require.Len(t, listOrgs.Orgs, 2)
-		require.NotEmpty(t, listOrgs.NextPageToken)
-		require.GreaterOrEqual(t, listOrgs.TotalSize, int32(3))
+		require.Len(t, listOrgs.GetOrgs(), 2)
+		require.NotEmpty(t, listOrgs.GetNextPageToken())
+		require.GreaterOrEqual(t, listOrgs.GetTotalSize(), int32(3))
 
 		nextOrgs, err := orgCli.ListOrgs(ctx, &api.ListOrgsRequest{
-			PageSize: 2, PageToken: listOrgs.NextPageToken,
+			PageSize: 2, PageToken: listOrgs.GetNextPageToken(),
 		})
 		t.Logf("nextOrgs, err: %+v, %v", nextOrgs, err)
 		require.NoError(t, err)
-		require.GreaterOrEqual(t, len(nextOrgs.Orgs), 1)
-		require.GreaterOrEqual(t, nextOrgs.TotalSize, int32(3))
+		require.GreaterOrEqual(t, len(nextOrgs.GetOrgs()), 1)
+		require.GreaterOrEqual(t, nextOrgs.GetTotalSize(), int32(3))
 	})
 
 	t.Run("List orgs with insufficient role", func(t *testing.T) {
@@ -531,8 +531,8 @@ func TestListOrgs(t *testing.T) {
 		listOrgs, err := secCli.ListOrgs(ctx, &api.ListOrgsRequest{})
 		t.Logf("listOrgs, err: %+v, %v", listOrgs, err)
 		require.NoError(t, err)
-		require.Len(t, listOrgs.Orgs, 1)
-		require.Equal(t, int32(1), listOrgs.TotalSize)
+		require.Len(t, listOrgs.GetOrgs(), 1)
+		require.Equal(t, int32(1), listOrgs.GetTotalSize())
 	})
 
 	t.Run("List orgs by invalid page token", func(t *testing.T) {

@@ -22,9 +22,9 @@ func (d *DAO) Create(ctx context.Context, event *api.Event) error {
 	now := time.Now().UTC().Truncate(time.Microsecond)
 	event.CreatedAt = timestamppb.New(now)
 
-	_, err := d.pg.ExecContext(ctx, createEvent, event.OrgId, event.AppId,
-		event.IdentityId, event.Status.String(), event.Error, now,
-		event.TraceId)
+	_, err := d.pg.ExecContext(ctx, createEvent, event.GetOrgId(), event.GetAppId(),
+		event.GetIdentityId(), event.GetStatus().String(), event.GetError(), now,
+		event.GetTraceId())
 
 	return dao.DBToSentinel(err)
 }

@@ -31,35 +31,35 @@ func TestNotifyMessages(t *testing.T) {
 	t.Logf("createOrg, err: %+v, %v", createOrg, err)
 	require.NoError(t, err)
 
-	app := random.App("not", createOrg.Id)
+	app := random.App("not", createOrg.GetId())
 	app.PushoverKey = ""
 	createApp, err := globalAppDAO.Create(ctx, app)
 	t.Logf("createApp, err: %+v, %v", createApp, err)
 	require.NoError(t, err)
 
 	createSMSIdentity, _, _, err := globalIdentDAO.Create(ctx,
-		random.SMSIdentity("not", createOrg.Id, createApp.Id))
+		random.SMSIdentity("not", createOrg.GetId(), createApp.GetId()))
 	t.Logf("createSMSIdentity, err: %+v, %v", createSMSIdentity, err)
 	require.NoError(t, err)
 
 	createPushoverIdentity, _, _, err := globalIdentDAO.Create(ctx,
-		random.PushoverIdentity("not", createOrg.Id, createApp.Id))
+		random.PushoverIdentity("not", createOrg.GetId(), createApp.GetId()))
 	t.Logf("createPushoverIdentity, err: %+v, %v", createPushoverIdentity, err)
 	require.NoError(t, err)
 
 	createEmailIdentity, _, _, err := globalIdentDAO.Create(ctx,
-		random.EmailIdentity("not", createOrg.Id, createApp.Id))
+		random.EmailIdentity("not", createOrg.GetId(), createApp.GetId()))
 	t.Logf("createEmailIdentity, err: %+v, %v", createEmailIdentity, err)
 	require.NoError(t, err)
 
-	appByKey := random.App("not", createOrg.Id)
+	appByKey := random.App("not", createOrg.GetId())
 	appByKey.PushoverKey = random.String(30)
 	createAppByKey, err := globalAppDAO.Create(ctx, appByKey)
 	t.Logf("createAppByKey, err: %+v, %v", createAppByKey, err)
 	require.NoError(t, err)
 
 	createIdentityByKey, _, _, err := globalIdentDAO.Create(ctx,
-		random.PushoverIdentity("not", createOrg.Id, createAppByKey.Id))
+		random.PushoverIdentity("not", createOrg.GetId(), createAppByKey.GetId()))
 	t.Logf("createIdentityByKey, err: %+v, %v", createIdentityByKey, err)
 	require.NoError(t, err)
 
@@ -68,26 +68,26 @@ func TestNotifyMessages(t *testing.T) {
 	}{
 		{
 			&message.NotifierIn{
-				OrgId: createOrg.Id, AppId: createApp.Id,
-				IdentityId: createSMSIdentity.Id, TraceId: traceID[:],
+				OrgId: createOrg.GetId(), AppId: createApp.GetId(),
+				IdentityId: createSMSIdentity.GetId(), TraceId: traceID[:],
 			},
 		},
 		{
 			&message.NotifierIn{
-				OrgId: createOrg.Id, AppId: createApp.Id,
-				IdentityId: createPushoverIdentity.Id, TraceId: traceID[:],
+				OrgId: createOrg.GetId(), AppId: createApp.GetId(),
+				IdentityId: createPushoverIdentity.GetId(), TraceId: traceID[:],
 			},
 		},
 		{
 			&message.NotifierIn{
-				OrgId: createOrg.Id, AppId: createAppByKey.Id,
-				IdentityId: createIdentityByKey.Id, TraceId: traceID[:],
+				OrgId: createOrg.GetId(), AppId: createAppByKey.GetId(),
+				IdentityId: createIdentityByKey.GetId(), TraceId: traceID[:],
 			},
 		},
 		{
 			&message.NotifierIn{
-				OrgId: createOrg.Id, AppId: createApp.Id,
-				IdentityId: createEmailIdentity.Id, TraceId: traceID[:],
+				OrgId: createOrg.GetId(), AppId: createApp.GetId(),
+				IdentityId: createEmailIdentity.GetId(), TraceId: traceID[:],
 			},
 		},
 	}
@@ -107,9 +107,9 @@ func TestNotifyMessages(t *testing.T) {
 
 			// Verify event.
 			event := &api.Event{
-				OrgId:      lTest.inp.OrgId,
-				AppId:      lTest.inp.AppId,
-				IdentityId: lTest.inp.IdentityId,
+				OrgId:      lTest.inp.GetOrgId(),
+				AppId:      lTest.inp.GetAppId(),
+				IdentityId: lTest.inp.GetIdentityId(),
 				Status:     api.EventStatus_CHALLENGE_SENT,
 				TraceId:    traceID.String(),
 			}
@@ -118,16 +118,16 @@ func TestNotifyMessages(t *testing.T) {
 				testTimeout)
 			defer cancel()
 
-			listEvents, err := globalEvDAO.List(ctx, lTest.inp.OrgId,
-				lTest.inp.IdentityId, time.Now(), time.Now().Add(-testTimeout))
+			listEvents, err := globalEvDAO.List(ctx, lTest.inp.GetOrgId(),
+				lTest.inp.GetIdentityId(), time.Now(), time.Now().Add(-testTimeout))
 			t.Logf("listEvents, err: %+v, %v", listEvents, err)
 			require.NoError(t, err)
 			require.Len(t, listEvents, 1)
 
 			// Normalize timestamp.
 			require.WithinDuration(t, time.Now(),
-				listEvents[0].CreatedAt.AsTime(), testTimeout)
-			event.CreatedAt = listEvents[0].CreatedAt
+				listEvents[0].GetCreatedAt().AsTime(), testTimeout)
+			event.CreatedAt = listEvents[0].GetCreatedAt()
 
 			// Testify does not currently support protobuf equality:
 			// https://github.com/stretchr/testify/issues/758
@@ -150,11 +150,11 @@ func TestNotifyMessagesError(t *testing.T) {
 	t.Logf("createOrg, err: %+v, %v", createOrg, err)
 	require.NoError(t, err)
 
-	createApp, err := globalAppDAO.Create(ctx, random.App("not", createOrg.Id))
+	createApp, err := globalAppDAO.Create(ctx, random.App("not", createOrg.GetId()))
 	t.Logf("createApp, err: %+v, %v", createApp, err)
 	require.NoError(t, err)
 
-	badOTPIdentity := random.HOTPIdentity("not", createOrg.Id, createApp.Id)
+	badOTPIdentity := random.HOTPIdentity("not", createOrg.GetId(), createApp.GetId())
 	badOTPIdentity.MethodOneof = &api.Identity_HardwareHotpMethod{
 		HardwareHotpMethod: &api.HardwareHOTPMethod{},
 	}
@@ -163,7 +163,7 @@ func TestNotifyMessagesError(t *testing.T) {
 	require.NoError(t, err)
 
 	createExpIdentity, otp, _, err := globalIdentDAO.Create(ctx,
-		random.SMSIdentity("not", createOrg.Id, createApp.Id))
+		random.SMSIdentity("not", createOrg.GetId(), createApp.GetId()))
 	t.Logf("createExpIdentity, otp, err: %+v, %#v, %v", createExpIdentity, otp,
 		err)
 	require.NoError(t, err)
@@ -171,19 +171,19 @@ func TestNotifyMessagesError(t *testing.T) {
 	passcode, err := otp.HOTP(1)
 	require.NoError(t, err)
 
-	ok, err := globalCache.SetIfNotExist(ctx, key.Expire(createOrg.Id,
-		createApp.Id, createExpIdentity.Id, passcode), 1)
+	ok, err := globalCache.SetIfNotExist(ctx, key.Expire(createOrg.GetId(),
+		createApp.GetId(), createExpIdentity.GetId(), passcode), 1)
 	require.True(t, ok)
 	require.NoError(t, err)
 
-	badTemplApp := random.App("not", createOrg.Id)
+	badTemplApp := random.App("not", createOrg.GetId())
 	badTemplApp.SubjectTemplate = `{{if`
 	createBadTemplApp, err := globalAppDAO.Create(ctx, badTemplApp)
 	t.Logf("createBadTemplApp, err: %+v, %v", createBadTemplApp, err)
 	require.NoError(t, err)
 
 	createBadTemplIdentity, _, _, err := globalIdentDAO.Create(ctx,
-		random.PushoverIdentity("not", createOrg.Id, createBadTemplApp.Id))
+		random.PushoverIdentity("not", createOrg.GetId(), createBadTemplApp.GetId()))
 	t.Logf("createBadTemplIdentity, err: %+v, %v", createBadTemplIdentity, err)
 	require.NoError(t, err)
 
@@ -197,22 +197,22 @@ func TestNotifyMessagesError(t *testing.T) {
 		// OTP error.
 		{
 			&message.NotifierIn{
-				OrgId: createOrg.Id, AppId: createApp.Id,
-				IdentityId: createBadOTPIdentity.Id, TraceId: traceID[:],
+				OrgId: createOrg.GetId(), AppId: createApp.GetId(),
+				IdentityId: createBadOTPIdentity.GetId(), TraceId: traceID[:],
 			}, false, "",
 		},
 		// Expiration collision.
 		{
 			&message.NotifierIn{
-				OrgId: createOrg.Id, AppId: createApp.Id,
-				IdentityId: createExpIdentity.Id, TraceId: traceID[:],
+				OrgId: createOrg.GetId(), AppId: createApp.GetId(),
+				IdentityId: createExpIdentity.GetId(), TraceId: traceID[:],
 			}, false, "",
 		},
 		// Templates error.
 		{
 			&message.NotifierIn{
-				OrgId: createOrg.Id, AppId: createBadTemplApp.Id,
-				IdentityId: createBadTemplIdentity.Id, TraceId: traceID[:],
+				OrgId: createOrg.GetId(), AppId: createBadTemplApp.GetId(),
+				IdentityId: createBadTemplIdentity.GetId(), TraceId: traceID[:],
 			}, true, "template: template:1: unclosed action",
 		},
 	}
@@ -238,9 +238,9 @@ func TestNotifyMessagesError(t *testing.T) {
 
 				// Verify event.
 				event := &api.Event{
-					OrgId:      lTest.inpNIn.OrgId,
-					AppId:      lTest.inpNIn.AppId,
-					IdentityId: lTest.inpNIn.IdentityId,
+					OrgId:      lTest.inpNIn.GetOrgId(),
+					AppId:      lTest.inpNIn.GetAppId(),
+					IdentityId: lTest.inpNIn.GetIdentityId(),
 					Status:     api.EventStatus_CHALLENGE_FAIL,
 					Error:      lTest.inpEventErr,
 					TraceId:    traceID.String(),
@@ -250,8 +250,8 @@ func TestNotifyMessagesError(t *testing.T) {
 					testTimeout)
 				defer cancel()
 
-				listEvents, err := globalEvDAO.List(ctx, lTest.inpNIn.OrgId,
-					lTest.inpNIn.IdentityId, time.Now(),
+				listEvents, err := globalEvDAO.List(ctx, lTest.inpNIn.GetOrgId(),
+					lTest.inpNIn.GetIdentityId(), time.Now(),
 					time.Now().Add(-testTimeout))
 				t.Logf("listEvents, err: %+v, %v", listEvents, err)
 				require.NoError(t, err)
@@ -259,8 +259,8 @@ func TestNotifyMessagesError(t *testing.T) {
 
 				// Normalize timestamp.
 				require.WithinDuration(t, time.Now(),
-					listEvents[0].CreatedAt.AsTime(), testTimeout)
-				event.CreatedAt = listEvents[0].CreatedAt
+					listEvents[0].GetCreatedAt().AsTime(), testTimeout)
+				event.CreatedAt = listEvents[0].GetCreatedAt()
 
 				// Testify does not currently support protobuf equality:
 				// https://github.com/stretchr/testify/issues/758

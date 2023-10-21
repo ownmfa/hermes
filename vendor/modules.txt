@@ -65,8 +65,8 @@ github.com/mennanov/fmutils
 # github.com/nsqio/go-nsq v1.1.0
 ## explicit; go 1.11
 github.com/nsqio/go-nsq
-# github.com/ownmfa/api/go v1.0.27
-## explicit; go 1.21.0
+# github.com/ownmfa/api/go v1.0.28
+## explicit; go 1.21.3
 github.com/ownmfa/api/go/api
 # github.com/pmezard/go-difflib v1.0.0
 ## explicit
@@ -132,18 +132,18 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# google.golang.org/genproto v0.0.0-20231009173412-8bfb1ae86b6c
+# google.golang.org/genproto v0.0.0-20231016165738-49dd2c1f3d0b
 ## explicit; go 1.19
 google.golang.org/genproto/internal
-# google.golang.org/genproto/googleapis/api v0.0.0-20231009173412-8bfb1ae86b6c
+# google.golang.org/genproto/googleapis/api v0.0.0-20231016165738-49dd2c1f3d0b
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/api
 google.golang.org/genproto/googleapis/api/annotations
 google.golang.org/genproto/googleapis/api/httpbody
-# google.golang.org/genproto/googleapis/rpc v0.0.0-20231009173412-8bfb1ae86b6c
+# google.golang.org/genproto/googleapis/rpc v0.0.0-20231016165738-49dd2c1f3d0b
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.58.3
+# google.golang.org/grpc v1.59.0
 ## explicit; go 1.19
 google.golang.org/grpc
 google.golang.org/grpc/attributes

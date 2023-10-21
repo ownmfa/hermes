@@ -37,7 +37,7 @@ func TestCreateUser(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: user.OrgId, Role: api.Role_ADMIN,
+				OrgID: user.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -116,7 +116,7 @@ func TestCreateUser(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: user.OrgId, Role: api.Role_ADMIN,
+				OrgID: user.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -140,17 +140,17 @@ func TestGetUser(t *testing.T) {
 		retUser, _ := proto.Clone(user).(*api.User)
 
 		userer := NewMockUserer(gomock.NewController(t))
-		userer.EXPECT().Read(gomock.Any(), user.Id, user.OrgId).Return(retUser,
+		userer.EXPECT().Read(gomock.Any(), user.GetId(), user.GetOrgId()).Return(retUser,
 			nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: user.OrgId, Role: api.Role_ADMIN,
+				OrgID: user.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
 		userSvc := NewUser(userer)
-		getUser, err := userSvc.GetUser(ctx, &api.GetUserRequest{Id: user.Id})
+		getUser, err := userSvc.GetUser(ctx, &api.GetUserRequest{Id: user.GetId()})
 		t.Logf("user, getUser, err: %+v, %+v, %v", user, getUser, err)
 		require.NoError(t, err)
 
@@ -228,7 +228,7 @@ func TestUpdateUser(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: user.OrgId, Role: api.Role_ADMIN,
+				OrgID: user.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -251,22 +251,22 @@ func TestUpdateUser(t *testing.T) {
 		user := random.User("api-user", uuid.NewString())
 		user.Role = api.Role_ADMIN
 		retUser, _ := proto.Clone(user).(*api.User)
-		part := &api.User{Id: user.Id, Status: api.Status_ACTIVE}
+		part := &api.User{Id: user.GetId(), Status: api.Status_ACTIVE}
 		merged := &api.User{
-			Id: user.Id, OrgId: user.OrgId, Name: user.Name, Email: user.Email,
-			Role: user.Role, Status: part.Status,
+			Id: user.GetId(), OrgId: user.GetOrgId(), Name: user.GetName(), Email: user.GetEmail(),
+			Role: user.GetRole(), Status: part.GetStatus(),
 		}
 		retMerged, _ := proto.Clone(merged).(*api.User)
 
 		userer := NewMockUserer(gomock.NewController(t))
-		userer.EXPECT().Read(gomock.Any(), user.Id, user.OrgId).Return(retUser,
+		userer.EXPECT().Read(gomock.Any(), user.GetId(), user.GetOrgId()).Return(retUser,
 			nil).Times(1)
 		userer.EXPECT().Update(gomock.Any(), matcher.NewProtoMatcher(merged)).
 			Return(retMerged, nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: user.OrgId, Role: api.Role_ADMIN,
+				OrgID: user.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -344,7 +344,7 @@ func TestUpdateUser(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				UserID: user.Id, OrgID: user.OrgId, Role: api.Role_AUTHENTICATOR,
+				UserID: user.GetId(), OrgID: user.GetOrgId(), Role: api.Role_AUTHENTICATOR,
 			}), testTimeout)
 		defer cancel()
 
@@ -365,7 +365,7 @@ func TestUpdateUser(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				UserID: user.Id, OrgID: user.OrgId, Role: api.Role_ADMIN,
+				UserID: user.GetId(), OrgID: user.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -409,7 +409,7 @@ func TestUpdateUser(t *testing.T) {
 		part := &api.User{Id: uuid.NewString(), Status: api.Status_ACTIVE}
 
 		userer := NewMockUserer(gomock.NewController(t))
-		userer.EXPECT().Read(gomock.Any(), part.Id, orgID).
+		userer.EXPECT().Read(gomock.Any(), part.GetId(), orgID).
 			Return(nil, dao.ErrNotFound).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
@@ -438,7 +438,7 @@ func TestUpdateUser(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: user.OrgId, Role: api.Role_ADMIN,
+				OrgID: user.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -466,7 +466,7 @@ func TestUpdateUser(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				OrgID: user.OrgId, Role: api.Role_ADMIN,
+				OrgID: user.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -676,7 +676,7 @@ func TestListUsers(t *testing.T) {
 		listUsers, err := userSvc.ListUsers(ctx, &api.ListUsersRequest{})
 		t.Logf("listUsers, err: %+v, %v", listUsers, err)
 		require.NoError(t, err)
-		require.Equal(t, int32(3), listUsers.TotalSize)
+		require.Equal(t, int32(3), listUsers.GetTotalSize())
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
@@ -698,8 +698,8 @@ func TestListUsers(t *testing.T) {
 			random.User("api-user", uuid.NewString()),
 		}
 
-		next, err := session.GeneratePageToken(users[1].CreatedAt.AsTime(),
-			users[1].Id)
+		next, err := session.GeneratePageToken(users[1].GetCreatedAt().AsTime(),
+			users[1].GetId())
 		require.NoError(t, err)
 
 		userer := NewMockUserer(gomock.NewController(t))
@@ -717,7 +717,7 @@ func TestListUsers(t *testing.T) {
 			&api.ListUsersRequest{PageSize: 2})
 		t.Logf("listUsers, err: %+v, %v", listUsers, err)
 		require.NoError(t, err)
-		require.Equal(t, int32(3), listUsers.TotalSize)
+		require.Equal(t, int32(3), listUsers.GetTotalSize())
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758
@@ -770,12 +770,12 @@ func TestListUsers(t *testing.T) {
 		user := random.User("api-user", uuid.NewString())
 
 		userer := NewMockUserer(gomock.NewController(t))
-		userer.EXPECT().Read(gomock.Any(), user.Id, user.OrgId).Return(user,
+		userer.EXPECT().Read(gomock.Any(), user.GetId(), user.GetOrgId()).Return(user,
 			nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				UserID: user.Id, OrgID: user.OrgId, Role: api.Role_VIEWER,
+				UserID: user.GetId(), OrgID: user.GetOrgId(), Role: api.Role_VIEWER,
 			}), testTimeout)
 		defer cancel()
 
@@ -806,7 +806,7 @@ func TestListUsers(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
-				UserID: user.Id, OrgID: user.OrgId, Role: api.Role_VIEWER,
+				UserID: user.GetId(), OrgID: user.GetOrgId(), Role: api.Role_VIEWER,
 			}), testTimeout)
 		defer cancel()
 
@@ -883,7 +883,7 @@ func TestListUsers(t *testing.T) {
 			&api.ListUsersRequest{PageSize: 2})
 		t.Logf("listUsers, err: %+v, %v", listUsers, err)
 		require.NoError(t, err)
-		require.Equal(t, int32(3), listUsers.TotalSize)
+		require.Equal(t, int32(3), listUsers.GetTotalSize())
 
 		// Testify does not currently support protobuf equality:
 		// https://github.com/stretchr/testify/issues/758

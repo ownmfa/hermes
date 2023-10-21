@@ -50,7 +50,7 @@ func authGRPCConn(role api.Role, plan api.Plan) (
 		return "", nil, err
 	}
 
-	user := random.User("api-helper", createOrg.Id)
+	user := random.User("api-helper", createOrg.GetId())
 	user.Role = role
 	user.Status = api.Status_ACTIVE
 	createUser, err := globalUserDAO.Create(ctx, user)
@@ -58,14 +58,14 @@ func authGRPCConn(role api.Role, plan api.Plan) (
 		return "", nil, err
 	}
 
-	if err = globalUserDAO.UpdatePassword(ctx, createUser.Id, createOrg.Id,
+	if err = globalUserDAO.UpdatePassword(ctx, createUser.GetId(), createOrg.GetId(),
 		globalHash); err != nil {
 		return "", nil, err
 	}
 
 	sessCli := api.NewSessionServiceClient(globalNoAuthGRPCConn)
 	login, err := sessCli.Login(ctx, &api.LoginRequest{
-		Email: createUser.Email, OrgName: createOrg.Name, Password: globalPass,
+		Email: createUser.GetEmail(), OrgName: createOrg.GetName(), Password: globalPass,
 	})
 	if err != nil {
 		return "", nil, err
@@ -75,14 +75,14 @@ func authGRPCConn(role api.Role, plan api.Plan) (
 		grpc.WithBlock(),
 		grpc.FailOnNonTempDialError(true),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithPerRPCCredentials(&credential{token: login.Token}),
+		grpc.WithPerRPCCredentials(&credential{token: login.GetToken()}),
 	}
 	authConn, err := grpc.Dial(iapi.GRPCHost+iapi.GRPCPort, opts...)
 	if err != nil {
 		return "", nil, err
 	}
 
-	return createOrg.Id, authConn, nil
+	return createOrg.GetId(), authConn, nil
 }
 
 func keyGRPCConn(conn *grpc.ClientConn, role api.Role) (
@@ -104,7 +104,7 @@ func keyGRPCConn(conn *grpc.ClientConn, role api.Role) (
 		grpc.WithBlock(),
 		grpc.FailOnNonTempDialError(true),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithPerRPCCredentials(&credential{token: createKey.Token}),
+		grpc.WithPerRPCCredentials(&credential{token: createKey.GetToken()}),
 	}
 	keyConn, err := grpc.Dial(iapi.GRPCHost+iapi.GRPCPort, opts...)
 	if err != nil {

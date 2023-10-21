@@ -52,51 +52,51 @@ func methodToOTP(identity *api.Identity) (*oath.OTP, *otpMeta, error) {
 	otp := &oath.OTP{Algorithm: oath.HOTP, Key: secret}
 	meta := &otpMeta{retSecret: true}
 
-	switch m := identity.MethodOneof.(type) {
+	switch m := identity.GetMethodOneof().(type) {
 	case *api.Identity_SoftwareHotpMethod:
-		otp.Hash = hashAPIToCrypto[m.SoftwareHotpMethod.Hash]
-		otp.AccountName = m.SoftwareHotpMethod.AccountName
+		otp.Hash = hashAPIToCrypto[m.SoftwareHotpMethod.GetHash()]
+		otp.AccountName = m.SoftwareHotpMethod.GetAccountName()
 
-		if m.SoftwareHotpMethod.Digits == 0 {
+		if m.SoftwareHotpMethod.GetDigits() == 0 {
 			m.SoftwareHotpMethod.Digits = defaultDigits
 		}
-		otp.Digits = int(m.SoftwareHotpMethod.Digits)
+		otp.Digits = int(m.SoftwareHotpMethod.GetDigits())
 	case *api.Identity_SoftwareTotpMethod:
 		otp.Algorithm = oath.TOTP
-		otp.Hash = hashAPIToCrypto[m.SoftwareTotpMethod.Hash]
-		otp.AccountName = m.SoftwareTotpMethod.AccountName
+		otp.Hash = hashAPIToCrypto[m.SoftwareTotpMethod.GetHash()]
+		otp.AccountName = m.SoftwareTotpMethod.GetAccountName()
 
-		if m.SoftwareTotpMethod.Digits == 0 {
+		if m.SoftwareTotpMethod.GetDigits() == 0 {
 			m.SoftwareTotpMethod.Digits = defaultDigits
 		}
-		otp.Digits = int(m.SoftwareTotpMethod.Digits)
+		otp.Digits = int(m.SoftwareTotpMethod.GetDigits())
 	case *api.Identity_GoogleAuthHotpMethod:
 		otp.Hash = crypto.SHA1
 		otp.Digits = 6
-		otp.AccountName = m.GoogleAuthHotpMethod.AccountName
+		otp.AccountName = m.GoogleAuthHotpMethod.GetAccountName()
 	case *api.Identity_GoogleAuthTotpMethod:
 		otp.Algorithm = oath.TOTP
 		otp.Hash = crypto.SHA1
 		otp.Digits = 6
-		otp.AccountName = m.GoogleAuthTotpMethod.AccountName
+		otp.AccountName = m.GoogleAuthTotpMethod.GetAccountName()
 	case *api.Identity_AppleIosTotpMethod:
 		otp.Algorithm = oath.TOTP
 		otp.Hash = crypto.SHA512
 		otp.Digits = defaultDigits
 	case *api.Identity_HardwareHotpMethod:
-		otp.Hash = hashAPIToCrypto[m.HardwareHotpMethod.Hash]
-		otp.Digits = int(m.HardwareHotpMethod.Digits)
+		otp.Hash = hashAPIToCrypto[m.HardwareHotpMethod.GetHash()]
+		otp.Digits = int(m.HardwareHotpMethod.GetDigits())
 
-		otp.Key = m.HardwareHotpMethod.Secret
+		otp.Key = m.HardwareHotpMethod.GetSecret()
 		m.HardwareHotpMethod.Secret = nil
 
 		meta.retSecret = false
 	case *api.Identity_HardwareTotpMethod:
 		otp.Algorithm = oath.TOTP
-		otp.Hash = hashAPIToCrypto[m.HardwareTotpMethod.Hash]
-		otp.Digits = int(m.HardwareTotpMethod.Digits)
+		otp.Hash = hashAPIToCrypto[m.HardwareTotpMethod.GetHash()]
+		otp.Digits = int(m.HardwareTotpMethod.GetDigits())
 
-		otp.Key = m.HardwareTotpMethod.Secret
+		otp.Key = m.HardwareTotpMethod.GetSecret()
 		m.HardwareTotpMethod.Secret = nil
 
 		meta.retSecret = false
@@ -104,31 +104,31 @@ func methodToOTP(identity *api.Identity) (*oath.OTP, *otpMeta, error) {
 		otp.Hash = crypto.SHA512
 		otp.Digits = defaultDigits
 
-		meta.phone = m.SmsMethod.Phone
+		meta.phone = m.SmsMethod.GetPhone()
 		meta.retSecret = false
 	case *api.Identity_PushoverMethod:
 		otp.Hash = crypto.SHA512
 		otp.Digits = defaultDigits
 
-		meta.pushoverKey = m.PushoverMethod.PushoverKey
+		meta.pushoverKey = m.PushoverMethod.GetPushoverKey()
 		meta.retSecret = false
 	case *api.Identity_EmailMethod:
 		otp.Hash = crypto.SHA512
 		otp.Digits = defaultDigits
 
-		meta.email = m.EmailMethod.Email
+		meta.email = m.EmailMethod.GetEmail()
 		meta.retSecret = false
 	case *api.Identity_BackupCodesMethod:
 		otp.Hash = crypto.SHA512
 		otp.Digits = defaultDigits
 
-		meta.backupCodes = m.BackupCodesMethod.Passcodes
+		meta.backupCodes = m.BackupCodesMethod.GetPasscodes()
 		meta.retSecret = false
 	case *api.Identity_SecurityQuestionsMethod:
 		otp.Hash = crypto.SHA512
 		otp.Digits = defaultDigits
 
-		otp.Answer = strings.ToLower(m.SecurityQuestionsMethod.Answer)
+		otp.Answer = strings.ToLower(m.SecurityQuestionsMethod.GetAnswer())
 		m.SecurityQuestionsMethod.Answer = defaultAnswer
 
 		meta.retSecret = false
