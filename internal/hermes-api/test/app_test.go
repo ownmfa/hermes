@@ -546,7 +546,7 @@ func TestListApps(t *testing.T) {
 		})
 		t.Logf("nextApps, err: %+v, %v", nextApps, err)
 		require.NoError(t, err)
-		require.GreaterOrEqual(t, len(nextApps.GetApps()), 1)
+		require.NotEmpty(t, nextApps.GetApps())
 		require.GreaterOrEqual(t, nextApps.GetTotalSize(), int32(3))
 	})
 
@@ -560,7 +560,7 @@ func TestListApps(t *testing.T) {
 		listApps, err := secCli.ListApps(ctx, &api.ListAppsRequest{})
 		t.Logf("listApps, err: %+v, %v", listApps, err)
 		require.NoError(t, err)
-		require.Len(t, listApps.GetApps(), 0)
+		require.Empty(t, listApps.GetApps())
 		require.Equal(t, int32(0), listApps.GetTotalSize())
 	})
 

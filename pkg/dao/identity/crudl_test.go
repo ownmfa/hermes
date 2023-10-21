@@ -841,7 +841,7 @@ func TestList(t *testing.T) {
 		t.Logf("listIdentities, listCount, err: %+v, %v, %v", listIdentities,
 			listCount, err)
 		require.NoError(t, err)
-		require.Len(t, listIdentities, 0)
+		require.Empty(t, listIdentities)
 		require.Equal(t, int32(0), listCount)
 	})
 
@@ -856,7 +856,7 @@ func TestList(t *testing.T) {
 		t.Logf("listIdentities, listCount, err: %+v, %v, %v", listIdentities,
 			listCount, err)
 		require.NoError(t, err)
-		require.Len(t, listIdentities, 0)
+		require.Empty(t, listIdentities)
 		require.Equal(t, int32(0), listCount)
 	})
 

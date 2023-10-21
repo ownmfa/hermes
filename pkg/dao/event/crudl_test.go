@@ -131,7 +131,7 @@ func TestList(t *testing.T) {
 			event.GetCreatedAt().AsTime().Add(-time.Millisecond))
 		t.Logf("listEvents, err: %+v, %v", listEvents, err)
 		require.NoError(t, err)
-		require.Len(t, listEvents, 0)
+		require.Empty(t, listEvents)
 	})
 
 	t.Run("List events by invalid org ID", func(t *testing.T) {
@@ -261,7 +261,7 @@ func TestLatest(t *testing.T) {
 			event.GetIdentityId())
 		t.Logf("latEvents, err: %+v, %v", latEvents, err)
 		require.NoError(t, err)
-		require.Len(t, latEvents, 0)
+		require.Empty(t, latEvents)
 	})
 
 	t.Run("Latest events by invalid app ID", func(t *testing.T) {

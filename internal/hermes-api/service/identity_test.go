@@ -247,8 +247,8 @@ func TestCreateIdentity(t *testing.T) {
 		identityer.EXPECT().Create(gomock.Any(), identity).Return(retIdentity,
 			otp, true, nil).Times(1)
 		apper := NewMockApper(ctrl)
-		apper.EXPECT().Read(gomock.Any(), app.GetId(), app.GetOrgId()).Return(app, nil).
-			Times(1)
+		apper.EXPECT().Read(gomock.Any(), app.GetId(), app.GetOrgId()).
+			Return(app, nil).Times(1)
 		eventer := NewMockEventer(ctrl)
 		eventer.EXPECT().Create(gomock.Any(), event).Return(dao.ErrNotFound).
 			Times(1)
@@ -494,8 +494,8 @@ func TestCreateIdentity(t *testing.T) {
 			uuid.NewString())
 
 		notifier := notify.NewMockNotifier(gomock.NewController(t))
-		notifier.EXPECT().ValidateSMS(gomock.Any(),
-			identity.GetSmsMethod().GetPhone()).Return(notify.ErrInvalidSMS).Times(1)
+		notifier.EXPECT().ValidateSMS(gomock.Any(), identity.GetSmsMethod().
+			GetPhone()).Return(notify.ErrInvalidSMS).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
@@ -521,7 +521,8 @@ func TestCreateIdentity(t *testing.T) {
 			uuid.NewString())
 
 		notifier := notify.NewMockNotifier(gomock.NewController(t))
-		notifier.EXPECT().ValidatePushover(identity.GetPushoverMethod().GetPushoverKey()).Return(notify.ErrInvalidPushover).Times(1)
+		notifier.EXPECT().ValidatePushover(identity.GetPushoverMethod().
+			GetPushoverKey()).Return(notify.ErrInvalidPushover).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
