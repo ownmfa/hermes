@@ -14,8 +14,6 @@ jobs:
         TEST_PG_URI: pgx://postgres:postgres@postgres/hermes_test
         TEST_NSQ_PUB_ADDR: nsqd:4150
         TEST_NSQ_LOOKUP_ADDRS: nsqlookupd:4161
-    env:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     services:
       postgres:
         image: postgres:16-alpine
@@ -48,7 +46,7 @@ jobs:
           go env
       - name: Clone
         id: Clone
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Build_and_Test
         id: Build_and_Test
         run: make test
@@ -66,9 +64,3 @@ jobs:
           docker buildx build -f build/Dockerfile -t ghcr.io/ownmfa/hermes:${TAG} --push .
           docker buildx rm
           docker logout ghcr.io
-      - name: Notify
-        uses: act10ns/slack@v2
-        with:
-          status: ${{ job.status }}
-          steps: ${{ toJson(steps) }}
-        if: always()
