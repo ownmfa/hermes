@@ -114,7 +114,7 @@ func New(cfg *config.Config) (*API, error) {
 		"/ownmfa.api.UserService/UpdateUser":       {},
 	}
 
-	orgDAO := org.NewDAO(pgRW, redis, orgExp)
+	orgDAO := org.NewDAO(pgRW, pgRO, redis, orgExp)
 	srv := grpc.NewServer(grpc.ChainUnaryInterceptor(
 		interceptor.Log(nil),
 		interceptor.Auth(skipAuth, cfg.PWTKey, redis, orgDAO),
@@ -128,9 +128,9 @@ func New(cfg *config.Config) (*API, error) {
 	api.RegisterEventServiceServer(srv, service.NewEvent(event.NewDAO(pgRW,
 		pgRO)))
 	api.RegisterOrgServiceServer(srv, service.NewOrg(orgDAO))
-	api.RegisterSessionServiceServer(srv, service.NewSession(user.NewDAO(pgRW),
-		key.NewDAO(pgRW), redis, cfg.PWTKey))
-	api.RegisterUserServiceServer(srv, service.NewUser(user.NewDAO(pgRW)))
+	api.RegisterSessionServiceServer(srv, service.NewSession(user.NewDAO(pgRW,
+		pgRO), key.NewDAO(pgRW, pgRO), redis, cfg.PWTKey))
+	api.RegisterUserServiceServer(srv, service.NewUser(user.NewDAO(pgRW, pgRO)))
 
 	// Register gRPC-Gateway handlers.
 	ctx, cancel := context.WithCancel(context.Background())

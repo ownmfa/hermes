@@ -128,7 +128,7 @@ func main() {
 			Plan:   api.Plan_STARTER,
 		}
 
-		orgDAO := org.NewDAO(pg, nil, 0)
+		orgDAO := org.NewDAO(pg, pg, nil, 0)
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		createOrg, err := orgDAO.Create(ctx, o)
 		cancel()
@@ -153,7 +153,7 @@ func main() {
 			Status: api.Status_ACTIVE,
 		}
 
-		userDAO := user.NewDAO(pg)
+		userDAO := user.NewDAO(pg, pg)
 		createUser, err := userDAO.Create(ctx, u)
 		checkErr(err)
 

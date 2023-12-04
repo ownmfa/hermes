@@ -94,8 +94,8 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalf("TestMain dao.NewPgDB: %v", err)
 	}
-	globalOrgDAO = org.NewDAO(pg, nil, 0)
-	globalUserDAO = user.NewDAO(pg)
+	globalOrgDAO = org.NewDAO(pg, pg, nil, 0)
+	globalUserDAO = user.NewDAO(pg, pg)
 	globalIdentDAO = identity.NewDAO(pg, pg, key)
 	globalEvDAO = event.NewDAO(pg, pg)
 
