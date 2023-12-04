@@ -71,7 +71,12 @@ func New(cfg *config.Config) (*API, error) {
 	}
 
 	// Set up database connection.
-	pg, err := dao.NewPgDB(cfg.PgURI)
+	pgRW, err := dao.NewPgDB(cfg.PgRwURI)
+	if err != nil {
+		return nil, err
+	}
+
+	pgRO, err := dao.NewPgDB(cfg.PgRoURI)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +114,7 @@ func New(cfg *config.Config) (*API, error) {
 		"/ownmfa.api.UserService/UpdateUser":       {},
 	}
 
-	orgDAO := org.NewDAO(pg, redis, orgExp)
+	orgDAO := org.NewDAO(pgRW, redis, orgExp)
 	srv := grpc.NewServer(grpc.ChainUnaryInterceptor(
 		interceptor.Log(nil),
 		interceptor.Auth(skipAuth, cfg.PWTKey, redis, orgDAO),
@@ -117,13 +122,15 @@ func New(cfg *config.Config) (*API, error) {
 	))
 
 	api.RegisterAppIdentityServiceServer(srv,
-		service.NewAppIdentity(app.NewDAO(pg), identity.NewDAO(pg,
-			cfg.IdentityKey), event.NewDAO(pg), redis, n, nsq, cfg.NSQPubTopic))
-	api.RegisterEventServiceServer(srv, service.NewEvent(event.NewDAO(pg)))
+		service.NewAppIdentity(app.NewDAO(pgRW, pgRO), identity.NewDAO(pgRW,
+			pgRO, cfg.IdentityKey), event.NewDAO(pgRW, pgRO), redis, n, nsq,
+			cfg.NSQPubTopic))
+	api.RegisterEventServiceServer(srv, service.NewEvent(event.NewDAO(pgRW,
+		pgRO)))
 	api.RegisterOrgServiceServer(srv, service.NewOrg(orgDAO))
-	api.RegisterSessionServiceServer(srv, service.NewSession(user.NewDAO(pg),
-		key.NewDAO(pg), redis, cfg.PWTKey))
-	api.RegisterUserServiceServer(srv, service.NewUser(user.NewDAO(pg)))
+	api.RegisterSessionServiceServer(srv, service.NewSession(user.NewDAO(pgRW),
+		key.NewDAO(pgRW), redis, cfg.PWTKey))
+	api.RegisterUserServiceServer(srv, service.NewUser(user.NewDAO(pgRW)))
 
 	// Register gRPC-Gateway handlers.
 	ctx, cancel := context.WithCancel(context.Background())

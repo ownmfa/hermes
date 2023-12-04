@@ -41,7 +41,8 @@ func TestMain(m *testing.M) {
 	// Set up Config.
 	testConfig := testconfig.New()
 	cfg := config.New()
-	cfg.PgURI = testConfig.PgURI
+	cfg.PgRwURI = testConfig.PgURI
+	cfg.PgRoURI = testConfig.PgURI
 	cfg.RedisHost = testConfig.RedisHost
 
 	cfg.IdentityKey = key
@@ -74,14 +75,14 @@ func TestMain(m *testing.M) {
 	}()
 
 	// Set up database connection.
-	pg, err := dao.NewPgDB(cfg.PgURI)
+	pg, err := dao.NewPgDB(cfg.PgRwURI)
 	if err != nil {
 		log.Fatalf("TestMain dao.NewPgDB: %v", err)
 	}
 	globalOrgDAO = org.NewDAO(pg, nil, 0)
-	globalAppDAO = app.NewDAO(pg)
-	globalIdentDAO = identity.NewDAO(pg, key)
-	globalEvDAO = event.NewDAO(pg)
+	globalAppDAO = app.NewDAO(pg, pg)
+	globalIdentDAO = identity.NewDAO(pg, pg, key)
+	globalEvDAO = event.NewDAO(pg, pg)
 
 	// Set up cache connection.
 	globalCache, err = cache.NewRedis(cfg.RedisHost + ":6379")

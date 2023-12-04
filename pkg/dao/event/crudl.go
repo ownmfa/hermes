@@ -22,9 +22,9 @@ func (d *DAO) Create(ctx context.Context, event *api.Event) error {
 	now := time.Now().UTC().Truncate(time.Microsecond)
 	event.CreatedAt = timestamppb.New(now)
 
-	_, err := d.pg.ExecContext(ctx, createEvent, event.GetOrgId(), event.GetAppId(),
-		event.GetIdentityId(), event.GetStatus().String(), event.GetError(), now,
-		event.GetTraceId())
+	_, err := d.rw.ExecContext(ctx, createEvent, event.GetOrgId(),
+		event.GetAppId(), event.GetIdentityId(), event.GetStatus().String(),
+		event.GetError(), now, event.GetTraceId())
 
 	return dao.DBToSentinel(err)
 }
@@ -42,7 +42,7 @@ ORDER BY created_at DESC
 func (d *DAO) List(
 	ctx context.Context, orgID, identityID string, end, start time.Time,
 ) ([]*api.Event, error) {
-	rows, err := d.pg.QueryContext(ctx, listEvents, orgID, identityID, end,
+	rows, err := d.ro.QueryContext(ctx, listEvents, orgID, identityID, end,
 		start)
 	if err != nil {
 		return nil, dao.DBToSentinel(err)
@@ -148,7 +148,7 @@ func (d *DAO) Latest(ctx context.Context, orgID, appID, identityID string) (
 	query += latestEventsOrder
 
 	// Run latest query.
-	rows, err := d.pg.QueryContext(ctx, query, args...)
+	rows, err := d.ro.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, dao.DBToSentinel(err)
 	}

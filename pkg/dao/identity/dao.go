@@ -8,15 +8,17 @@ import (
 
 // DAO contains functions to create and query identities in the database.
 type DAO struct {
-	pg *sql.DB
+	rw *sql.DB
+	ro *sql.DB
 
 	secretKey []byte
 }
 
 // NewDAO instantiates and returns a new DAO.
-func NewDAO(pg *sql.DB, secretKey []byte) *DAO {
+func NewDAO(rw *sql.DB, ro *sql.DB, secretKey []byte) *DAO {
 	return &DAO{
-		pg: pg,
+		rw: rw,
+		ro: ro,
 
 		secretKey: secretKey,
 	}

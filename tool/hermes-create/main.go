@@ -167,11 +167,11 @@ func main() {
 		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
 		defer cancel()
 
-		appDAO := app.NewDAO(pg)
+		appDAO := app.NewDAO(pg, pg)
 		app, err := appDAO.Read(ctx, flag.Arg(3), flag.Arg(2))
 		checkErr(err)
 
-		identDAO := identity.NewDAO(pg, identKey)
+		identDAO := identity.NewDAO(pg, pg, identKey)
 		_, otp, err := identDAO.Read(ctx, flag.Arg(4), flag.Arg(2),
 			flag.Arg(3))
 		checkErr(err)
