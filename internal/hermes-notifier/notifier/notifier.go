@@ -66,7 +66,12 @@ func New(cfg *config.Config) (*Notifier, error) {
 	}
 
 	// Set up database connection.
-	pg, err := dao.NewPgDB(cfg.PgURI)
+	pgRW, err := dao.NewPgDB(cfg.PgRwURI)
+	if err != nil {
+		return nil, err
+	}
+
+	pgRO, err := dao.NewPgDB(cfg.PgRoURI)
 	if err != nil {
 		return nil, err
 	}
@@ -107,9 +112,9 @@ func New(cfg *config.Config) (*Notifier, error) {
 	}
 
 	return &Notifier{
-		appDAO:   app.NewDAO(pg),
-		identDAO: identity.NewDAO(pg, cfg.IdentityKey),
-		evDAO:    event.NewDAO(pg),
+		appDAO:   app.NewDAO(pgRW, pgRO),
+		identDAO: identity.NewDAO(pgRW, pgRO, cfg.IdentityKey),
+		evDAO:    event.NewDAO(pgRW, pgRO),
 		cache:    redis,
 
 		notQueue: nsq,

@@ -12,7 +12,8 @@ type Config struct {
 	StatsDAddr  string
 	Concurrency int
 
-	PgURI     string
+	PgRwURI   string
+	PgRoURI   string
 	RedisHost string
 
 	IdentityKey []byte
@@ -38,7 +39,9 @@ func New() *Config {
 		StatsDAddr:  config.String(pref+"STATSD_ADDR", ""),
 		Concurrency: config.Int(pref+"CONCURRENCY", 5),
 
-		PgURI: config.String(pref+"PG_URI",
+		PgRwURI: config.String(pref+"PG_RW_URI",
+			"postgres://postgres:postgres@127.0.0.1/hermes_test"),
+		PgRoURI: config.String(pref+"PG_RO_URI",
 			"postgres://postgres:postgres@127.0.0.1/hermes_test"),
 		RedisHost: config.String(pref+"REDIS_HOST", "127.0.0.1"),
 

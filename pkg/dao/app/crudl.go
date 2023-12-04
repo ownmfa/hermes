@@ -25,10 +25,11 @@ func (d *DAO) Create(ctx context.Context, app *api.App) (*api.App, error) {
 	app.CreatedAt = timestamppb.New(now)
 	app.UpdatedAt = timestamppb.New(now)
 
-	if err := d.pg.QueryRowContext(ctx, createApp, app.GetOrgId(), app.GetName(),
-		app.GetDisplayName(), app.GetEmail(), app.GetPushoverKey(), app.GetSubjectTemplate(),
-		app.GetTextBodyTemplate(), app.GetHtmlBodyTemplate(), now).Scan(
-		&app.Id); err != nil {
+	if err := d.rw.QueryRowContext(ctx, createApp, app.GetOrgId(),
+		app.GetName(), app.GetDisplayName(), app.GetEmail(),
+		app.GetPushoverKey(), app.GetSubjectTemplate(),
+		app.GetTextBodyTemplate(), app.GetHtmlBodyTemplate(),
+		now).Scan(&app.Id); err != nil {
 		return nil, dao.DBToSentinel(err)
 	}
 
@@ -47,7 +48,7 @@ func (d *DAO) Read(ctx context.Context, appID, orgID string) (*api.App, error) {
 	app := &api.App{}
 	var createdAt, updatedAt time.Time
 
-	if err := d.pg.QueryRowContext(ctx, readApp, appID, orgID).Scan(&app.Id,
+	if err := d.ro.QueryRowContext(ctx, readApp, appID, orgID).Scan(&app.Id,
 		&app.OrgId, &app.Name, &app.DisplayName, &app.Email, &app.PushoverKey,
 		&app.SubjectTemplate, &app.TextBodyTemplate, &app.HtmlBodyTemplate,
 		&createdAt, &updatedAt); err != nil {
@@ -76,10 +77,11 @@ func (d *DAO) Update(ctx context.Context, app *api.App) (*api.App, error) {
 	updatedAt := time.Now().UTC().Truncate(time.Microsecond)
 	app.UpdatedAt = timestamppb.New(updatedAt)
 
-	if err := d.pg.QueryRowContext(ctx, updateApp, app.GetName(), app.GetDisplayName(),
-		app.GetEmail(), app.GetPushoverKey(), app.GetSubjectTemplate(), app.GetTextBodyTemplate(),
-		app.GetHtmlBodyTemplate(), updatedAt, app.GetId(), app.GetOrgId()).Scan(
-		&createdAt); err != nil {
+	if err := d.rw.QueryRowContext(ctx, updateApp, app.GetName(),
+		app.GetDisplayName(), app.GetEmail(), app.GetPushoverKey(),
+		app.GetSubjectTemplate(), app.GetTextBodyTemplate(),
+		app.GetHtmlBodyTemplate(), updatedAt, app.GetId(),
+		app.GetOrgId()).Scan(&createdAt); err != nil {
 		return nil, dao.DBToSentinel(err)
 	}
 
@@ -101,7 +103,7 @@ func (d *DAO) Delete(ctx context.Context, appID, orgID string) error {
 		return err
 	}
 
-	_, err := d.pg.ExecContext(ctx, deleteApp, appID, orgID)
+	_, err := d.rw.ExecContext(ctx, deleteApp, appID, orgID)
 
 	return dao.DBToSentinel(err)
 }
@@ -141,7 +143,7 @@ func (d *DAO) List(
 ) ([]*api.App, int32, error) {
 	// Run count query.
 	var count int32
-	if err := d.pg.QueryRowContext(ctx, countApps, orgID).Scan(
+	if err := d.ro.QueryRowContext(ctx, countApps, orgID).Scan(
 		&count); err != nil {
 		return nil, 0, dao.DBToSentinel(err)
 	}
@@ -162,7 +164,7 @@ func (d *DAO) List(
 	}
 
 	// Run list query.
-	rows, err := d.pg.QueryContext(ctx, query, args...)
+	rows, err := d.ro.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, 0, dao.DBToSentinel(err)
 	}

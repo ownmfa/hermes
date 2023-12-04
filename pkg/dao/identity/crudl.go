@@ -56,11 +56,12 @@ func (d *DAO) Create(ctx context.Context, identity *api.Identity) (
 		}
 	}
 
-	if err := d.pg.QueryRowContext(ctx, createIdentity, identity.GetOrgId(),
-		identity.GetAppId(), identity.GetComment(), identity.GetStatus().String(),
-		otp.Algorithm, hashCryptoToAPI[otp.Hash].String(), otp.Digits,
-		secretEnc, meta.phone, meta.pushoverKey, meta.email, meta.backupCodes,
-		answerEnc, now).Scan(&identity.Id); err != nil {
+	if err := d.rw.QueryRowContext(ctx, createIdentity, identity.GetOrgId(),
+		identity.GetAppId(), identity.GetComment(),
+		identity.GetStatus().String(), otp.Algorithm,
+		hashCryptoToAPI[otp.Hash].String(), otp.Digits, secretEnc, meta.phone,
+		meta.pushoverKey, meta.email, meta.backupCodes, answerEnc,
+		now).Scan(&identity.Id); err != nil {
 		return nil, nil, false, dao.DBToSentinel(err)
 	}
 
@@ -86,7 +87,7 @@ func (d *DAO) Read(ctx context.Context, identityID, orgID, appID string) (
 	var secretEnc, answerEnc []byte
 	var createdAt, updatedAt time.Time
 
-	if err := d.pg.QueryRowContext(ctx, readIdentity, identityID, orgID,
+	if err := d.ro.QueryRowContext(ctx, readIdentity, identityID, orgID,
 		appID).Scan(&identity.Id, &identity.OrgId, &identity.AppId,
 		&identity.Comment, &status, &otp.Algorithm, &hash, &otp.Digits,
 		&secretEnc, &meta.phone, &meta.pushoverKey, &meta.email,
@@ -138,7 +139,7 @@ func (d *DAO) UpdateStatus(
 	updatedAt := time.Now().UTC().Truncate(time.Microsecond)
 	identity.UpdatedAt = timestamppb.New(updatedAt)
 
-	if _, err = d.pg.ExecContext(ctx, updateIdentityStatus, status.String(),
+	if _, err = d.rw.ExecContext(ctx, updateIdentityStatus, status.String(),
 		updatedAt, identityID, orgID, appID); err != nil {
 		return nil, dao.DBToSentinel(err)
 	}
@@ -161,7 +162,7 @@ func (d *DAO) Delete(
 		return err
 	}
 
-	_, err := d.pg.ExecContext(ctx, deleteIdentity, identityID, orgID, appID)
+	_, err := d.rw.ExecContext(ctx, deleteIdentity, identityID, orgID, appID)
 
 	return dao.DBToSentinel(err)
 }
@@ -218,7 +219,7 @@ func (d *DAO) List(
 
 	// Run count query.
 	var count int32
-	if err := d.pg.QueryRowContext(ctx, cQuery, cArgs...).Scan(
+	if err := d.ro.QueryRowContext(ctx, cQuery, cArgs...).Scan(
 		&count); err != nil {
 		return nil, 0, dao.DBToSentinel(err)
 	}
@@ -247,7 +248,7 @@ func (d *DAO) List(
 	}
 
 	// Run list query.
-	rows, err := d.pg.QueryContext(ctx, lQuery, lArgs...)
+	rows, err := d.ro.QueryContext(ctx, lQuery, lArgs...)
 	if err != nil {
 		return nil, 0, dao.DBToSentinel(err)
 	}
