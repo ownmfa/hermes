@@ -27,8 +27,8 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalf("TestMain dao.NewPgDB: %v", err)
 	}
-	globalOrgDAO = NewDAO(pg, nil, 0)
-	globalOrgDAOCache = NewDAO(pg, cache.NewMemory(), time.Minute)
+	globalOrgDAO = NewDAO(pg, pg, nil, 0)
+	globalOrgDAOCache = NewDAO(pg, pg, cache.NewMemory(), time.Minute)
 
 	os.Exit(m.Run())
 }

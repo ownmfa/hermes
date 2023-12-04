@@ -11,16 +11,20 @@ import (
 
 // DAO contains functions to query and modify organizations in the database.
 type DAO struct {
-	pg    *sql.DB
+	rw    *sql.DB
+	ro    *sql.DB
 	cache cache.Cacher
 	exp   time.Duration
 }
 
 // NewDAO instantiates and returns a new DAO with organization read caching.
 // Cache can be set to nil to disable caching.
-func NewDAO(pg *sql.DB, cache cache.Cacher, exp time.Duration) *DAO {
+func NewDAO(rw *sql.DB, ro *sql.DB, cache cache.Cacher,
+	exp time.Duration,
+) *DAO {
 	return &DAO{
-		pg:    pg,
+		rw:    rw,
+		ro:    ro,
 		cache: cache,
 		exp:   exp,
 	}

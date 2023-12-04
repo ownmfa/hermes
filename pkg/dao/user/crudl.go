@@ -23,9 +23,9 @@ func (d *DAO) Create(ctx context.Context, user *api.User) (*api.User, error) {
 	user.CreatedAt = timestamppb.New(now)
 	user.UpdatedAt = timestamppb.New(now)
 
-	if err := d.pg.QueryRowContext(ctx, createUser, user.GetOrgId(), user.GetName(),
-		user.GetEmail(), user.GetRole().String(), user.GetStatus().String(), now).Scan(
-		&user.Id); err != nil {
+	if err := d.rw.QueryRowContext(ctx, createUser, user.GetOrgId(),
+		user.GetName(), user.GetEmail(), user.GetRole().String(),
+		user.GetStatus().String(), now).Scan(&user.Id); err != nil {
 		return nil, dao.DBToSentinel(err)
 	}
 
@@ -46,7 +46,7 @@ func (d *DAO) Read(ctx context.Context, userID, orgID string) (
 	var role, status string
 	var createdAt, updatedAt time.Time
 
-	if err := d.pg.QueryRowContext(ctx, readUser, userID, orgID).Scan(&user.Id,
+	if err := d.ro.QueryRowContext(ctx, readUser, userID, orgID).Scan(&user.Id,
 		&user.OrgId, &user.Name, &user.Email, &role, &status, &createdAt,
 		&updatedAt); err != nil {
 		return nil, dao.DBToSentinel(err)
@@ -78,7 +78,7 @@ func (d *DAO) ReadByEmail(ctx context.Context, email, orgName string) (
 	var role, status string
 	var createdAt, updatedAt time.Time
 
-	if err := d.pg.QueryRowContext(ctx, readUserByEmail, email, orgName).Scan(
+	if err := d.ro.QueryRowContext(ctx, readUserByEmail, email, orgName).Scan(
 		&user.Id, &user.OrgId, &user.Name, &user.Email, &passHash, &role,
 		&status, &createdAt, &updatedAt); err != nil {
 		return nil, nil, dao.DBToSentinel(err)
@@ -106,9 +106,9 @@ func (d *DAO) Update(ctx context.Context, user *api.User) (*api.User, error) {
 	updatedAt := time.Now().UTC().Truncate(time.Microsecond)
 	user.UpdatedAt = timestamppb.New(updatedAt)
 
-	if err := d.pg.QueryRowContext(ctx, updateUser, user.GetName(), user.GetEmail(),
-		user.GetRole().String(), user.GetStatus().String(), updatedAt, user.GetId(),
-		user.GetOrgId()).Scan(&createdAt); err != nil {
+	if err := d.rw.QueryRowContext(ctx, updateUser, user.GetName(),
+		user.GetEmail(), user.GetRole().String(), user.GetStatus().String(),
+		updatedAt, user.GetId(), user.GetOrgId()).Scan(&createdAt); err != nil {
 		return nil, dao.DBToSentinel(err)
 	}
 
@@ -134,7 +134,7 @@ func (d *DAO) UpdatePassword(
 		return err
 	}
 
-	_, err := d.pg.ExecContext(ctx, updateUserPassword, passHash,
+	_, err := d.rw.ExecContext(ctx, updateUserPassword, passHash,
 		time.Now().UTC().Truncate(time.Microsecond), userID, orgID)
 
 	return dao.DBToSentinel(err)
@@ -153,7 +153,7 @@ func (d *DAO) Delete(ctx context.Context, userID, orgID string) error {
 		return err
 	}
 
-	_, err := d.pg.ExecContext(ctx, deleteUser, userID, orgID)
+	_, err := d.rw.ExecContext(ctx, deleteUser, userID, orgID)
 
 	return dao.DBToSentinel(err)
 }
@@ -192,7 +192,7 @@ func (d *DAO) List(
 ) ([]*api.User, int32, error) {
 	// Run count query.
 	var count int32
-	if err := d.pg.QueryRowContext(ctx, countUsers, orgID).Scan(
+	if err := d.ro.QueryRowContext(ctx, countUsers, orgID).Scan(
 		&count); err != nil {
 		return nil, 0, dao.DBToSentinel(err)
 	}
@@ -213,7 +213,7 @@ func (d *DAO) List(
 	}
 
 	// Run list query.
-	rows, err := d.pg.QueryContext(ctx, query, args...)
+	rows, err := d.ro.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, 0, dao.DBToSentinel(err)
 	}
