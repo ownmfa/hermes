@@ -12,8 +12,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	api "github.com/ownmfa/api/go/api"
 	oath "github.com/ownmfa/hermes/pkg/oath"
+	api "github.com/ownmfa/proto/go/api"
 	gomock "go.uber.org/mock/gomock"
 )
 

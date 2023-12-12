@@ -4,12 +4,12 @@ import (
 	"context"
 	"strings"
 
-	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/hermes/internal/hermes-api/key"
 	"github.com/ownmfa/hermes/internal/hermes-api/service"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/cache"
 	"github.com/ownmfa/hermes/pkg/hlog"
+	"github.com/ownmfa/proto/go/api"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"

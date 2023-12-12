@@ -12,7 +12,6 @@ import (
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/hermes/internal/hermes-api/config"
 	"github.com/ownmfa/hermes/internal/hermes-api/interceptor"
 	"github.com/ownmfa/hermes/internal/hermes-api/service"
@@ -28,6 +27,7 @@ import (
 	"github.com/ownmfa/hermes/pkg/hlog"
 	"github.com/ownmfa/hermes/pkg/notify"
 	"github.com/ownmfa/hermes/pkg/queue"
+	"github.com/ownmfa/proto/go/api"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	_ "google.golang.org/grpc/encoding/gzip" // For UseCompressor CallOption.

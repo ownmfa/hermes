@@ -8,12 +8,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/crypto"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/test/matcher"
 	"github.com/ownmfa/hermes/pkg/test/random"
+	"github.com/ownmfa/proto/go/api"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc/codes"

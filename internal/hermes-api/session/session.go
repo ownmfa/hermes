@@ -6,7 +6,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/ownmfa/api/go/api"
+	"github.com/ownmfa/proto/go/api"
 )
 
 // Session represents session metadata as retrieved from an encrypted token.

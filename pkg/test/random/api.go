@@ -4,7 +4,7 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
-	"github.com/ownmfa/api/go/api"
+	"github.com/ownmfa/proto/go/api"
 )
 
 // Org generates a random org with prefixed identifiers.

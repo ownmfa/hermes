@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/test/random"
+	"github.com/ownmfa/proto/go/api"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
 )

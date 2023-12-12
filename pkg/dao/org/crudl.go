@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/hlog"
+	"github.com/ownmfa/proto/go/api"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )

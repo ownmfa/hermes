@@ -6,8 +6,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
+	"github.com/ownmfa/proto/go/api"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
