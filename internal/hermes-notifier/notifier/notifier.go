@@ -9,7 +9,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/hermes/internal/hermes-notifier/config"
 	"github.com/ownmfa/hermes/pkg/cache"
 	"github.com/ownmfa/hermes/pkg/consterr"
@@ -21,6 +20,7 @@ import (
 	"github.com/ownmfa/hermes/pkg/notify"
 	"github.com/ownmfa/hermes/pkg/oath"
 	"github.com/ownmfa/hermes/pkg/queue"
+	"github.com/ownmfa/proto/go/api"
 )
 
 // ServiceName provides consistent naming, including logs and metrics.

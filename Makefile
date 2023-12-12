@@ -61,9 +61,9 @@ mod:
 	go get -t -u ./... || true
 	go mod tidy -v
 	go mod vendor
-# Update hermes.swagger.json at the same time as github.com/ownmfa/api
-	if [ -f ../api/openapi/hermes.swagger.json ]; then cp -f -v \
-	../api/openapi/hermes.swagger.json web/; fi
+# Update hermes.swagger.json at the same time as github.com/ownmfa/proto
+	if [ -f ../proto/openapi/hermes.swagger.json ]; then cp -f -v \
+	../proto/openapi/hermes.swagger.json web/; fi
 
 generate:
 	go install go.uber.org/mock/mockgen@latest

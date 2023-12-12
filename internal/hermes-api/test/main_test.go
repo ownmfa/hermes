@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ownmfa/api/go/api"
 	iapi "github.com/ownmfa/hermes/internal/hermes-api/api"
 	"github.com/ownmfa/hermes/internal/hermes-api/config"
 	"github.com/ownmfa/hermes/pkg/cache"
@@ -22,6 +21,7 @@ import (
 	"github.com/ownmfa/hermes/pkg/queue"
 	testconfig "github.com/ownmfa/hermes/pkg/test/config"
 	"github.com/ownmfa/hermes/pkg/test/random"
+	"github.com/ownmfa/proto/go/api"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/encoding/gzip"

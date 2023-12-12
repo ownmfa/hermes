@@ -1,24 +1,24 @@
 module github.com/ownmfa/hermes
 
-go 1.21.3
+go 1.21.5
 
 require (
 	github.com/NYTimes/gziphandler v1.1.1
-	github.com/google/uuid v1.4.0
+	github.com/google/uuid v1.5.0
 	github.com/gregdel/pushover v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.18.1
-	github.com/jackc/pgx/v5 v5.5.0
+	github.com/jackc/pgx/v5 v5.5.1
 	github.com/jellydator/ttlcache/v3 v3.1.0
 	github.com/mennanov/fmutils v0.2.1
 	github.com/nsqio/go-nsq v1.1.0
-	github.com/ownmfa/api/go v1.0.28
+	github.com/ownmfa/proto/go v1.1.0
 	github.com/redis/go-redis/v9 v9.3.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/smira/go-statsd v1.3.3
 	github.com/stretchr/testify v1.8.4
 	go.uber.org/mock v0.3.0
 	golang.org/x/crypto v0.16.0
-	google.golang.org/grpc v1.59.0
+	google.golang.org/grpc v1.60.0
 	google.golang.org/protobuf v1.31.0
 )
 
@@ -38,8 +38,8 @@ require (
 	golang.org/x/sync v0.5.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
-	google.golang.org/genproto v0.0.0-20231127180814-3a041ad873d4 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20231127180814-3a041ad873d4 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20231127180814-3a041ad873d4 // indirect
+	google.golang.org/genproto v0.0.0-20231212172506-995d672761c0 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20231212172506-995d672761c0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20231212172506-995d672761c0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

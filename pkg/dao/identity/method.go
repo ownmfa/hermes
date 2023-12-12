@@ -5,9 +5,9 @@ import (
 	"crypto/rand"
 	"strings"
 
-	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/hermes/pkg/consterr"
 	"github.com/ownmfa/hermes/pkg/oath"
+	"github.com/ownmfa/proto/go/api"
 )
 
 const (

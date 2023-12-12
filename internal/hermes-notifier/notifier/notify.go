@@ -6,13 +6,13 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/hermes/api/go/message"
 	"github.com/ownmfa/hermes/internal/hermes-notifier/template"
 	"github.com/ownmfa/hermes/pkg/hlog"
 	"github.com/ownmfa/hermes/pkg/key"
 	"github.com/ownmfa/hermes/pkg/metric"
 	"github.com/ownmfa/hermes/pkg/queue"
+	"github.com/ownmfa/proto/go/api"
 	"google.golang.org/protobuf/proto"
 )
 

@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/ownmfa/api/go/api"
 	"github.com/ownmfa/hermes/pkg/crypto"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/dao/app"
@@ -20,6 +19,7 @@ import (
 	"github.com/ownmfa/hermes/pkg/dao/org"
 	"github.com/ownmfa/hermes/pkg/dao/user"
 	"github.com/ownmfa/hermes/pkg/test/random"
+	"github.com/ownmfa/proto/go/api"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
