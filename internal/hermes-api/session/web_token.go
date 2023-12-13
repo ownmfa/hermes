@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/ownmfa/hermes/api/go/token"
 	"github.com/ownmfa/hermes/pkg/consterr"
 	"github.com/ownmfa/hermes/pkg/crypto"
+	"github.com/ownmfa/hermes/proto/go/token"
 	"github.com/ownmfa/proto/go/api"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"

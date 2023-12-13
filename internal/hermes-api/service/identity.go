@@ -13,7 +13,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ownmfa/hermes/api/go/message"
 	ikey "github.com/ownmfa/hermes/internal/hermes-api/key"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/consterr"
@@ -21,6 +20,7 @@ import (
 	"github.com/ownmfa/hermes/pkg/key"
 	"github.com/ownmfa/hermes/pkg/metric"
 	"github.com/ownmfa/hermes/pkg/oath"
+	"github.com/ownmfa/hermes/proto/go/message"
 	"github.com/ownmfa/proto/go/api"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

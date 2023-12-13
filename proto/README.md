@@ -1,4 +1,4 @@
-# API (Internal)
+# Proto (Internal)
 
 This directory contains the
 [Protobuf](https://developers.google.com/protocol-buffers/) internal definitions
@@ -10,7 +10,7 @@ based on the Google [API Design Guide](https://cloud.google.com/apis/design).
 ### Go
 
 ```
-import "github.com/ownmfa/hermes/api/go/token"
+import "github.com/ownmfa/hermes/proto/go/token"
 ```
 
 ## Building

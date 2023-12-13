@@ -4,7 +4,7 @@ package ownmfa.int.token;
 import "api/ownmfa_role.proto";
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/ownmfa/hermes/api/go/token";
+option go_package = "github.com/ownmfa/hermes/proto/go/token";
 
 // Web represents a web or API key token.
 message Web {
