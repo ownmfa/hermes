@@ -3,7 +3,7 @@ package ownmfa.int.token;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/ownmfa/hermes/api/go/token";
+option go_package = "github.com/ownmfa/hermes/proto/go/token";
 
 // Page represents a pagination token.
 message Page {

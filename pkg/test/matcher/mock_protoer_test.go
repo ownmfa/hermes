@@ -11,7 +11,7 @@ package matcher
 import (
 	reflect "reflect"
 
-	token "github.com/ownmfa/hermes/api/go/token"
+	token "github.com/ownmfa/hermes/proto/go/token"
 	gomock "go.uber.org/mock/gomock"
 )
 

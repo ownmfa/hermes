@@ -1,7 +1,7 @@
 syntax = "proto3";
 package ownmfa.int.message;
 
-option go_package = "github.com/ownmfa/hermes/api/go/message";
+option go_package = "github.com/ownmfa/hermes/proto/go/message";
 
 // NotifierIn represents notification metadata as used in message queues.
 message NotifierIn {

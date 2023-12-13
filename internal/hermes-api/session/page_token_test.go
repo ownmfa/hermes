@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/ownmfa/hermes/api/go/token"
 	"github.com/ownmfa/hermes/pkg/test/random"
+	"github.com/ownmfa/hermes/proto/go/token"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"

@@ -7,7 +7,7 @@ package matcher
 import (
 	"testing"
 
-	"github.com/ownmfa/hermes/api/go/token"
+	"github.com/ownmfa/hermes/proto/go/token"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )

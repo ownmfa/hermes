@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/ownmfa/hermes/api/go/message"
 	ikey "github.com/ownmfa/hermes/internal/hermes-api/key"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/cache"
@@ -22,6 +21,7 @@ import (
 	"github.com/ownmfa/hermes/pkg/oath"
 	"github.com/ownmfa/hermes/pkg/queue"
 	"github.com/ownmfa/hermes/pkg/test/random"
+	"github.com/ownmfa/hermes/proto/go/message"
 	"github.com/ownmfa/proto/go/api"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
