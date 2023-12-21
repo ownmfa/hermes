@@ -5,6 +5,7 @@
 //
 //	mockgen -source identity.go -destination mock_identityer_test.go -package service
 //
+
 // Package service is a generated GoMock package.
 package service
 
@@ -118,4 +119,3 @@ func (mr *MockIdentityerMockRecorder) UpdateStatus(ctx, identityID, orgID, appID
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockIdentityer)(nil).UpdateStatus), ctx, identityID, orgID, appID, status)
 }
-//lint:file-ignore ST1000 Mockgen package comment
