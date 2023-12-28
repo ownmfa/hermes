@@ -21,12 +21,12 @@ jobs:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: hermes_test
       nsqlookupd:
-        image: ghcr.io/ownmfa/nsqlookupd:v1.2.1
+        image: ghcr.io/ownmfa/nsqlookupd:v1.3.0
         credentials:
           username: ownmfa
           password: ${{ secrets.GHCR_PAT }}
       nsqd:
-        image: ghcr.io/ownmfa/nsqd:v1.2.1
+        image: ghcr.io/ownmfa/nsqd:v1.3.0
         credentials:
           username: ownmfa
           password: ${{ secrets.GHCR_PAT }}
