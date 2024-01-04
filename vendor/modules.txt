@@ -30,7 +30,7 @@ github.com/google/uuid
 # github.com/gregdel/pushover v1.3.0
 ## explicit; go 1.14
 github.com/gregdel/pushover
-# github.com/grpc-ecosystem/grpc-gateway/v2 v2.18.1
+# github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.0
 ## explicit; go 1.19
 github.com/grpc-ecosystem/grpc-gateway/v2/internal/httprule
 github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2/options
@@ -70,7 +70,7 @@ github.com/mennanov/fmutils
 # github.com/nsqio/go-nsq v1.1.0
 ## explicit; go 1.11
 github.com/nsqio/go-nsq
-# github.com/ownmfa/proto/go v1.1.0
+# github.com/ownmfa/proto/go v1.1.1
 ## explicit; go 1.21.5
 github.com/ownmfa/proto/go/api
 # github.com/pmezard/go-difflib v1.0.0
@@ -138,15 +138,15 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# google.golang.org/genproto v0.0.0-20231212172506-995d672761c0
+# google.golang.org/genproto v0.0.0-20240102182953-50ed04b92917
 ## explicit; go 1.19
 google.golang.org/genproto/internal
-# google.golang.org/genproto/googleapis/api v0.0.0-20231212172506-995d672761c0
+# google.golang.org/genproto/googleapis/api v0.0.0-20240102182953-50ed04b92917
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/api
 google.golang.org/genproto/googleapis/api/annotations
 google.golang.org/genproto/googleapis/api/httpbody
-# google.golang.org/genproto/googleapis/rpc v0.0.0-20231212172506-995d672761c0
+# google.golang.org/genproto/googleapis/rpc v0.0.0-20240102182953-50ed04b92917
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.60.1
