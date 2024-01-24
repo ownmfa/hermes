@@ -227,4 +227,5 @@ func (api *API) Serve() {
 
 	hlog.Info("Serve received signal, exiting")
 	api.httpCancel()
+	api.grpcSrv.GracefulStop()
 }
