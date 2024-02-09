@@ -24,7 +24,7 @@ func TestOrgKey(t *testing.T) {
 			key := orgKey(orgID)
 			t.Logf("key: %v", key)
 
-			require.Equal(t, fmt.Sprintf("dao:org:%s", orgID), key)
+			require.Equal(t, "dao:org:"+orgID, key)
 			require.Equal(t, key, orgKey(orgID))
 		})
 	}

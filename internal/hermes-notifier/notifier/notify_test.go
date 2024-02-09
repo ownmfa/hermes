@@ -136,7 +136,7 @@ func TestNotifyMessages(t *testing.T) {
 
 			eventer := NewMockeventer(ctrl)
 			eventer.EXPECT().Create(gomock.Any(), gomock.Any()).
-				DoAndReturn(func(ctx interface{}, event interface{}) error {
+				DoAndReturn(func(_ any, _ any) error {
 					defer wg.Done()
 
 					return nil
@@ -296,10 +296,7 @@ func TestNotifyMessagesError(t *testing.T) {
 			notifier := notify.NewMockNotifier(ctrl)
 			notifier.EXPECT().SMS(gomock.Any(),
 				smsIdentity.GetSmsMethod().GetPhone(), app.GetDisplayName(), "861821").
-				DoAndReturn(func(
-					ctx interface{}, phone interface{}, displayName interface{},
-					passcode interface{},
-				) error {
+				DoAndReturn(func(_ any, _ any, _ any, _ any) error {
 					defer wg.Done()
 
 					return lTest.inpSMSErr
@@ -307,8 +304,7 @@ func TestNotifyMessagesError(t *testing.T) {
 			notifier.EXPECT().Pushover(gomock.Any(),
 				pushoverIdentity.GetPushoverMethod().GetPushoverKey(),
 				app.GetDisplayName(), "861821").DoAndReturn(func(
-				ctx interface{}, userKey interface{}, displayName interface{},
-				passcode interface{},
+				_ any, _ any, _ any, _ any,
 			) error {
 				defer wg.Done()
 
@@ -317,9 +313,7 @@ func TestNotifyMessagesError(t *testing.T) {
 			notifier.EXPECT().Email(gomock.Any(), app.GetDisplayName(), app.GetEmail(),
 				emailIdentity.GetEmailMethod().GetEmail(), gomock.Any(),
 				gomock.Any(), gomock.Any()).DoAndReturn(func(
-				ctx interface{}, displayName interface{}, from interface{},
-				to interface{}, subject interface{}, body interface{},
-				htmlBody interface{},
+				_ any, _ any, _ any, _ any, _ any, _ any, _ any,
 			) error {
 				defer wg.Done()
 

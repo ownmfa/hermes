@@ -66,9 +66,7 @@ func TestLog(t *testing.T) {
 			ctx = metadata.NewIncomingContext(ctx,
 				metadata.Pairs(lTest.inpMD...))
 
-			handler := func(ctx context.Context, req interface{}) (
-				interface{}, error,
-			) {
+			handler := func(_ context.Context, req any) (any, error) {
 				return req, lTest.inpHandlerErr
 			}
 
