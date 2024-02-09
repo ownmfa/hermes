@@ -71,10 +71,10 @@ func (n *notify) pushover(
 
 	// Truncate to subject and body limits: https://pushover.net/api#limits
 	if len(subject) > 250 {
-		subject = fmt.Sprintf("%s...", subject[:247])
+		subject = subject[:247] + "..."
 	}
 	if len(body) > 1024 {
-		body = fmt.Sprintf("%s...", body[:1024])
+		body = body[:1024] + "..."
 	}
 	msg := pushover.NewMessageWithTitle(body, subject)
 
