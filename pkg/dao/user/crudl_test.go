@@ -506,7 +506,7 @@ func TestList(t *testing.T) {
 	userNames := []string{}
 	userRoles := []api.Role{}
 	userTSes := []time.Time{}
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		createUser, err := globalUserDAO.Create(ctx, random.User("dao-user",
 			createOrg.GetId()))
 		t.Logf("createUser, err: %+v, %v", createUser, err)

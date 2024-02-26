@@ -661,7 +661,7 @@ func TestList(t *testing.T) {
 	identityIDs := []string{}
 	identityComments := []string{}
 	identityTSes := []time.Time{}
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		createIdentity, _, _, err := globalIdentDAO.Create(ctx,
 			random.HOTPIdentity("dao-identity", createOrg.GetId(), createApp.GetId()))
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)

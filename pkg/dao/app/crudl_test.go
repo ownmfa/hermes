@@ -316,7 +316,7 @@ func TestList(t *testing.T) {
 	appEmails := []string{}
 	appPushoverKeys := []string{}
 	appTSes := []time.Time{}
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		createApp, err := globalAppDAO.Create(ctx, random.App("dao-app",
 			createOrg.GetId()))
 		t.Logf("createApp, err: %+v, %v", createApp, err)

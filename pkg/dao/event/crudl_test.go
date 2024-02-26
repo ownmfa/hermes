@@ -71,7 +71,7 @@ func TestList(t *testing.T) {
 
 		events := []*api.Event{}
 
-		for i := 0; i < 5; i++ {
+		for range 5 {
 			event := random.Event("dao-event", createOrg.GetId())
 			event.IdentityId = identityID
 			events = append(events, event)
@@ -163,7 +163,7 @@ func TestLatest(t *testing.T) {
 
 		events := []*api.Event{}
 
-		for i := 0; i < 5; i++ {
+		for range 5 {
 			event := random.Event("dao-event", createOrg.GetId())
 			events = append(events, event)
 

@@ -14,10 +14,8 @@ import (
 func TestOrg(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 5; i++ {
-		lTest := i
-
-		t.Run(fmt.Sprintf("Can generate %v", lTest), func(t *testing.T) {
+	for i := range 5 {
+		t.Run(fmt.Sprintf("Can generate %v", i), func(t *testing.T) {
 			t.Parallel()
 
 			prefix := String(10)
@@ -36,10 +34,8 @@ func TestOrg(t *testing.T) {
 func TestUser(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 5; i++ {
-		lTest := i
-
-		t.Run(fmt.Sprintf("Can generate %v", lTest), func(t *testing.T) {
+	for i := range 5 {
+		t.Run(fmt.Sprintf("Can generate %v", i), func(t *testing.T) {
 			t.Parallel()
 
 			prefix := String(10)
@@ -61,10 +57,8 @@ func TestUser(t *testing.T) {
 func TestKey(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 5; i++ {
-		lTest := i
-
-		t.Run(fmt.Sprintf("Can generate %v", lTest), func(t *testing.T) {
+	for i := range 5 {
+		t.Run(fmt.Sprintf("Can generate %v", i), func(t *testing.T) {
 			t.Parallel()
 
 			prefix := String(10)
@@ -84,10 +78,8 @@ func TestKey(t *testing.T) {
 func TestApp(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 5; i++ {
-		lTest := i
-
-		t.Run(fmt.Sprintf("Can generate %v", lTest), func(t *testing.T) {
+	for i := range 5 {
+		t.Run(fmt.Sprintf("Can generate %v", i), func(t *testing.T) {
 			t.Parallel()
 
 			prefix := String(10)
@@ -111,10 +103,8 @@ func TestApp(t *testing.T) {
 func TestHOTPIdentity(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 5; i++ {
-		lTest := i
-
-		t.Run(fmt.Sprintf("Can generate %v", lTest), func(t *testing.T) {
+	for i := range 5 {
+		t.Run(fmt.Sprintf("Can generate %v", i), func(t *testing.T) {
 			t.Parallel()
 
 			prefix := String(10)
@@ -135,10 +125,8 @@ func TestHOTPIdentity(t *testing.T) {
 func TestSMSIdentity(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 5; i++ {
-		lTest := i
-
-		t.Run(fmt.Sprintf("Can generate %v", lTest), func(t *testing.T) {
+	for i := range 5 {
+		t.Run(fmt.Sprintf("Can generate %v", i), func(t *testing.T) {
 			t.Parallel()
 
 			prefix := String(10)
@@ -159,10 +147,8 @@ func TestSMSIdentity(t *testing.T) {
 func TestPushoverIdentity(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 5; i++ {
-		lTest := i
-
-		t.Run(fmt.Sprintf("Can generate %v", lTest), func(t *testing.T) {
+	for i := range 5 {
+		t.Run(fmt.Sprintf("Can generate %v", i), func(t *testing.T) {
 			t.Parallel()
 
 			prefix := String(10)
@@ -183,10 +169,8 @@ func TestPushoverIdentity(t *testing.T) {
 func TestEmailIdentity(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 5; i++ {
-		lTest := i
-
-		t.Run(fmt.Sprintf("Can generate %v", lTest), func(t *testing.T) {
+	for i := range 5 {
+		t.Run(fmt.Sprintf("Can generate %v", i), func(t *testing.T) {
 			t.Parallel()
 
 			prefix := String(10)
@@ -207,10 +191,8 @@ func TestEmailIdentity(t *testing.T) {
 func TestBackupCodesIdentity(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 5; i++ {
-		lTest := i
-
-		t.Run(fmt.Sprintf("Can generate %v", lTest), func(t *testing.T) {
+	for i := range 5 {
+		t.Run(fmt.Sprintf("Can generate %v", i), func(t *testing.T) {
 			t.Parallel()
 
 			prefix := String(10)
@@ -231,10 +213,8 @@ func TestBackupCodesIdentity(t *testing.T) {
 func TestSecurityQuestionsIdentity(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 5; i++ {
-		lTest := i
-
-		t.Run(fmt.Sprintf("Can generate %v", lTest), func(t *testing.T) {
+	for i := range 5 {
+		t.Run(fmt.Sprintf("Can generate %v", i), func(t *testing.T) {
 			t.Parallel()
 
 			prefix := String(10)
@@ -255,10 +235,8 @@ func TestSecurityQuestionsIdentity(t *testing.T) {
 func TestEvent(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 5; i++ {
-		lTest := i
-
-		t.Run(fmt.Sprintf("Can generate %v", lTest), func(t *testing.T) {
+	for i := range 5 {
+		t.Run(fmt.Sprintf("Can generate %v", i), func(t *testing.T) {
 			t.Parallel()
 
 			prefix := String(10)

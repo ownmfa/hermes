@@ -42,23 +42,21 @@ func TestHOTP(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		lTest := test
-
-		t.Run(fmt.Sprintf("Can generate %+v", lTest), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Can generate %+v", test), func(t *testing.T) {
 			t.Parallel()
 
 			otp := &OTP{
-				Algorithm: HOTP, Hash: lTest.inpHash, Key: lTest.inpKey,
-				Digits: lTest.inpDigits,
+				Algorithm: HOTP, Hash: test.inpHash, Key: test.inpKey,
+				Digits: test.inpDigits,
 			}
 
-			res, err := otp.HOTP(lTest.inpCounter)
+			res, err := otp.HOTP(test.inpCounter)
 			t.Logf("res, err: %v, %v", res, err)
-			require.Len(t, res, lTest.resDigits)
-			if lTest.resCode != "" {
-				require.Equal(t, lTest.resCode, res)
+			require.Len(t, res, test.resDigits)
+			if test.resCode != "" {
+				require.Equal(t, test.resCode, res)
 			}
-			require.Equal(t, lTest.err, err)
+			require.Equal(t, test.err, err)
 		})
 	}
 }
@@ -86,20 +84,18 @@ func TestVerifyHOTP(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		lTest := test
-
-		t.Run(fmt.Sprintf("Can generate %+v", lTest), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Can generate %+v", test), func(t *testing.T) {
 			t.Parallel()
 
 			otp := &OTP{
-				Algorithm: HOTP, Hash: lTest.inpHash, Key: lTest.inpKey,
-				Digits: lTest.inpDigits,
+				Algorithm: HOTP, Hash: test.inpHash, Key: test.inpKey,
+				Digits: test.inpDigits,
 			}
 
-			res, err := otp.VerifyHOTP(DefaultHOTPLookAhead, 0, lTest.inpCode)
+			res, err := otp.VerifyHOTP(DefaultHOTPLookAhead, 0, test.inpCode)
 			t.Logf("res, err: %v, %v", res, err)
-			require.Equal(t, lTest.res, res)
-			require.Equal(t, lTest.err, err)
+			require.Equal(t, test.res, res)
+			require.Equal(t, test.err, err)
 		})
 	}
 }

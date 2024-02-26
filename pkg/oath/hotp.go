@@ -37,7 +37,7 @@ func (o *OTP) HOTP(counter int64) (string, error) {
 func (o *OTP) VerifyHOTP(lookAhead int, counter int64, passcode string) (
 	int64, error,
 ) {
-	for i := 0; i < lookAhead; i++ {
+	for i := range lookAhead {
 		pass, err := o.HOTP(counter + int64(i))
 		if err != nil {
 			return 0, err

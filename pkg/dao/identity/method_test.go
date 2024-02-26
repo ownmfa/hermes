@@ -147,27 +147,25 @@ func TestMethodToOTP(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		lTest := test
-
-		t.Run(fmt.Sprintf("Can convert %+v", lTest), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Can convert %+v", test), func(t *testing.T) {
 			t.Parallel()
 
 			identity := random.HOTPIdentity("dao-identity", uuid.NewString(),
 				uuid.NewString())
-			identity.MethodOneof = lTest.inp.GetMethodOneof()
+			identity.MethodOneof = test.inp.GetMethodOneof()
 
 			otp, meta, err := methodToOTP(identity)
 			t.Logf("otp, meta, err: %#v, %#v, %v", otp, meta, err)
 
 			// Normalize secret.
-			if lTest.resOTP != nil {
+			if test.resOTP != nil {
 				require.Len(t, otp.Key, 32)
-				lTest.resOTP.Key = otp.Key
+				test.resOTP.Key = otp.Key
 			}
 
-			require.Equal(t, lTest.resOTP, otp)
-			require.Equal(t, lTest.resMeta, meta)
-			require.Equal(t, lTest.err, err)
+			require.Equal(t, test.resOTP, otp)
+			require.Equal(t, test.resMeta, meta)
+			require.Equal(t, test.err, err)
 		})
 	}
 }
@@ -291,19 +289,17 @@ func TestOTPToMethod(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		lTest := test
-
-		t.Run(fmt.Sprintf("Can modify %+v", lTest), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Can modify %+v", test), func(t *testing.T) {
 			t.Parallel()
 
 			identity := &api.Identity{}
-			otpToMethod(identity, lTest.inpOTP, lTest.inpMeta)
+			otpToMethod(identity, test.inpOTP, test.inpMeta)
 			t.Logf("identity: %+v", identity)
 
 			// Testify does not currently support protobuf equality:
 			// https://github.com/stretchr/testify/issues/758
-			if !proto.Equal(lTest.res, identity) {
-				t.Fatalf("\nExpect: %+v\nActual: %+v", lTest.res, identity)
+			if !proto.Equal(test.res, identity) {
+				t.Fatalf("\nExpect: %+v\nActual: %+v", test.res, identity)
 			}
 		})
 	}
