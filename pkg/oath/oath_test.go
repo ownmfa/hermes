@@ -53,19 +53,17 @@ func TestValidate(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		lTest := test
-
-		t.Run(fmt.Sprintf("Can validate %+v", lTest), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Can validate %+v", test), func(t *testing.T) {
 			t.Parallel()
 
 			otp := &OTP{
-				Algorithm: lTest.inpAlg, Hash: lTest.inpHash, Key: lTest.inpKey,
-				Digits: lTest.inpDigits,
+				Algorithm: test.inpAlg, Hash: test.inpHash, Key: test.inpKey,
+				Digits: test.inpDigits,
 			}
 
 			err := otp.validate()
 			t.Logf("err:%v", err)
-			require.Equal(t, lTest.err, err)
+			require.Equal(t, test.err, err)
 		})
 	}
 }
@@ -113,20 +111,18 @@ func TestUri(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		lTest := test
-
-		t.Run(fmt.Sprintf("Can generate %+v", lTest), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Can generate %+v", test), func(t *testing.T) {
 			t.Parallel()
 
 			otp := &OTP{
-				Algorithm: lTest.inpAlg, Hash: lTest.inpHash, Key: lTest.inpKey,
-				Digits: lTest.inpDigits, AccountName: lTest.inpAccount,
+				Algorithm: test.inpAlg, Hash: test.inpHash, Key: test.inpKey,
+				Digits: test.inpDigits, AccountName: test.inpAccount,
 			}
 
-			res, err := otp.uri(lTest.inpIssuer)
+			res, err := otp.uri(test.inpIssuer)
 			t.Logf("res, err: %v, %v", res, err)
-			require.Equal(t, lTest.res, res)
-			require.Equal(t, lTest.err, err)
+			require.Equal(t, test.res, res)
+			require.Equal(t, test.err, err)
 
 			uri, err := url.Parse(res)
 			t.Logf("uri, err: %#v, %v", uri, err)
@@ -162,22 +158,20 @@ func TestQR(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		lTest := test
-
-		t.Run(fmt.Sprintf("Can generate %+v", lTest), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Can generate %+v", test), func(t *testing.T) {
 			t.Parallel()
 
 			otp := &OTP{
-				Algorithm: lTest.inpAlg, Hash: lTest.inpHash, Key: lTest.inpKey,
-				Digits: lTest.inpDigits, AccountName: lTest.inpAccount,
+				Algorithm: test.inpAlg, Hash: test.inpHash, Key: test.inpKey,
+				Digits: test.inpDigits, AccountName: test.inpAccount,
 			}
 
-			res, err := otp.QR(lTest.inpIssuer)
+			res, err := otp.QR(test.inpIssuer)
 			t.Logf("res, err: %x, %v", res, err)
-			if lTest.err == nil {
+			if test.err == nil {
 				require.Greater(t, len(res), 800)
 			}
-			require.Equal(t, lTest.err, err)
+			require.Equal(t, test.err, err)
 		})
 	}
 }

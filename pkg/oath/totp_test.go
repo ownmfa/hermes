@@ -44,28 +44,26 @@ func TestTOTP(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		lTest := test
-
-		t.Run(fmt.Sprintf("Can generate %+v", lTest), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Can generate %+v", test), func(t *testing.T) {
 			t.Parallel()
 
 			otp := &OTP{
-				Algorithm: TOTP, Hash: lTest.inpHash, Key: lTest.inpKey,
-				Digits: lTest.inpDigits,
+				Algorithm: TOTP, Hash: test.inpHash, Key: test.inpKey,
+				Digits: test.inpDigits,
 			}
 
-			res, err := otp.TOTP(lTest.inpTime)
+			res, err := otp.TOTP(test.inpTime)
 			t.Logf("res, err: %v, %v", res, err)
-			require.Len(t, res, lTest.resDigits)
-			if lTest.resCode != "" {
-				require.Equal(t, lTest.resCode, res)
+			require.Len(t, res, test.resDigits)
+			if test.resCode != "" {
+				require.Equal(t, test.resCode, res)
 			}
-			require.Equal(t, lTest.err, err)
+			require.Equal(t, test.err, err)
 
 			res, err = otp.TOTP(time.Now())
 			t.Logf("res, err: %v, %v", res, err)
-			require.Len(t, res, lTest.resDigits)
-			require.Equal(t, lTest.err, err)
+			require.Len(t, res, test.resDigits)
+			require.Equal(t, test.err, err)
 		})
 	}
 }
@@ -98,32 +96,30 @@ func TestVerifyTOTP(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		lTest := test
-
-		t.Run(fmt.Sprintf("Can generate %+v", lTest), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Can generate %+v", test), func(t *testing.T) {
 			t.Parallel()
 
 			otp := &OTP{
-				Algorithm: TOTP, Hash: lTest.inpHash, Key: lTest.inpKey,
-				Digits: lTest.inpDigits,
+				Algorithm: TOTP, Hash: test.inpHash, Key: test.inpKey,
+				Digits: test.inpDigits,
 			}
 
-			res, err := otp.verifyTOTP(DefaultTOTPLookAhead, lTest.inpOffset,
-				lTest.inpTime, lTest.inpCode)
+			res, err := otp.verifyTOTP(DefaultTOTPLookAhead, test.inpOffset,
+				test.inpTime, test.inpCode)
 			t.Logf("res, err: %v, %v", res, err)
-			require.Equal(t, lTest.res, res)
-			require.Equal(t, lTest.err, err)
+			require.Equal(t, test.res, res)
+			require.Equal(t, test.err, err)
 
-			if lTest.err == nil {
+			if test.err == nil {
 				code, err := otp.TOTP(time.Now().Add(time.Duration(
-					lTest.res*period) * time.Second))
+					test.res*period) * time.Second))
 				t.Logf("code, err: %v, %v", code, err)
 				require.NoError(t, err)
 
-				res, err = otp.VerifyTOTP(DefaultTOTPLookAhead, lTest.inpOffset,
+				res, err = otp.VerifyTOTP(DefaultTOTPLookAhead, test.inpOffset,
 					code)
 				t.Logf("res, err: %v, %v", res, err)
-				require.Equal(t, lTest.res, res)
+				require.Equal(t, test.res, res)
 				require.NoError(t, err)
 			}
 		})
