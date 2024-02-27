@@ -135,7 +135,7 @@ func (ai *AppIdentity) CreateIdentity(
 
 	// Populate pregenerated backup codes.
 	if m, ok := identity.GetMethodOneof().(*api.Identity_BackupCodesMethod); ok {
-		for i := 0; i < int(m.BackupCodesMethod.GetPasscodes()); i++ {
+		for i := range m.BackupCodesMethod.GetPasscodes() {
 			passcode, err := otp.HOTP(int64(i + 10))
 			if err != nil {
 				return nil, errToStatus(err)

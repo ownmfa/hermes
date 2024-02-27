@@ -43,19 +43,17 @@ func TestErrToStatus(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		lTest := test
-
-		t.Run(fmt.Sprintf("Can map %+v", lTest), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Can map %+v", test), func(t *testing.T) {
 			t.Parallel()
 
-			res := errToStatus(lTest.inp)
+			res := errToStatus(test.inp)
 			t.Logf("res: %#v", res)
 			// Comparison of gRPC status errors does not play well with
 			// require.Equal.
-			if lTest.res == "" {
+			if test.res == "" {
 				require.NoError(t, res)
 			} else {
-				require.EqualError(t, res, lTest.res)
+				require.EqualError(t, res, test.res)
 			}
 		})
 	}
@@ -64,10 +62,8 @@ func TestErrToStatus(t *testing.T) {
 func TestErrPerm(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 5; i++ {
-		lTest := i
-
-		t.Run(fmt.Sprintf("Can generate %v", lTest), func(t *testing.T) {
+	for i := range 5 {
+		t.Run(fmt.Sprintf("Can generate %v", i), func(t *testing.T) {
 			t.Parallel()
 
 			role := []api.Role{
@@ -90,10 +86,8 @@ func TestErrPerm(t *testing.T) {
 func TestErrPlan(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 5; i++ {
-		lTest := i
-
-		t.Run(fmt.Sprintf("Can generate %v", lTest), func(t *testing.T) {
+	for i := range 5 {
+		t.Run(fmt.Sprintf("Can generate %v", i), func(t *testing.T) {
 			t.Parallel()
 
 			plan := []api.Plan{

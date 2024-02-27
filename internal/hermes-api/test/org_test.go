@@ -461,7 +461,7 @@ func TestListOrgs(t *testing.T) {
 	orgIDs := []string{}
 	orgNames := []string{}
 	orgPlans := []api.Plan{}
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
 		createOrg, err := orgCli.CreateOrg(ctx,
 			&api.CreateOrgRequest{Org: random.Org("api-org")})

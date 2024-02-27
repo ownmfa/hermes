@@ -277,9 +277,7 @@ func TestCreateIdentity(t *testing.T) {
 		}
 
 		for _, test := range tests {
-			lTest := test
-
-			t.Run(fmt.Sprintf("Can create %v", lTest), func(t *testing.T) {
+			t.Run(fmt.Sprintf("Can create %v", test), func(t *testing.T) {
 				t.Parallel()
 
 				ctx, cancel := context.WithTimeout(context.Background(),
@@ -288,7 +286,7 @@ func TestCreateIdentity(t *testing.T) {
 
 				aiCli := api.NewAppIdentityServiceClient(adminStarterGRPCConn)
 				createIdentity, err := aiCli.CreateIdentity(ctx,
-					&api.CreateIdentityRequest{Identity: lTest})
+					&api.CreateIdentityRequest{Identity: test})
 				t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 				require.Nil(t, createIdentity)
 				require.EqualError(t, err, "rpc error: code = "+
@@ -1781,7 +1779,7 @@ func TestListIdentities(t *testing.T) {
 
 	identityIDs := []string{}
 	identityComments := []string{}
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			createApp.GetId())
 

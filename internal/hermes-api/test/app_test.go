@@ -490,7 +490,7 @@ func TestListApps(t *testing.T) {
 
 	appIDs := []string{}
 	appNames := []string{}
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		app := random.App("api-app", uuid.NewString())
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
