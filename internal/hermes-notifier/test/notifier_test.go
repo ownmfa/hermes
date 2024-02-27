@@ -93,12 +93,10 @@ func TestNotifyMessages(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		lTest := test
-
-		t.Run(fmt.Sprintf("Can notify %+v", lTest), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Can notify %+v", test), func(t *testing.T) {
 			t.Parallel()
 
-			bNIn, err := proto.Marshal(lTest.inp)
+			bNIn, err := proto.Marshal(test.inp)
 			require.NoError(t, err)
 			t.Logf("bNIn: %s", bNIn)
 
@@ -107,9 +105,9 @@ func TestNotifyMessages(t *testing.T) {
 
 			// Verify event.
 			event := &api.Event{
-				OrgId:      lTest.inp.GetOrgId(),
-				AppId:      lTest.inp.GetAppId(),
-				IdentityId: lTest.inp.GetIdentityId(),
+				OrgId:      test.inp.GetOrgId(),
+				AppId:      test.inp.GetAppId(),
+				IdentityId: test.inp.GetIdentityId(),
 				Status:     api.EventStatus_CHALLENGE_SENT,
 				TraceId:    traceID.String(),
 			}
@@ -118,8 +116,8 @@ func TestNotifyMessages(t *testing.T) {
 				testTimeout)
 			defer cancel()
 
-			listEvents, err := globalEvDAO.List(ctx, lTest.inp.GetOrgId(),
-				lTest.inp.GetIdentityId(), time.Now(), time.Now().Add(-testTimeout))
+			listEvents, err := globalEvDAO.List(ctx, test.inp.GetOrgId(),
+				test.inp.GetIdentityId(), time.Now(), time.Now().Add(-testTimeout))
 			t.Logf("listEvents, err: %+v, %v", listEvents, err)
 			require.NoError(t, err)
 			require.Len(t, listEvents, 1)
@@ -218,31 +216,29 @@ func TestNotifyMessagesError(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		lTest := test
-
-		t.Run(fmt.Sprintf("Cannot notify %+v", lTest), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Cannot notify %+v", test), func(t *testing.T) {
 			t.Parallel()
 
 			bNIn := []byte("not-aaa")
-			if lTest.inpNIn != nil {
+			if test.inpNIn != nil {
 				var err error
-				bNIn, err = proto.Marshal(lTest.inpNIn)
+				bNIn, err = proto.Marshal(test.inpNIn)
 				require.NoError(t, err)
 				t.Logf("bNIn: %s", bNIn)
 			}
 
 			require.NoError(t, globalNotQueue.Publish(globalNInSubTopic, bNIn))
 
-			if lTest.inpEvent {
+			if test.inpEvent {
 				time.Sleep(2 * time.Second)
 
 				// Verify event.
 				event := &api.Event{
-					OrgId:      lTest.inpNIn.GetOrgId(),
-					AppId:      lTest.inpNIn.GetAppId(),
-					IdentityId: lTest.inpNIn.GetIdentityId(),
+					OrgId:      test.inpNIn.GetOrgId(),
+					AppId:      test.inpNIn.GetAppId(),
+					IdentityId: test.inpNIn.GetIdentityId(),
 					Status:     api.EventStatus_CHALLENGE_FAIL,
-					Error:      lTest.inpEventErr,
+					Error:      test.inpEventErr,
 					TraceId:    traceID.String(),
 				}
 
@@ -250,8 +246,8 @@ func TestNotifyMessagesError(t *testing.T) {
 					testTimeout)
 				defer cancel()
 
-				listEvents, err := globalEvDAO.List(ctx, lTest.inpNIn.GetOrgId(),
-					lTest.inpNIn.GetIdentityId(), time.Now(),
+				listEvents, err := globalEvDAO.List(ctx, test.inpNIn.GetOrgId(),
+					test.inpNIn.GetIdentityId(), time.Now(),
 					time.Now().Add(-testTimeout))
 				t.Logf("listEvents, err: %+v, %v", listEvents, err)
 				require.NoError(t, err)

@@ -126,7 +126,7 @@ func New(cfg *config.Config) (*Notifier, error) {
 
 // Serve starts the message notifiers.
 func (not *Notifier) Serve(concurrency int) {
-	for i := 0; i < concurrency; i++ {
+	for range concurrency {
 		go not.notifyMessages()
 	}
 

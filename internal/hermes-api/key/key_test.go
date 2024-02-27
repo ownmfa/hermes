@@ -14,10 +14,8 @@ import (
 func TestDisabled(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 5; i++ {
-		lTest := i
-
-		t.Run(fmt.Sprintf("Can key %v", lTest), func(t *testing.T) {
+	for i := range 5 {
+		t.Run(fmt.Sprintf("Can key %v", i), func(t *testing.T) {
 			t.Parallel()
 
 			orgID := uuid.NewString()
@@ -36,10 +34,8 @@ func TestDisabled(t *testing.T) {
 func TestTOTPOffset(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 5; i++ {
-		lTest := i
-
-		t.Run(fmt.Sprintf("Can key %v", lTest), func(t *testing.T) {
+	for i := range 5 {
+		t.Run(fmt.Sprintf("Can key %v", i), func(t *testing.T) {
 			t.Parallel()
 
 			orgID := uuid.NewString()
@@ -59,10 +55,8 @@ func TestTOTPOffset(t *testing.T) {
 func TestReuse(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 5; i++ {
-		lTest := i
-
-		t.Run(fmt.Sprintf("Can key %v", lTest), func(t *testing.T) {
+	for i := range 5 {
+		t.Run(fmt.Sprintf("Can key %v", i), func(t *testing.T) {
 			t.Parallel()
 
 			orgID := uuid.NewString()
@@ -83,10 +77,8 @@ func TestReuse(t *testing.T) {
 func TestChallenge(t *testing.T) {
 	t.Parallel()
 
-	for i := 0; i < 5; i++ {
-		lTest := i
-
-		t.Run(fmt.Sprintf("Can key %v", lTest), func(t *testing.T) {
+	for i := range 5 {
+		t.Run(fmt.Sprintf("Can key %v", i), func(t *testing.T) {
 			t.Parallel()
 
 			orgID := uuid.NewString()

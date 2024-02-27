@@ -36,19 +36,17 @@ func TestGenerate(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		lTest := test
-
-		t.Run(fmt.Sprintf("Can generate %+v", lTest), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Can generate %+v", test), func(t *testing.T) {
 			t.Parallel()
 
-			res, err := Generate(lTest.inpDisplayName, lTest.inpPasscode,
-				lTest.inpTempl)
+			res, err := Generate(test.inpDisplayName, test.inpPasscode,
+				test.inpTempl)
 			t.Logf("res, err: %v, %#v", res, err)
-			require.Equal(t, lTest.res, res)
-			if lTest.err == "" {
+			require.Equal(t, test.res, res)
+			if test.err == "" {
 				require.NoError(t, err)
 			} else {
-				require.Contains(t, err.Error(), lTest.err)
+				require.Contains(t, err.Error(), test.err)
 			}
 		})
 	}

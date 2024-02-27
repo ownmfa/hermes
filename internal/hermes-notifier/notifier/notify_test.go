@@ -82,9 +82,7 @@ func TestNotifyMessages(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		lTest := test
-
-		t.Run(fmt.Sprintf("Can notify %+v", lTest), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Can notify %+v", test), func(t *testing.T) {
 			t.Parallel()
 
 			nInQueue := queue.NewFake()
@@ -101,38 +99,38 @@ func TestNotifyMessages(t *testing.T) {
 
 			ctrl := gomock.NewController(t)
 			identityer := NewMockidentityer(ctrl)
-			identityer.EXPECT().Read(gomock.Any(), lTest.inpNIn.GetIdentityId(),
-				lTest.inpNIn.GetOrgId(), lTest.inpNIn.GetAppId()).
-				Return(lTest.inpIdentity, otp, nil).Times(1)
+			identityer.EXPECT().Read(gomock.Any(), test.inpNIn.GetIdentityId(),
+				test.inpNIn.GetOrgId(), test.inpNIn.GetAppId()).
+				Return(test.inpIdentity, otp, nil).Times(1)
 
 			cacher := cache.NewMockCacher(ctrl)
 			cacher.EXPECT().Incr(gomock.Any(), key.HOTPCounter(
-				lTest.inpNIn.GetOrgId(), lTest.inpNIn.GetAppId(),
-				lTest.inpNIn.GetIdentityId())).Return(int64(5), nil).Times(1)
+				test.inpNIn.GetOrgId(), test.inpNIn.GetAppId(),
+				test.inpNIn.GetIdentityId())).Return(int64(5), nil).Times(1)
 			cacher.EXPECT().SetIfNotExistTTL(gomock.Any(), key.Expire(
-				lTest.inpNIn.GetOrgId(), lTest.inpNIn.GetAppId(), lTest.inpNIn.GetIdentityId(),
-				"861821"), 1, lTest.inpExpire).Return(true, nil).Times(1)
+				test.inpNIn.GetOrgId(), test.inpNIn.GetAppId(), test.inpNIn.GetIdentityId(),
+				"861821"), 1, test.inpExpire).Return(true, nil).Times(1)
 
 			apper := NewMockapper(ctrl)
-			apper.EXPECT().Read(gomock.Any(), lTest.inpNIn.GetAppId(),
-				lTest.inpNIn.GetOrgId()).Return(lTest.inpApp, nil).Times(1)
+			apper.EXPECT().Read(gomock.Any(), test.inpNIn.GetAppId(),
+				test.inpNIn.GetOrgId()).Return(test.inpApp, nil).Times(1)
 
 			notifier := notify.NewMockNotifier(ctrl)
 			notifier.EXPECT().SMS(gomock.Any(),
-				smsIdentity.GetSmsMethod().GetPhone(), lTest.inpApp.GetDisplayName(),
-				"861821").Return(nil).Times(lTest.inpSMSTimes)
+				smsIdentity.GetSmsMethod().GetPhone(), test.inpApp.GetDisplayName(),
+				"861821").Return(nil).Times(test.inpSMSTimes)
 			notifier.EXPECT().Pushover(gomock.Any(),
 				pushoverIdentity.GetPushoverMethod().GetPushoverKey(),
-				lTest.inpApp.GetDisplayName(), "861821").Return(nil).
-				Times(lTest.inpPushoverTimes)
+				test.inpApp.GetDisplayName(), "861821").Return(nil).
+				Times(test.inpPushoverTimes)
 			notifier.EXPECT().PushoverByApp(gomock.Any(),
-				lTest.inpApp.GetPushoverKey(),
+				test.inpApp.GetPushoverKey(),
 				identityByKey.GetPushoverMethod().GetPushoverKey(), gomock.Any(),
-				gomock.Any()).Return(nil).Times(lTest.inpPushoverByAppTimes)
-			notifier.EXPECT().Email(gomock.Any(), lTest.inpApp.GetDisplayName(),
-				lTest.inpApp.GetEmail(), emailIdentity.GetEmailMethod().GetEmail(),
+				gomock.Any()).Return(nil).Times(test.inpPushoverByAppTimes)
+			notifier.EXPECT().Email(gomock.Any(), test.inpApp.GetDisplayName(),
+				test.inpApp.GetEmail(), emailIdentity.GetEmailMethod().GetEmail(),
 				gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).
-				Times(lTest.inpEmailTimes)
+				Times(test.inpEmailTimes)
 
 			eventer := NewMockeventer(ctrl)
 			eventer.EXPECT().Create(gomock.Any(), gomock.Any()).
@@ -157,7 +155,7 @@ func TestNotifyMessages(t *testing.T) {
 				not.notifyMessages()
 			}()
 
-			bNIn, err := proto.Marshal(lTest.inpNIn)
+			bNIn, err := proto.Marshal(test.inpNIn)
 			require.NoError(t, err)
 			t.Logf("bNIn: %s", bNIn)
 
@@ -263,9 +261,7 @@ func TestNotifyMessagesError(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		lTest := test
-
-		t.Run(fmt.Sprintf("Can notify %+v", lTest), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Can notify %+v", test), func(t *testing.T) {
 			t.Parallel()
 
 			nInQueue := queue.NewFake()
@@ -278,20 +274,20 @@ func TestNotifyMessagesError(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			identityer := NewMockidentityer(ctrl)
 			identityer.EXPECT().Read(gomock.Any(), gomock.Any(), gomock.Any(),
-				gomock.Any()).Return(lTest.inpIdentity, lTest.inpOTP,
-				lTest.inpIdentityErr).Times(lTest.inpIdentityTimes)
+				gomock.Any()).Return(test.inpIdentity, test.inpOTP,
+				test.inpIdentityErr).Times(test.inpIdentityTimes)
 
 			cacher := cache.NewMockCacher(ctrl)
 			cacher.EXPECT().Incr(gomock.Any(), gomock.Any()).Return(int64(5),
-				lTest.inpIncrErr).Times(lTest.inpIncrTimes)
+				test.inpIncrErr).Times(test.inpIncrTimes)
 
 			apper := NewMockapper(ctrl)
 			apper.EXPECT().Read(gomock.Any(), gomock.Any(), gomock.Any()).
-				Return(lTest.inpApp, lTest.inpAppErr).Times(lTest.inpAppTimes)
+				Return(test.inpApp, test.inpAppErr).Times(test.inpAppTimes)
 
 			cacher.EXPECT().SetIfNotExistTTL(gomock.Any(), gomock.Any(), 1,
-				lTest.inpExpire).Return(true, lTest.inpSetIfNotExistTTLErr).
-				Times(lTest.inpSetIfNotExistTTLTimes)
+				test.inpExpire).Return(true, test.inpSetIfNotExistTTLErr).
+				Times(test.inpSetIfNotExistTTLTimes)
 
 			notifier := notify.NewMockNotifier(ctrl)
 			notifier.EXPECT().SMS(gomock.Any(),
@@ -299,8 +295,8 @@ func TestNotifyMessagesError(t *testing.T) {
 				DoAndReturn(func(_ any, _ any, _ any, _ any) error {
 					defer wg.Done()
 
-					return lTest.inpSMSErr
-				}).Times(lTest.inpSMSTimes)
+					return test.inpSMSErr
+				}).Times(test.inpSMSTimes)
 			notifier.EXPECT().Pushover(gomock.Any(),
 				pushoverIdentity.GetPushoverMethod().GetPushoverKey(),
 				app.GetDisplayName(), "861821").DoAndReturn(func(
@@ -308,8 +304,8 @@ func TestNotifyMessagesError(t *testing.T) {
 			) error {
 				defer wg.Done()
 
-				return lTest.inpPushoverErr
-			}).Times(lTest.inpPushoverTimes)
+				return test.inpPushoverErr
+			}).Times(test.inpPushoverTimes)
 			notifier.EXPECT().Email(gomock.Any(), app.GetDisplayName(), app.GetEmail(),
 				emailIdentity.GetEmailMethod().GetEmail(), gomock.Any(),
 				gomock.Any(), gomock.Any()).DoAndReturn(func(
@@ -317,8 +313,8 @@ func TestNotifyMessagesError(t *testing.T) {
 			) error {
 				defer wg.Done()
 
-				return lTest.inpEmailErr
-			}).Times(lTest.inpEmailTimes)
+				return test.inpEmailErr
+			}).Times(test.inpEmailTimes)
 
 			eventer := NewMockeventer(ctrl)
 			eventer.EXPECT().Create(gomock.Any(), gomock.Any()).
@@ -340,14 +336,14 @@ func TestNotifyMessagesError(t *testing.T) {
 			}()
 
 			bNIn := []byte("not-aaa")
-			if lTest.inpNIn != nil {
-				bNIn, err = proto.Marshal(lTest.inpNIn)
+			if test.inpNIn != nil {
+				bNIn, err = proto.Marshal(test.inpNIn)
 				require.NoError(t, err)
 				t.Logf("bNIn: %s", bNIn)
 			}
 
 			require.NoError(t, nInQueue.Publish("", bNIn))
-			if lTest.inpNotifyTimes > 0 {
+			if test.inpNotifyTimes > 0 {
 				wg.Wait()
 			} else {
 				// If the success mode isn't supported by WaitGroup operation,
@@ -387,22 +383,20 @@ func TestGenTemplates(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		lTest := test
-
-		t.Run(fmt.Sprintf("Can generate %+v", lTest), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Can generate %+v", test), func(t *testing.T) {
 			t.Parallel()
 
-			subj, body, htmlBody, err := genTemplates(lTest.inpApp,
-				lTest.inpPasscode)
+			subj, body, htmlBody, err := genTemplates(test.inpApp,
+				test.inpPasscode)
 			t.Logf("subj, body, htmlBody, err: %v, %v, %v, %v", subj, body,
 				htmlBody, err)
-			require.Equal(t, lTest.resSubj, subj)
-			require.Equal(t, lTest.resBody, body)
-			require.Equal(t, lTest.resHTMLBody, htmlBody)
-			if lTest.err == "" {
+			require.Equal(t, test.resSubj, subj)
+			require.Equal(t, test.resBody, body)
+			require.Equal(t, test.resHTMLBody, htmlBody)
+			if test.err == "" {
 				require.NoError(t, err)
 			} else {
-				require.Contains(t, err.Error(), lTest.err)
+				require.Contains(t, err.Error(), test.err)
 			}
 		})
 	}

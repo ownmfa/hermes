@@ -438,22 +438,20 @@ func TestCreateIdentity(t *testing.T) {
 		}
 
 		for _, test := range tests {
-			lTest := test
-
-			t.Run(fmt.Sprintf("Can create %v", lTest), func(t *testing.T) {
+			t.Run(fmt.Sprintf("Can create %v", test), func(t *testing.T) {
 				t.Parallel()
 
 				ctx, cancel := context.WithTimeout(session.NewContext(
 					context.Background(), &session.Session{
-						OrgID: lTest.GetOrgId(), OrgPlan: api.Plan_STARTER,
+						OrgID: test.GetOrgId(), OrgPlan: api.Plan_STARTER,
 						Role: api.Role_ADMIN,
 					}), testTimeout)
 				defer cancel()
 
 				aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
 				createIdentity, err := aiSvc.CreateIdentity(ctx,
-					&api.CreateIdentityRequest{Identity: lTest})
-				t.Logf("lTest, createIdentity, err: %+v, %+v, %v", lTest,
+					&api.CreateIdentityRequest{Identity: test})
+				t.Logf("test, createIdentity, err: %+v, %+v, %v", test,
 					createIdentity, err)
 				require.Nil(t, createIdentity)
 				require.Equal(t, errPlan(api.Plan_PRO), err)
