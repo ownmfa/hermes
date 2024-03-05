@@ -82,11 +82,7 @@ func TestCreateIdentity(t *testing.T) {
 			listEvents[0].GetCreatedAt().AsTime(), testTimeout)
 		event.CreatedAt = listEvents[0].GetCreatedAt()
 
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(event, listEvents[0]) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", event, listEvents[0])
-		}
+		require.EqualExportedValues(t, event, listEvents[0])
 	})
 
 	t.Run("Create valid SMS identity", func(t *testing.T) {
@@ -356,12 +352,13 @@ func TestActivateIdentity(t *testing.T) {
 
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
-				Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
-				Passcode: passcode,
+				Id:    createIdentity.GetIdentity().GetId(),
+				AppId: createApp.GetId(), Passcode: passcode,
 			})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
 		require.NoError(t, err)
-		require.Equal(t, api.IdentityStatus_ACTIVATED, activateIdentity.GetStatus())
+		require.Equal(t, api.IdentityStatus_ACTIVATED,
+			activateIdentity.GetStatus())
 		require.WithinDuration(t, time.Now(),
 			activateIdentity.GetUpdatedAt().AsTime(), 2*time.Second)
 
@@ -395,11 +392,7 @@ func TestActivateIdentity(t *testing.T) {
 			listEvents[0].GetCreatedAt().AsTime(), testTimeout)
 		event.CreatedAt = listEvents[0].GetCreatedAt()
 
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(event, listEvents[0]) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", event, listEvents[0])
-		}
+		require.EqualExportedValues(t, event, listEvents[0])
 	})
 
 	t.Run("Activate soft TOTP identity by valid ID", func(t *testing.T) {
@@ -621,8 +614,8 @@ func TestActivateIdentity(t *testing.T) {
 
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
-				Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
-				Passcode: "000000",
+				Id:    createIdentity.GetIdentity().GetId(),
+				AppId: createApp.GetId(), Passcode: "000000",
 			})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
 		require.Nil(t, activateIdentity)
@@ -652,11 +645,7 @@ func TestActivateIdentity(t *testing.T) {
 			listEvents[0].GetCreatedAt().AsTime(), testTimeout)
 		event.CreatedAt = listEvents[0].GetCreatedAt()
 
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(event, listEvents[0]) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", event, listEvents[0])
-		}
+		require.EqualExportedValues(t, event, listEvents[0])
 	})
 
 	t.Run("Activate identity by unknown/expired passcode", func(t *testing.T) {
@@ -765,11 +754,7 @@ func TestChallengeIdentity(t *testing.T) {
 			listEvents[0].GetCreatedAt().AsTime(), testTimeout)
 		event.CreatedAt = listEvents[0].GetCreatedAt()
 
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(event, listEvents[0]) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", event, listEvents[0])
-		}
+		require.EqualExportedValues(t, event, listEvents[0])
 	})
 
 	t.Run("Challenge SMS identity by valid ID", func(t *testing.T) {
@@ -808,11 +793,7 @@ func TestChallengeIdentity(t *testing.T) {
 				TraceId:    res.GetTraceId(),
 			}
 
-			// Testify does not currently support protobuf equality:
-			// https://github.com/stretchr/testify/issues/758
-			if !proto.Equal(nIn, res) {
-				t.Fatalf("\nExpect: %+v\nActual: %+v", nIn, res)
-			}
+			require.EqualExportedValues(t, nIn, res)
 		case <-time.After(testTimeout):
 			t.Fatal("Message timed out")
 		}
@@ -953,11 +934,7 @@ func TestChallengeIdentity(t *testing.T) {
 				TraceId:    res.GetTraceId(),
 			}
 
-			// Testify does not currently support protobuf equality:
-			// https://github.com/stretchr/testify/issues/758
-			if !proto.Equal(nIn, res) {
-				t.Fatalf("\nExpect: %+v\nActual: %+v", nIn, res)
-			}
+			require.EqualExportedValues(t, nIn, res)
 		case <-time.After(testTimeout):
 			t.Fatal("Message timed out")
 		}
@@ -992,11 +969,7 @@ func TestChallengeIdentity(t *testing.T) {
 			listEvents[0].GetCreatedAt().AsTime(), testTimeout)
 		event.CreatedAt = listEvents[0].GetCreatedAt()
 
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(event, listEvents[0]) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", event, listEvents[0])
-		}
+		require.EqualExportedValues(t, event, listEvents[0])
 	})
 }
 
@@ -1039,8 +1012,8 @@ func TestVerifyIdentity(t *testing.T) {
 
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
-				Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
-				Passcode: passcode,
+				Id:    createIdentity.GetIdentity().GetId(),
+				AppId: createApp.GetId(), Passcode: passcode,
 			})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
 		require.NoError(t, err)
@@ -1080,11 +1053,7 @@ func TestVerifyIdentity(t *testing.T) {
 			listEvents[0].GetCreatedAt().AsTime(), testTimeout)
 		event.CreatedAt = listEvents[0].GetCreatedAt()
 
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(event, listEvents[0]) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", event, listEvents[0])
-		}
+		require.EqualExportedValues(t, event, listEvents[0])
 	})
 
 	t.Run("Verify soft TOTP identity by valid ID", func(t *testing.T) {
@@ -1398,11 +1367,7 @@ func TestVerifyIdentity(t *testing.T) {
 			listEvents[0].GetCreatedAt().AsTime(), testTimeout)
 		event.CreatedAt = listEvents[0].GetCreatedAt()
 
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(event, listEvents[0]) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", event, listEvents[0])
-		}
+		require.EqualExportedValues(t, event, listEvents[0])
 	})
 
 	t.Run("Verify identity by expired passcode", func(t *testing.T) {
@@ -1586,13 +1551,8 @@ func TestGetIdentity(t *testing.T) {
 		})
 		t.Logf("getIdentity, err: %+v, %v", getIdentity, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(createIdentity.GetIdentity(), getIdentity) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", createIdentity.GetIdentity(),
-				getIdentity)
-		}
+		require.EqualExportedValues(t, createIdentity.GetIdentity(),
+			getIdentity)
 	})
 
 	t.Run("Get identity by unknown ID", func(t *testing.T) {
@@ -1603,7 +1563,10 @@ func TestGetIdentity(t *testing.T) {
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		getIdentity, err := aiCli.GetIdentity(ctx,
-			&api.GetIdentityRequest{Id: uuid.NewString(), AppId: createApp.GetId()})
+			&api.GetIdentityRequest{
+				Id:    uuid.NewString(),
+				AppId: createApp.GetId(),
+			})
 		t.Logf("getIdentity, err: %+v, %v", getIdentity, err)
 		require.Nil(t, getIdentity)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
@@ -1679,11 +1642,7 @@ func TestDeleteIdentity(t *testing.T) {
 			listEvents[0].GetCreatedAt().AsTime(), testTimeout)
 		event.CreatedAt = listEvents[0].GetCreatedAt()
 
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(event, listEvents[0]) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", event, listEvents[0])
-		}
+		require.EqualExportedValues(t, event, listEvents[0])
 
 		t.Run("Read identity by deleted ID", func(t *testing.T) {
 			t.Parallel()

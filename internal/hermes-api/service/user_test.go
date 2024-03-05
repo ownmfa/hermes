@@ -46,12 +46,7 @@ func TestCreateUser(t *testing.T) {
 			&api.CreateUserRequest{User: user})
 		t.Logf("user, createUser, err: %+v, %+v, %v", user, createUser, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(user, createUser) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", user, createUser)
-		}
+		require.EqualExportedValues(t, user, createUser)
 	})
 
 	t.Run("Create user with invalid session", func(t *testing.T) {
@@ -140,8 +135,8 @@ func TestGetUser(t *testing.T) {
 		retUser, _ := proto.Clone(user).(*api.User)
 
 		userer := NewMockUserer(gomock.NewController(t))
-		userer.EXPECT().Read(gomock.Any(), user.GetId(), user.GetOrgId()).Return(retUser,
-			nil).Times(1)
+		userer.EXPECT().Read(gomock.Any(), user.GetId(), user.GetOrgId()).
+			Return(retUser, nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
@@ -153,12 +148,7 @@ func TestGetUser(t *testing.T) {
 		getUser, err := userSvc.GetUser(ctx, &api.GetUserRequest{Id: user.GetId()})
 		t.Logf("user, getUser, err: %+v, %+v, %v", user, getUser, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(user, getUser) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", user, getUser)
-		}
+		require.EqualExportedValues(t, user, getUser)
 	})
 
 	t.Run("Get user with invalid session", func(t *testing.T) {
@@ -237,12 +227,7 @@ func TestUpdateUser(t *testing.T) {
 			&api.UpdateUserRequest{User: user})
 		t.Logf("user, updateUser, err: %+v, %+v, %v", user, updateUser, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(user, updateUser) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", user, updateUser)
-		}
+		require.EqualExportedValues(t, user, updateUser)
 	})
 
 	t.Run("Partial update user by valid user", func(t *testing.T) {
@@ -278,12 +263,7 @@ func TestUpdateUser(t *testing.T) {
 		})
 		t.Logf("merged, updateUser, err: %+v, %+v, %v", merged, updateUser, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(merged, updateUser) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", merged, updateUser)
-		}
+		require.EqualExportedValues(t, merged, updateUser)
 	})
 
 	t.Run("Update user with invalid session", func(t *testing.T) {
@@ -677,14 +657,8 @@ func TestListUsers(t *testing.T) {
 		t.Logf("listUsers, err: %+v, %v", listUsers, err)
 		require.NoError(t, err)
 		require.Equal(t, int32(3), listUsers.GetTotalSize())
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.ListUsersResponse{Users: users, TotalSize: 3},
-			listUsers) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v",
-				&api.ListUsersResponse{Users: users, TotalSize: 3}, listUsers)
-		}
+		require.EqualExportedValues(t,
+			&api.ListUsersResponse{Users: users, TotalSize: 3}, listUsers)
 	})
 
 	t.Run("List users by valid org ID with next page", func(t *testing.T) {
@@ -718,16 +692,9 @@ func TestListUsers(t *testing.T) {
 		t.Logf("listUsers, err: %+v, %v", listUsers, err)
 		require.NoError(t, err)
 		require.Equal(t, int32(3), listUsers.GetTotalSize())
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.ListUsersResponse{
+		require.EqualExportedValues(t, &api.ListUsersResponse{
 			Users: users[:2], NextPageToken: next, TotalSize: 3,
-		}, listUsers) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.ListUsersResponse{
-				Users: users[:2], NextPageToken: next, TotalSize: 3,
-			}, listUsers)
-		}
+		}, listUsers)
 	})
 
 	t.Run("List users with invalid session", func(t *testing.T) {
@@ -755,13 +722,7 @@ func TestListUsers(t *testing.T) {
 		listUsers, err := userSvc.ListUsers(ctx, &api.ListUsersRequest{})
 		t.Logf("listUsers, err: %+v, %v", listUsers, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.ListUsersResponse{}, listUsers) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.ListUsersResponse{},
-				listUsers)
-		}
+		require.EqualExportedValues(t, &api.ListUsersResponse{}, listUsers)
 	})
 
 	t.Run("List own user with non-admin role", func(t *testing.T) {
@@ -783,16 +744,9 @@ func TestListUsers(t *testing.T) {
 		listUsers, err := userSvc.ListUsers(ctx, &api.ListUsersRequest{})
 		t.Logf("listUsers, err: %+v, %v", listUsers, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.ListUsersResponse{
+		require.EqualExportedValues(t, &api.ListUsersResponse{
 			Users: []*api.User{user}, TotalSize: 1,
-		}, listUsers) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.ListUsersResponse{
-				Users: []*api.User{user}, TotalSize: 1,
-			}, listUsers)
-		}
+		}, listUsers)
 	})
 
 	t.Run("List users by unknown ID", func(t *testing.T) {
@@ -884,14 +838,7 @@ func TestListUsers(t *testing.T) {
 		t.Logf("listUsers, err: %+v, %v", listUsers, err)
 		require.NoError(t, err)
 		require.Equal(t, int32(3), listUsers.GetTotalSize())
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.ListUsersResponse{Users: users[:2], TotalSize: 3},
-			listUsers) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v",
-				&api.ListUsersResponse{Users: users[:2], TotalSize: 3},
-				listUsers)
-		}
+		require.EqualExportedValues(t,
+			&api.ListUsersResponse{Users: users[:2], TotalSize: 3}, listUsers)
 	})
 }

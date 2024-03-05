@@ -67,15 +67,8 @@ func TestCreateIdentity(t *testing.T) {
 		t.Logf("identity, createIdentity, err: %+v, %+v, %v", identity,
 			createIdentity, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.CreateIdentityResponse{Identity: identity},
-			createIdentity) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.CreateIdentityResponse{
-				Identity: identity,
-			}, createIdentity)
-		}
+		require.EqualExportedValues(t,
+			&api.CreateIdentityResponse{Identity: identity}, createIdentity)
 	})
 
 	t.Run("Create valid SMS identity", func(t *testing.T) {
@@ -116,15 +109,8 @@ func TestCreateIdentity(t *testing.T) {
 		t.Logf("identity, createIdentity, err: %+v, %+v, %v", identity,
 			createIdentity, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.CreateIdentityResponse{Identity: identity},
-			createIdentity) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.CreateIdentityResponse{
-				Identity: identity,
-			}, createIdentity)
-		}
+		require.EqualExportedValues(t,
+			&api.CreateIdentityResponse{Identity: identity}, createIdentity)
 	})
 
 	t.Run("Create valid Pushover identity", func(t *testing.T) {
@@ -136,8 +122,9 @@ func TestCreateIdentity(t *testing.T) {
 		traceID := uuid.New()
 		event := &api.Event{
 			OrgId: identity.GetOrgId(), AppId: identity.GetAppId(),
-			IdentityId: identity.GetId(), Status: api.EventStatus_IDENTITY_CREATED,
-			TraceId: traceID.String(),
+			IdentityId: identity.GetId(),
+			Status:     api.EventStatus_IDENTITY_CREATED,
+			TraceId:    traceID.String(),
 		}
 
 		ctrl := gomock.NewController(t)
@@ -145,7 +132,8 @@ func TestCreateIdentity(t *testing.T) {
 		identityer.EXPECT().Create(gomock.Any(), identity).Return(retIdentity,
 			nil, false, nil).Times(1)
 		notifier := notify.NewMockNotifier(ctrl)
-		notifier.EXPECT().ValidatePushover(identity.GetPushoverMethod().GetPushoverKey()).Return(nil).Times(1)
+		notifier.EXPECT().ValidatePushover(identity.GetPushoverMethod().
+			GetPushoverKey()).Return(nil).Times(1)
 		eventer := NewMockEventer(ctrl)
 		eventer.EXPECT().Create(gomock.Any(), event).Return(dao.ErrNotFound).
 			Times(1)
@@ -164,15 +152,8 @@ func TestCreateIdentity(t *testing.T) {
 		t.Logf("identity, createIdentity, err: %+v, %+v, %v", identity,
 			createIdentity, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.CreateIdentityResponse{Identity: identity},
-			createIdentity) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.CreateIdentityResponse{
-				Identity: identity,
-			}, createIdentity)
-		}
+		require.EqualExportedValues(t,
+			&api.CreateIdentityResponse{Identity: identity}, createIdentity)
 	})
 
 	t.Run("Create valid email identity", func(t *testing.T) {
@@ -209,15 +190,9 @@ func TestCreateIdentity(t *testing.T) {
 		t.Logf("identity, createIdentity, err: %+v, %+v, %v", identity,
 			createIdentity, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.CreateIdentityResponse{Identity: identity},
-			createIdentity) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.CreateIdentityResponse{
-				Identity: identity,
-			}, createIdentity)
-		}
+		require.EqualExportedValues(t, &api.CreateIdentityResponse{
+			Identity: identity,
+		}, createIdentity)
 	})
 
 	t.Run("Create valid HOTP identity with OTP", func(t *testing.T) {
@@ -233,13 +208,15 @@ func TestCreateIdentity(t *testing.T) {
 		}
 
 		app := random.App("api-app", uuid.NewString())
-		identity := random.HOTPIdentity("api-identity", app.GetOrgId(), app.GetId())
+		identity := random.HOTPIdentity("api-identity", app.GetOrgId(),
+			app.GetId())
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
 		traceID := uuid.New()
 		event := &api.Event{
 			OrgId: identity.GetOrgId(), AppId: identity.GetAppId(),
-			IdentityId: identity.GetId(), Status: api.EventStatus_IDENTITY_CREATED,
-			TraceId: traceID.String(),
+			IdentityId: identity.GetId(),
+			Status:     api.EventStatus_IDENTITY_CREATED,
+			TraceId:    traceID.String(),
 		}
 
 		ctrl := gomock.NewController(t)
@@ -273,11 +250,7 @@ func TestCreateIdentity(t *testing.T) {
 		require.Greater(t, len(createIdentity.GetQr()), 800)
 		resp.Qr = createIdentity.GetQr()
 
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(resp, createIdentity) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", resp, createIdentity)
-		}
+		require.EqualExportedValues(t, resp, createIdentity)
 	})
 
 	t.Run("Create valid backup codes identity with OTP", func(t *testing.T) {
@@ -298,8 +271,9 @@ func TestCreateIdentity(t *testing.T) {
 		traceID := uuid.New()
 		event := &api.Event{
 			OrgId: identity.GetOrgId(), AppId: identity.GetAppId(),
-			IdentityId: identity.GetId(), Status: api.EventStatus_IDENTITY_CREATED,
-			TraceId: traceID.String(),
+			IdentityId: identity.GetId(),
+			Status:     api.EventStatus_IDENTITY_CREATED,
+			TraceId:    traceID.String(),
 		}
 
 		ctrl := gomock.NewController(t)
@@ -328,15 +302,9 @@ func TestCreateIdentity(t *testing.T) {
 		require.Len(t, createIdentity.GetPasscodes(),
 			int(identity.GetBackupCodesMethod().GetPasscodes()))
 
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.CreateIdentityResponse{
+		require.EqualExportedValues(t, &api.CreateIdentityResponse{
 			Identity: identity, Passcodes: createIdentity.GetPasscodes(),
-		}, createIdentity) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.CreateIdentityResponse{
-				Identity: identity, Passcodes: createIdentity.GetPasscodes(),
-			}, createIdentity)
-		}
+		}, createIdentity)
 	})
 
 	t.Run("Create valid security questions identity", func(t *testing.T) {
@@ -379,15 +347,9 @@ func TestCreateIdentity(t *testing.T) {
 		t.Logf("identity, createIdentity, err: %+v, %+v, %v", identity,
 			createIdentity, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.CreateIdentityResponse{Identity: identity},
-			createIdentity) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.CreateIdentityResponse{
-				Identity: identity,
-			}, createIdentity)
-		}
+		require.EqualExportedValues(t, &api.CreateIdentityResponse{
+			Identity: identity,
+		}, createIdentity)
 	})
 
 	t.Run("Create identity with invalid session", func(t *testing.T) {
@@ -1336,17 +1298,13 @@ func TestActivateIdentity(t *testing.T) {
 		aiSvc := NewAppIdentity(nil, identityer, eventer, cacher, nil, nil, "")
 		activateIdentity, err := aiSvc.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
-				Id: identity.GetId(), AppId: identity.GetAppId(), Passcode: "861821",
+				Id: identity.GetId(), AppId: identity.GetAppId(),
+				Passcode: "861821",
 			})
 		t.Logf("identity, activateIdentity, err: %+v, %+v, %v", identity,
 			activateIdentity, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(identity, activateIdentity) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", identity, activateIdentity)
-		}
+		require.EqualExportedValues(t, identity, activateIdentity)
 	})
 
 	t.Run("Activate identity with invalid session", func(t *testing.T) {
@@ -1511,12 +1469,13 @@ func TestChallengeIdentity(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		identityer := NewMockIdentityer(ctrl)
-		identityer.EXPECT().Read(gomock.Any(), identity.GetId(), identity.GetOrgId(),
-			identity.GetAppId()).Return(identity, nil, nil).Times(1)
+		identityer.EXPECT().Read(gomock.Any(), identity.GetId(),
+			identity.GetOrgId(), identity.GetAppId()).Return(identity, nil,
+			nil).Times(1)
 		cacher := cache.NewMockCacher(ctrl)
 		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(), ikey.Challenge(
-			identity.GetOrgId(), identity.GetAppId(), identity.GetId()), 1, notifyRate).
-			Return(true, nil).Times(1)
+			identity.GetOrgId(), identity.GetAppId(), identity.GetId()), 1,
+			notifyRate).Return(true, nil).Times(1)
 
 		aiQueue := queue.NewFake()
 		nInSub, err := aiQueue.Subscribe("")
@@ -1556,11 +1515,7 @@ func TestChallengeIdentity(t *testing.T) {
 				TraceId:    res.GetTraceId(),
 			}
 
-			// Testify does not currently support protobuf equality:
-			// https://github.com/stretchr/testify/issues/758
-			if !proto.Equal(nIn, res) {
-				t.Fatalf("\nExpect: %+v\nActual: %+v", nIn, res)
-			}
+			require.EqualExportedValues(t, nIn, res)
 		case <-time.After(testTimeout):
 			t.Fatal("Message timed out")
 		}
@@ -1878,8 +1833,9 @@ func TestGetIdentity(t *testing.T) {
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
 
 		identityer := NewMockIdentityer(gomock.NewController(t))
-		identityer.EXPECT().Read(gomock.Any(), identity.GetId(), identity.GetOrgId(),
-			identity.GetAppId()).Return(retIdentity, nil, nil).Times(1)
+		identityer.EXPECT().Read(gomock.Any(), identity.GetId(),
+			identity.GetOrgId(), identity.GetAppId()).Return(retIdentity, nil,
+			nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			context.Background(), &session.Session{
@@ -1888,17 +1844,13 @@ func TestGetIdentity(t *testing.T) {
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, nil, nil, nil, "")
-		getIdentity, err := aiSvc.GetIdentity(ctx,
-			&api.GetIdentityRequest{Id: identity.GetId(), AppId: identity.GetAppId()})
+		getIdentity, err := aiSvc.GetIdentity(ctx, &api.GetIdentityRequest{
+			Id: identity.GetId(), AppId: identity.GetAppId(),
+		})
 		t.Logf("identity, getIdentity, err: %+v, %+v, %v", identity,
 			getIdentity, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(identity, getIdentity) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", identity, getIdentity)
-		}
+		require.EqualExportedValues(t, identity, getIdentity)
 	})
 
 	t.Run("Get identity with invalid session", func(t *testing.T) {
@@ -2076,16 +2028,9 @@ func TestListIdentities(t *testing.T) {
 		t.Logf("listIdentities, err: %+v, %v", listIdentities, err)
 		require.NoError(t, err)
 		require.Equal(t, int32(3), listIdentities.GetTotalSize())
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.ListIdentitiesResponse{
+		require.EqualExportedValues(t, &api.ListIdentitiesResponse{
 			Identities: identities, TotalSize: 3,
-		}, listIdentities) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.ListIdentitiesResponse{
-				Identities: identities, TotalSize: 3,
-			}, listIdentities)
-		}
+		}, listIdentities)
 	})
 
 	t.Run("List identities by valid org ID with next page", func(t *testing.T) {
@@ -2122,16 +2067,9 @@ func TestListIdentities(t *testing.T) {
 		t.Logf("listIdentities, err: %+v, %v", listIdentities, err)
 		require.NoError(t, err)
 		require.Equal(t, int32(3), listIdentities.GetTotalSize())
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.ListIdentitiesResponse{
+		require.EqualExportedValues(t, &api.ListIdentitiesResponse{
 			Identities: identities[:2], NextPageToken: next, TotalSize: 3,
-		}, listIdentities) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.ListIdentitiesResponse{
-				Identities: identities[:2], NextPageToken: next, TotalSize: 3,
-			}, listIdentities)
-		}
+		}, listIdentities)
 	})
 
 	t.Run("List identities with invalid session", func(t *testing.T) {
@@ -2237,15 +2175,8 @@ func TestListIdentities(t *testing.T) {
 		t.Logf("listIdentities, err: %+v, %v", listIdentities, err)
 		require.NoError(t, err)
 		require.Equal(t, int32(3), listIdentities.GetTotalSize())
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.ListIdentitiesResponse{
+		require.EqualExportedValues(t, &api.ListIdentitiesResponse{
 			Identities: identities[:2], TotalSize: 3,
-		}, listIdentities) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.ListIdentitiesResponse{
-				Identities: identities[:2], TotalSize: 3,
-			}, listIdentities)
-		}
+		}, listIdentities)
 	})
 }

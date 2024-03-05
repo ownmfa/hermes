@@ -138,22 +138,12 @@ func TestReadUpdateDeleteCache(t *testing.T) {
 		readOrg, err := globalOrgDAOCache.Read(ctx, createOrg.GetId())
 		t.Logf("readOrg, err: %+v, %v", readOrg, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(createOrg, readOrg) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", createOrg, readOrg)
-		}
+		require.EqualExportedValues(t, createOrg, readOrg)
 
 		readOrg, err = globalOrgDAOCache.Read(ctx, createOrg.GetId())
 		t.Logf("readOrg, err: %+v, %v", readOrg, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(createOrg, readOrg) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", createOrg, readOrg)
-		}
+		require.EqualExportedValues(t, createOrg, readOrg)
 	})
 
 	t.Run("Read updated org by valid ID", func(t *testing.T) {
@@ -187,12 +177,7 @@ func TestReadUpdateDeleteCache(t *testing.T) {
 		readOrg, err := globalOrgDAOCache.Read(ctx, createOrg.GetId())
 		t.Logf("readOrg, err: %+v, %v", readOrg, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(updateOrg, readOrg) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", updateOrg, readOrg)
-		}
+		require.EqualExportedValues(t, updateOrg, readOrg)
 	})
 
 	t.Run("Read deleted org by valid ID", func(t *testing.T) {
@@ -208,12 +193,7 @@ func TestReadUpdateDeleteCache(t *testing.T) {
 		readOrg, err := globalOrgDAOCache.Read(ctx, createOrg.GetId())
 		t.Logf("readOrg, err: %+v, %v", readOrg, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(createOrg, readOrg) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", createOrg, readOrg)
-		}
+		require.EqualExportedValues(t, createOrg, readOrg)
 
 		err = globalOrgDAOCache.Delete(ctx, createOrg.GetId())
 		t.Logf("err: %v", err)
