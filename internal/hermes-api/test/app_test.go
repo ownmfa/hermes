@@ -11,7 +11,6 @@ import (
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/ownmfa/proto/go/api"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 )
 
@@ -99,12 +98,7 @@ func TestGetApp(t *testing.T) {
 			&api.GetAppRequest{Id: createApp.GetId()})
 		t.Logf("getApp, err: %+v, %v", getApp, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(createApp, getApp) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", createApp, getApp)
-		}
+		require.EqualExportedValues(t, createApp, getApp)
 	})
 
 	t.Run("Get app by unknown ID", func(t *testing.T) {
@@ -178,12 +172,7 @@ func TestUpdateApp(t *testing.T) {
 			&api.GetAppRequest{Id: createApp.GetId()})
 		t.Logf("getApp, err: %+v, %v", getApp, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(updateApp, getApp) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", updateApp, getApp)
-		}
+		require.EqualExportedValues(t, updateApp, getApp)
 	})
 
 	t.Run("Partial update app by valid app", func(t *testing.T) {
@@ -227,12 +216,7 @@ func TestUpdateApp(t *testing.T) {
 			&api.GetAppRequest{Id: createApp.GetId()})
 		t.Logf("getApp, err: %+v, %v", getApp, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(updateApp, getApp) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", updateApp, getApp)
-		}
+		require.EqualExportedValues(t, updateApp, getApp)
 	})
 
 	t.Run("Update nil app", func(t *testing.T) {

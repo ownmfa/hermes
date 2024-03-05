@@ -43,12 +43,7 @@ func TestCreateApp(t *testing.T) {
 		createApp, err := aiSvc.CreateApp(ctx, &api.CreateAppRequest{App: app})
 		t.Logf("app, createApp, err: %+v, %+v, %v", app, createApp, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(app, createApp) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", app, createApp)
-		}
+		require.EqualExportedValues(t, app, createApp)
 	})
 
 	t.Run("Create app with invalid session", func(t *testing.T) {
@@ -128,12 +123,7 @@ func TestGetApp(t *testing.T) {
 		getApp, err := aiSvc.GetApp(ctx, &api.GetAppRequest{Id: app.GetId()})
 		t.Logf("app, getApp, err: %+v, %+v, %v", app, getApp, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(app, getApp) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", app, getApp)
-		}
+		require.EqualExportedValues(t, app, getApp)
 	})
 
 	t.Run("Get app with invalid session", func(t *testing.T) {
@@ -211,12 +201,7 @@ func TestUpdateApp(t *testing.T) {
 		})
 		t.Logf("app, updateApp, err: %+v, %+v, %v", app, updateApp, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(app, updateApp) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", app, updateApp)
-		}
+		require.EqualExportedValues(t, app, updateApp)
 	})
 
 	t.Run("Partial update app by valid app", func(t *testing.T) {
@@ -257,12 +242,7 @@ func TestUpdateApp(t *testing.T) {
 		})
 		t.Logf("merged, updateApp, err: %+v, %+v, %v", merged, updateApp, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(merged, updateApp) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", merged, updateApp)
-		}
+		require.EqualExportedValues(t, merged, updateApp)
 	})
 
 	t.Run("Update app with invalid session", func(t *testing.T) {
@@ -511,14 +491,8 @@ func TestListApps(t *testing.T) {
 		t.Logf("listApps, err: %+v, %v", listApps, err)
 		require.NoError(t, err)
 		require.Equal(t, int32(3), listApps.GetTotalSize())
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.ListAppsResponse{Apps: apps, TotalSize: 3},
-			listApps) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v",
-				&api.ListAppsResponse{Apps: apps, TotalSize: 3}, listApps)
-		}
+		require.EqualExportedValues(t,
+			&api.ListAppsResponse{Apps: apps, TotalSize: 3}, listApps)
 	})
 
 	t.Run("List apps by valid org ID with next page", func(t *testing.T) {
@@ -551,16 +525,9 @@ func TestListApps(t *testing.T) {
 		t.Logf("listApps, err: %+v, %v", listApps, err)
 		require.NoError(t, err)
 		require.Equal(t, int32(3), listApps.GetTotalSize())
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.ListAppsResponse{
+		require.EqualExportedValues(t, &api.ListAppsResponse{
 			Apps: apps[:2], NextPageToken: next, TotalSize: 3,
-		}, listApps) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.ListAppsResponse{
-				Apps: apps[:2], NextPageToken: next, TotalSize: 3,
-			}, listApps)
-		}
+		}, listApps)
 	})
 
 	t.Run("List apps with invalid session", func(t *testing.T) {
@@ -658,14 +625,7 @@ func TestListApps(t *testing.T) {
 		t.Logf("listApps, err: %+v, %v", listApps, err)
 		require.NoError(t, err)
 		require.Equal(t, int32(3), listApps.GetTotalSize())
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.ListAppsResponse{Apps: apps[:2], TotalSize: 3},
-			listApps) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.ListAppsResponse{
-				Apps: apps[:2], TotalSize: 3,
-			}, listApps)
-		}
+		require.EqualExportedValues(t,
+			&api.ListAppsResponse{Apps: apps[:2], TotalSize: 3}, listApps)
 	})
 }

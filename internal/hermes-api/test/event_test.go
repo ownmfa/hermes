@@ -12,7 +12,6 @@ import (
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/ownmfa/proto/go/api"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -70,18 +69,14 @@ func TestListEvents(t *testing.T) {
 		listEvents, err := evCli.ListEvents(ctx, &api.ListEventsRequest{
 			IdentityId: createIdentity.GetIdentity().GetId(),
 			EndTime:    events[0].GetCreatedAt(),
-			StartTime:  timestamppb.New(events[len(events)-1].GetCreatedAt().AsTime().Add(-time.Microsecond)),
+			StartTime: timestamppb.New(events[len(events)-1].GetCreatedAt().
+				AsTime().Add(-time.Microsecond)),
 		})
 		t.Logf("listEvents, err: %+v, %v", listEvents, err)
 		require.NoError(t, err)
 		require.Len(t, listEvents.GetEvents(), len(events))
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.ListEventsResponse{Events: events}, listEvents) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v",
-				&api.ListEventsResponse{Events: events}, listEvents)
-		}
+		require.EqualExportedValues(t, &api.ListEventsResponse{Events: events},
+			listEvents)
 
 		// Verify results by identity ID without oldest event.
 		listEventsTS, err := evCli.ListEvents(ctx, &api.ListEventsRequest{
@@ -91,15 +86,9 @@ func TestListEvents(t *testing.T) {
 		t.Logf("listEventsTS, err: %+v, %v", listEventsTS, err)
 		require.NoError(t, err)
 		require.Len(t, listEventsTS.GetEvents(), len(events)-1)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.ListEventsResponse{Events: events[:len(events)-1]},
-			listEventsTS) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.ListEventsResponse{
-				Events: events[:len(events)-1],
-			}, listEventsTS)
-		}
+		require.EqualExportedValues(t, &api.ListEventsResponse{
+			Events: events[:len(events)-1],
+		}, listEventsTS)
 	})
 
 	t.Run("List events are isolated by org ID", func(t *testing.T) {
@@ -217,16 +206,9 @@ func TestLatestEvents(t *testing.T) {
 			latEventsAppIDIdentityID, err)
 		require.NoError(t, err)
 		require.Len(t, latEventsAppIDIdentityID.GetEvents(), 1)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.LatestEventsResponse{
+		require.EqualExportedValues(t, &api.LatestEventsResponse{
 			Events: []*api.Event{events[len(events)-1]},
-		}, latEventsAppIDIdentityID) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.LatestEventsResponse{
-				Events: []*api.Event{events[len(events)-1]},
-			}, latEventsAppIDIdentityID)
-		}
+		}, latEventsAppIDIdentityID)
 
 		// Verify results by app ID.
 		latEventsAppID, err := evCli.LatestEvents(ctx,
@@ -234,16 +216,9 @@ func TestLatestEvents(t *testing.T) {
 		t.Logf("latEventsAppID, err: %+v, %v", latEventsAppID, err)
 		require.NoError(t, err)
 		require.Len(t, latEventsAppID.GetEvents(), 1)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.LatestEventsResponse{
+		require.EqualExportedValues(t, &api.LatestEventsResponse{
 			Events: []*api.Event{events[0]},
-		}, latEventsAppID) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.LatestEventsResponse{
-				Events: []*api.Event{events[0]},
-			}, latEventsAppID)
-		}
+		}, latEventsAppID)
 
 		// Verify results by identity ID.
 		latEventsIdentityID, err := evCli.LatestEvents(ctx,
@@ -251,16 +226,9 @@ func TestLatestEvents(t *testing.T) {
 		t.Logf("latEventsIdentityID, err: %+v, %v", latEventsIdentityID, err)
 		require.NoError(t, err)
 		require.Len(t, latEventsIdentityID.GetEvents(), 1)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.LatestEventsResponse{
+		require.EqualExportedValues(t, &api.LatestEventsResponse{
 			Events: []*api.Event{events[1]},
-		}, latEventsIdentityID) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.LatestEventsResponse{
-				Events: []*api.Event{events[1]},
-			}, latEventsIdentityID)
-		}
+		}, latEventsIdentityID)
 	})
 
 	t.Run("Latest events are isolated by org ID", func(t *testing.T) {

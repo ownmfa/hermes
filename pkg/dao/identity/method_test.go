@@ -14,7 +14,6 @@ import (
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/ownmfa/proto/go/api"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/protobuf/proto"
 )
 
 func TestMethodToOTP(t *testing.T) {
@@ -295,12 +294,7 @@ func TestOTPToMethod(t *testing.T) {
 			identity := &api.Identity{}
 			otpToMethod(identity, test.inpOTP, test.inpMeta)
 			t.Logf("identity: %+v", identity)
-
-			// Testify does not currently support protobuf equality:
-			// https://github.com/stretchr/testify/issues/758
-			if !proto.Equal(test.res, identity) {
-				t.Fatalf("\nExpect: %+v\nActual: %+v", test.res, identity)
-			}
+			require.EqualExportedValues(t, test.res, identity)
 		})
 	}
 }

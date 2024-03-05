@@ -13,7 +13,6 @@ import (
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/ownmfa/proto/go/api"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/protobuf/proto"
 )
 
 const testTimeout = 6 * time.Second
@@ -101,12 +100,8 @@ func TestList(t *testing.T) {
 		require.NoError(t, err)
 		require.Len(t, listEvents, len(events))
 
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
 		for i, event := range events {
-			if !proto.Equal(event, listEvents[i]) {
-				t.Fatalf("\nExpect: %+v\nActual: %+v", event, listEvents[i])
-			}
+			require.EqualExportedValues(t, event, listEvents[i])
 		}
 	})
 
@@ -190,28 +185,20 @@ func TestLatest(t *testing.T) {
 		require.NoError(t, err)
 		require.Len(t, latEvents, len(events))
 
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
 		for i, event := range events {
-			if !proto.Equal(event, latEvents[i]) {
-				t.Fatalf("\nExpect: %+v\nActual: %+v", event, latEvents[i])
-			}
+			require.EqualExportedValues(t, event, latEvents[i])
 		}
 
 		// Verify results by app ID and identity ID.
-		latEventsAppIDIdentityID, err := globalEvDAO.Latest(ctx, createOrg.GetId(),
-			events[len(events)-1].GetAppId(), events[len(events)-1].GetIdentityId())
+		latEventsAppIDIdentityID, err := globalEvDAO.Latest(ctx,
+			createOrg.GetId(), events[len(events)-1].GetAppId(),
+			events[len(events)-1].GetIdentityId())
 		t.Logf("latEventsAppIDIdentityID, err: %+v, %v",
 			latEventsAppIDIdentityID, err)
 		require.NoError(t, err)
 		require.Len(t, latEventsAppIDIdentityID, 1)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(events[len(events)-1], latEventsAppIDIdentityID[0]) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", events[len(events)-1],
-				latEventsAppIDIdentityID[0])
-		}
+		require.EqualExportedValues(t, events[len(events)-1],
+			latEventsAppIDIdentityID[0])
 
 		// Verify results by app ID.
 		latEventsAppID, err := globalEvDAO.Latest(ctx, createOrg.GetId(),
@@ -219,26 +206,15 @@ func TestLatest(t *testing.T) {
 		t.Logf("latEventsAppID, err: %+v, %v", latEventsAppID, err)
 		require.NoError(t, err)
 		require.Len(t, latEventsAppID, 1)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(events[0], latEventsAppID[0]) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", events[0], latEventsAppID[0])
-		}
+		require.EqualExportedValues(t, events[0], latEventsAppID[0])
 
 		// Verify results by identity ID.
-		latEventsIdentityID, err := globalEvDAO.Latest(ctx, createOrg.GetId(), "",
-			events[1].GetIdentityId())
+		latEventsIdentityID, err := globalEvDAO.Latest(ctx, createOrg.GetId(),
+			"", events[1].GetIdentityId())
 		t.Logf("latEventsIdentityID, err: %+v, %v", latEventsIdentityID, err)
 		require.NoError(t, err)
 		require.Len(t, latEventsIdentityID, 1)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(events[1], latEventsIdentityID[0]) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", events[1],
-				latEventsIdentityID[0])
-		}
+		require.EqualExportedValues(t, events[1], latEventsIdentityID[0])
 	})
 
 	t.Run("Latest events are isolated by org ID", func(t *testing.T) {
@@ -257,8 +233,8 @@ func TestLatest(t *testing.T) {
 		t.Logf("err: %#v", err)
 		require.NoError(t, err)
 
-		latEvents, err := globalEvDAO.Latest(ctx, uuid.NewString(), event.GetAppId(),
-			event.GetIdentityId())
+		latEvents, err := globalEvDAO.Latest(ctx, uuid.NewString(),
+			event.GetAppId(), event.GetIdentityId())
 		t.Logf("latEvents, err: %+v, %v", latEvents, err)
 		require.NoError(t, err)
 		require.Empty(t, latEvents)

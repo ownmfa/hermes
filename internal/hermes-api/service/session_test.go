@@ -100,7 +100,8 @@ func TestLogin(t *testing.T) {
 
 		sessSvc := NewSession(userer, nil, nil, pwtKey)
 		loginResp, err := sessSvc.Login(ctx, &api.LoginRequest{
-			Email: user.GetEmail(), OrgName: org.GetName(), Password: random.String(10),
+			Email: user.GetEmail(), OrgName: org.GetName(),
+			Password: random.String(10),
 		})
 		t.Logf("loginResp, err: %+v, %v", loginResp, err)
 		require.Nil(t, loginResp)
@@ -192,11 +193,7 @@ func TestCreateKey(t *testing.T) {
 		// Normalize token.
 		resp := &api.CreateKeyResponse{Key: key, Token: createKey.GetToken()}
 
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(resp, createKey) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", resp, createKey)
-		}
+		require.EqualExportedValues(t, resp, createKey)
 	})
 
 	t.Run("Create key with invalid session", func(t *testing.T) {
@@ -424,14 +421,8 @@ func TestListKeys(t *testing.T) {
 		t.Logf("listKeys, err: %+v, %v", listKeys, err)
 		require.NoError(t, err)
 		require.Equal(t, int32(3), listKeys.GetTotalSize())
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.ListKeysResponse{Keys: keys, TotalSize: 3},
-			listKeys) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v",
-				&api.ListKeysResponse{Keys: keys, TotalSize: 3}, listKeys)
-		}
+		require.EqualExportedValues(t,
+			&api.ListKeysResponse{Keys: keys, TotalSize: 3}, listKeys)
 	})
 
 	t.Run("List keys by valid org ID with next page", func(t *testing.T) {
@@ -464,16 +455,9 @@ func TestListKeys(t *testing.T) {
 		t.Logf("listKeys, err: %+v, %v", listKeys, err)
 		require.NoError(t, err)
 		require.Equal(t, int32(3), listKeys.GetTotalSize())
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.ListKeysResponse{
+		require.EqualExportedValues(t, &api.ListKeysResponse{
 			Keys: keys[:2], NextPageToken: next, TotalSize: 3,
-		}, listKeys) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.ListKeysResponse{
-				Keys: keys[:2], NextPageToken: next, TotalSize: 3,
-			}, listKeys)
-		}
+		}, listKeys)
 	})
 
 	t.Run("List keys with invalid session", func(t *testing.T) {
@@ -556,14 +540,7 @@ func TestListKeys(t *testing.T) {
 		t.Logf("listKeys, err: %+v, %v", listKeys, err)
 		require.NoError(t, err)
 		require.Equal(t, int32(3), listKeys.GetTotalSize())
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.ListKeysResponse{Keys: keys[:2], TotalSize: 3},
-			listKeys) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v",
-				&api.ListKeysResponse{Keys: keys[:2], TotalSize: 3},
-				listKeys)
-		}
+		require.EqualExportedValues(t,
+			&api.ListKeysResponse{Keys: keys[:2], TotalSize: 3}, listKeys)
 	})
 }

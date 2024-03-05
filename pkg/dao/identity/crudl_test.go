@@ -257,16 +257,12 @@ func TestRead(t *testing.T) {
 		defer cancel()
 
 		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
-			createIdentity.GetId(), createIdentity.GetOrgId(), createIdentity.GetAppId())
+			createIdentity.GetId(), createIdentity.GetOrgId(),
+			createIdentity.GetAppId())
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(createIdentity, readIdentity) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", createIdentity, readIdentity)
-		}
+		require.EqualExportedValues(t, createIdentity, readIdentity)
 
 		require.Equal(t, createOTP, readOTP)
 		require.Equal(t, createIdentity.GetSoftwareHotpMethod().GetHash(),
@@ -282,24 +278,20 @@ func TestRead(t *testing.T) {
 		defer cancel()
 
 		createIdentity, createOTP, _, err := globalIdentDAO.Create(ctx,
-			random.SMSIdentity("dao-identity", createOrg.GetId(), createApp.GetId()))
+			random.SMSIdentity("dao-identity", createOrg.GetId(),
+				createApp.GetId()))
 		t.Logf("createIdentity, createOTP, err: %+v, %#v, %v", createIdentity,
 			createOTP, err)
 		require.NoError(t, err)
 
 		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
-			createIdentity.GetId(), createIdentity.GetOrgId(), createIdentity.GetAppId())
+			createIdentity.GetId(), createIdentity.GetOrgId(),
+			createIdentity.GetAppId())
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
 		require.NoError(t, err)
 		require.NotNil(t, readOTP)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(createIdentity, readIdentity) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", createIdentity, readIdentity)
-		}
-
+		require.EqualExportedValues(t, createIdentity, readIdentity)
 		require.Equal(t, createOTP, readOTP)
 	})
 
@@ -310,24 +302,20 @@ func TestRead(t *testing.T) {
 		defer cancel()
 
 		createIdentity, createOTP, _, err := globalIdentDAO.Create(ctx,
-			random.PushoverIdentity("dao-identity", createOrg.GetId(), createApp.GetId()))
+			random.PushoverIdentity("dao-identity", createOrg.GetId(),
+				createApp.GetId()))
 		t.Logf("createIdentity, createOTP, err: %+v, %#v, %v", createIdentity,
 			createOTP, err)
 		require.NoError(t, err)
 
 		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
-			createIdentity.GetId(), createIdentity.GetOrgId(), createIdentity.GetAppId())
+			createIdentity.GetId(), createIdentity.GetOrgId(),
+			createIdentity.GetAppId())
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
 		require.NoError(t, err)
 		require.NotNil(t, readOTP)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(createIdentity, readIdentity) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", createIdentity, readIdentity)
-		}
-
+		require.EqualExportedValues(t, createIdentity, readIdentity)
 		require.Equal(t, createOTP, readOTP)
 	})
 
@@ -338,24 +326,20 @@ func TestRead(t *testing.T) {
 		defer cancel()
 
 		createIdentity, createOTP, _, err := globalIdentDAO.Create(ctx,
-			random.EmailIdentity("dao-identity", createOrg.GetId(), createApp.GetId()))
+			random.EmailIdentity("dao-identity", createOrg.GetId(),
+				createApp.GetId()))
 		t.Logf("createIdentity, createOTP, err: %+v, %#v, %v", createIdentity,
 			createOTP, err)
 		require.NoError(t, err)
 
 		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
-			createIdentity.GetId(), createIdentity.GetOrgId(), createIdentity.GetAppId())
+			createIdentity.GetId(), createIdentity.GetOrgId(),
+			createIdentity.GetAppId())
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
 		require.NoError(t, err)
 		require.NotNil(t, readOTP)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(createIdentity, readIdentity) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", createIdentity, readIdentity)
-		}
-
+		require.EqualExportedValues(t, createIdentity, readIdentity)
 		require.Equal(t, createOTP, readOTP)
 	})
 
@@ -373,18 +357,13 @@ func TestRead(t *testing.T) {
 		require.NoError(t, err)
 
 		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
-			createIdentity.GetId(), createIdentity.GetOrgId(), createIdentity.GetAppId())
+			createIdentity.GetId(), createIdentity.GetOrgId(),
+			createIdentity.GetAppId())
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
 		require.NoError(t, err)
 		require.NotNil(t, readOTP)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(createIdentity, readIdentity) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", createIdentity, readIdentity)
-		}
-
+		require.EqualExportedValues(t, createIdentity, readIdentity)
 		require.Equal(t, createOTP, readOTP)
 	})
 
@@ -402,18 +381,13 @@ func TestRead(t *testing.T) {
 		require.NoError(t, err)
 
 		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
-			createIdentity.GetId(), createIdentity.GetOrgId(), createIdentity.GetAppId())
+			createIdentity.GetId(), createIdentity.GetOrgId(),
+			createIdentity.GetAppId())
 		t.Logf("readIdentity, readOTP, err: %+v, %#v, %v", readIdentity,
 			readOTP, err)
 		require.NoError(t, err)
 		require.NotNil(t, readOTP)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(createIdentity, readIdentity) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", createIdentity, readIdentity)
-		}
-
+		require.EqualExportedValues(t, createIdentity, readIdentity)
 		require.Equal(t, createOTP, readOTP)
 	})
 

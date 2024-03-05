@@ -117,7 +117,8 @@ func TestNotifyMessages(t *testing.T) {
 			defer cancel()
 
 			listEvents, err := globalEvDAO.List(ctx, test.inp.GetOrgId(),
-				test.inp.GetIdentityId(), time.Now(), time.Now().Add(-testTimeout))
+				test.inp.GetIdentityId(), time.Now(), time.Now().
+					Add(-testTimeout))
 			t.Logf("listEvents, err: %+v, %v", listEvents, err)
 			require.NoError(t, err)
 			require.Len(t, listEvents, 1)
@@ -127,11 +128,7 @@ func TestNotifyMessages(t *testing.T) {
 				listEvents[0].GetCreatedAt().AsTime(), testTimeout)
 			event.CreatedAt = listEvents[0].GetCreatedAt()
 
-			// Testify does not currently support protobuf equality:
-			// https://github.com/stretchr/testify/issues/758
-			if !proto.Equal(event, listEvents[0]) {
-				t.Fatalf("\nExpect: %+v\nActual: %+v", event, listEvents[0])
-			}
+			require.EqualExportedValues(t, event, listEvents[0])
 		})
 	}
 }
@@ -148,11 +145,13 @@ func TestNotifyMessagesError(t *testing.T) {
 	t.Logf("createOrg, err: %+v, %v", createOrg, err)
 	require.NoError(t, err)
 
-	createApp, err := globalAppDAO.Create(ctx, random.App("not", createOrg.GetId()))
+	createApp, err := globalAppDAO.Create(ctx, random.App("not",
+		createOrg.GetId()))
 	t.Logf("createApp, err: %+v, %v", createApp, err)
 	require.NoError(t, err)
 
-	badOTPIdentity := random.HOTPIdentity("not", createOrg.GetId(), createApp.GetId())
+	badOTPIdentity := random.HOTPIdentity("not", createOrg.GetId(),
+		createApp.GetId())
 	badOTPIdentity.MethodOneof = &api.Identity_HardwareHotpMethod{
 		HardwareHotpMethod: &api.HardwareHOTPMethod{},
 	}
@@ -181,7 +180,8 @@ func TestNotifyMessagesError(t *testing.T) {
 	require.NoError(t, err)
 
 	createBadTemplIdentity, _, _, err := globalIdentDAO.Create(ctx,
-		random.PushoverIdentity("not", createOrg.GetId(), createBadTemplApp.GetId()))
+		random.PushoverIdentity("not", createOrg.GetId(),
+			createBadTemplApp.GetId()))
 	t.Logf("createBadTemplIdentity, err: %+v, %v", createBadTemplIdentity, err)
 	require.NoError(t, err)
 
@@ -258,11 +258,7 @@ func TestNotifyMessagesError(t *testing.T) {
 					listEvents[0].GetCreatedAt().AsTime(), testTimeout)
 				event.CreatedAt = listEvents[0].GetCreatedAt()
 
-				// Testify does not currently support protobuf equality:
-				// https://github.com/stretchr/testify/issues/758
-				if !proto.Equal(event, listEvents[0]) {
-					t.Fatalf("\nExpect: %+v\nActual: %+v", event, listEvents[0])
-				}
+				require.EqualExportedValues(t, event, listEvents[0])
 			}
 		})
 	}

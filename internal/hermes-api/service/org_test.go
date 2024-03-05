@@ -43,12 +43,7 @@ func TestCreateOrg(t *testing.T) {
 		createOrg, err := orgSvc.CreateOrg(ctx, &api.CreateOrgRequest{Org: org})
 		t.Logf("org, createOrg, err: %+v, %+v, %v", org, createOrg, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(org, createOrg) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", org, createOrg)
-		}
+		require.EqualExportedValues(t, org, createOrg)
 	})
 
 	t.Run("Create org with invalid session", func(t *testing.T) {
@@ -126,12 +121,7 @@ func TestGetOrg(t *testing.T) {
 		getOrg, err := orgSvc.GetOrg(ctx, &api.GetOrgRequest{Id: org.GetId()})
 		t.Logf("org, getOrg, err: %+v, %+v, %v", org, getOrg, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(org, getOrg) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", org, getOrg)
-		}
+		require.EqualExportedValues(t, org, getOrg)
 	})
 
 	t.Run("Get org with invalid session", func(t *testing.T) {
@@ -207,12 +197,7 @@ func TestUpdateOrg(t *testing.T) {
 		updateOrg, err := orgSvc.UpdateOrg(ctx, &api.UpdateOrgRequest{Org: org})
 		t.Logf("org, updateOrg, err: %+v, %+v, %v", org, updateOrg, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(org, updateOrg) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", org, updateOrg)
-		}
+		require.EqualExportedValues(t, org, updateOrg)
 	})
 
 	t.Run("Partial update org by valid org", func(t *testing.T) {
@@ -247,12 +232,7 @@ func TestUpdateOrg(t *testing.T) {
 		})
 		t.Logf("merged, updateOrg, err: %+v, %+v, %v", merged, updateOrg, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(merged, updateOrg) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", merged, updateOrg)
-		}
+		require.EqualExportedValues(t, merged, updateOrg)
 	})
 
 	t.Run("Update org with invalid session", func(t *testing.T) {
@@ -513,14 +493,8 @@ func TestListOrgs(t *testing.T) {
 		t.Logf("listOrgs, err: %+v, %v", listOrgs, err)
 		require.NoError(t, err)
 		require.Equal(t, int32(3), listOrgs.GetTotalSize())
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.ListOrgsResponse{Orgs: orgs, TotalSize: 3},
-			listOrgs) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v",
-				&api.ListOrgsResponse{Orgs: orgs, TotalSize: 3}, listOrgs)
-		}
+		require.EqualExportedValues(t,
+			&api.ListOrgsResponse{Orgs: orgs, TotalSize: 3}, listOrgs)
 	})
 
 	t.Run("List orgs with next page", func(t *testing.T) {
@@ -553,16 +527,9 @@ func TestListOrgs(t *testing.T) {
 		t.Logf("listOrgs, err: %+v, %v", listOrgs, err)
 		require.NoError(t, err)
 		require.Equal(t, int32(3), listOrgs.GetTotalSize())
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.ListOrgsResponse{
+		require.EqualExportedValues(t, &api.ListOrgsResponse{
 			Orgs: orgs[:2], NextPageToken: next, TotalSize: 3,
-		}, listOrgs) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.ListOrgsResponse{
-				Orgs: orgs[:2], NextPageToken: next, TotalSize: 3,
-			}, listOrgs)
-		}
+		}, listOrgs)
 	})
 
 	t.Run("List orgs with invalid session", func(t *testing.T) {
@@ -596,16 +563,9 @@ func TestListOrgs(t *testing.T) {
 		listOrgs, err := orgSvc.ListOrgs(ctx, &api.ListOrgsRequest{})
 		t.Logf("listOrgs, err: %+v, %v", listOrgs, err)
 		require.NoError(t, err)
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.ListOrgsResponse{
+		require.EqualExportedValues(t, &api.ListOrgsResponse{
 			Orgs: []*api.Org{org}, TotalSize: 1,
-		}, listOrgs) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v", &api.ListOrgsResponse{
-				Orgs: []*api.Org{org}, TotalSize: 1,
-			}, listOrgs)
-		}
+		}, listOrgs)
 	})
 
 	t.Run("List orgs by unknown ID", func(t *testing.T) {
@@ -696,13 +656,7 @@ func TestListOrgs(t *testing.T) {
 		t.Logf("listOrgs, err: %+v, %v", listOrgs, err)
 		require.NoError(t, err)
 		require.Equal(t, int32(3), listOrgs.GetTotalSize())
-
-		// Testify does not currently support protobuf equality:
-		// https://github.com/stretchr/testify/issues/758
-		if !proto.Equal(&api.ListOrgsResponse{Orgs: orgs[:2], TotalSize: 3},
-			listOrgs) {
-			t.Fatalf("\nExpect: %+v\nActual: %+v",
-				&api.ListOrgsResponse{Orgs: orgs[:2], TotalSize: 3}, listOrgs)
-		}
+		require.EqualExportedValues(t,
+			&api.ListOrgsResponse{Orgs: orgs[:2], TotalSize: 3}, listOrgs)
 	})
 }
