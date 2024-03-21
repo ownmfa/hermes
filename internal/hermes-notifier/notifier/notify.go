@@ -139,11 +139,12 @@ func (not *Notifier) notifyMessages() {
 			continue
 		}
 
-		// Set the passcode expiration. It is not necessary to check for
-		// collisions here, but if one was found, that would be notable.
-		expire := smsPushoverExpire
+		// Set the passcode expiration.
+		var expire time.Duration
 		if _, ok := identity.GetMethodOneof().(*api.Identity_EmailMethod); ok {
 			expire = emailExpire
+		} else {
+			expire = smsPushoverExpire
 		}
 
 		ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
