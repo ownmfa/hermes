@@ -57,6 +57,7 @@ services:
   traefik:
     image: traefik:v2.11
     ports:
+      # Comment 80 when enabling 443
       - "80:80"
       # - "443:443"
       - "50051:50051"
@@ -64,14 +65,13 @@ services:
       - TRAEFIK_LOG_LEVEL=INFO
       - TRAEFIK_PROVIDERS_DOCKER=true
       - TRAEFIK_PROVIDERS_DOCKER_EXPOSEDBYDEFAULT=false
+      # Comment PLAINTEXT when enabling TLS, do not redirect
       - TRAEFIK_ENTRYPOINTS_PLAINTEXT_ADDRESS=:80
       # - TRAEFIK_ENTRYPOINTS_TLS_ADDRESS=:443
       - TRAEFIK_ENTRYPOINTS_GRPC_ADDRESS=:50051
       # - TRAEFIK_CERTIFICATESRESOLVERS_HERMES-TLS_ACME_TLSCHALLENGE=true
       # - TRAEFIK_CERTIFICATESRESOLVERS_HERMES-TLS_ACME_EMAIL=letsencrypt@ownmfa.com
       # - TRAEFIK_CERTIFICATESRESOLVERS_HERMES-TLS_ACME_STORAGE=/tls/acme.json
-      # - TRAEFIK_ENTRYPOINTS_PLAINTEXT_HTTP_REDIRECTIONS_ENTRYPOINT_TO=tls
-      # - TRAEFIK_ENTRYPOINTS_PLAINTEXT_HTTP_REDIRECTIONS_ENTRYPOINT_SCHEME=https
       # - TRAEFIK_PROVIDERS_FILE_FILENAME=/tls/options.yaml
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
