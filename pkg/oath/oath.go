@@ -61,7 +61,7 @@ func (o *OTP) validate() error {
 		return ErrUnknownAlgorithm
 	}
 
-	//nolint:exhaustive // covered by default
+	//nolint:exhaustive // Covered by default.
 	switch o.Hash {
 	case crypto.SHA1, crypto.SHA256, crypto.SHA512:
 		break
