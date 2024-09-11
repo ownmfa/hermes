@@ -183,12 +183,14 @@ func otpToMethod(identity *api.Identity, otp *oath.OTP, meta *otpMeta) {
 			AppleIosTotpMethod: &api.AppleiOSTOTPMethod{},
 		}
 	case otp.Algorithm == oath.HOTP:
+		//nolint:gosec // Safe conversion for limited values.
 		identity.MethodOneof = &api.Identity_SoftwareHotpMethod{
 			SoftwareHotpMethod: &api.SoftwareHOTPMethod{
 				Hash: hashCryptoToAPI[otp.Hash], Digits: int32(otp.Digits),
 			},
 		}
 	case otp.Algorithm == oath.TOTP:
+		//nolint:gosec // Safe conversion for limited values.
 		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{
 			SoftwareTotpMethod: &api.SoftwareTOTPMethod{
 				Hash: hashCryptoToAPI[otp.Hash], Digits: int32(otp.Digits),
