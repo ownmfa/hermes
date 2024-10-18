@@ -22,6 +22,7 @@ import (
 type Mockapper struct {
 	ctrl     *gomock.Controller
 	recorder *MockapperMockRecorder
+	isgomock struct{}
 }
 
 // MockapperMockRecorder is the mock recorder for Mockapper.
@@ -60,6 +61,7 @@ func (mr *MockapperMockRecorder) Read(ctx, appID, orgID any) *gomock.Call {
 type Mockidentityer struct {
 	ctrl     *gomock.Controller
 	recorder *MockidentityerMockRecorder
+	isgomock struct{}
 }
 
 // MockidentityerMockRecorder is the mock recorder for Mockidentityer.
@@ -99,6 +101,7 @@ func (mr *MockidentityerMockRecorder) Read(ctx, identityID, orgID, appID any) *g
 type Mockeventer struct {
 	ctrl     *gomock.Controller
 	recorder *MockeventerMockRecorder
+	isgomock struct{}
 }
 
 // MockeventerMockRecorder is the mock recorder for Mockeventer.
