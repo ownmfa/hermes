@@ -5,7 +5,7 @@
 generate:
 	cp -Rf ../../proto/protobuf/api protobuf/
 	docker compose build --progress=plain --no-cache --pull
-	docker compose up
+	docker compose up --menu=false
 	docker compose down
 	rm -rf protobuf/api
 	cp -f ../../proto/openapi/hermes.swagger.json ../web/
