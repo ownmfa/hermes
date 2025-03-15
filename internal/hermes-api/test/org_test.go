@@ -23,7 +23,7 @@ func TestCreateOrg(t *testing.T) {
 
 		org := random.Org("api-org")
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
@@ -45,7 +45,7 @@ func TestCreateOrg(t *testing.T) {
 		org := random.Org("api-org")
 		org.Name = strings.ToUpper(org.GetName())
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
@@ -64,7 +64,7 @@ func TestCreateOrg(t *testing.T) {
 	t.Run("Create valid org with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgCli := api.NewOrgServiceClient(globalAdminGRPCConn)
@@ -82,7 +82,7 @@ func TestCreateOrg(t *testing.T) {
 		org := random.Org("api-org")
 		org.Name = "api-org-" + random.String(40)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
@@ -100,7 +100,7 @@ func TestCreateOrg(t *testing.T) {
 func TestGetOrg(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
@@ -112,7 +112,7 @@ func TestGetOrg(t *testing.T) {
 	t.Run("Get org by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
@@ -125,7 +125,7 @@ func TestGetOrg(t *testing.T) {
 	t.Run("Get org with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgCli := api.NewOrgServiceClient(globalAdminGRPCConn)
@@ -140,7 +140,7 @@ func TestGetOrg(t *testing.T) {
 	t.Run("Get org by unknown ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
@@ -159,7 +159,7 @@ func TestUpdateOrg(t *testing.T) {
 	t.Run("Update org by valid org", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
@@ -195,7 +195,7 @@ func TestUpdateOrg(t *testing.T) {
 	t.Run("Partial update org by valid org", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
@@ -239,7 +239,7 @@ func TestUpdateOrg(t *testing.T) {
 			api.Role_SYS_ADMIN, api.Plan_PRO)
 		require.NoError(t, err)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		// Update org fields.
@@ -269,7 +269,7 @@ func TestUpdateOrg(t *testing.T) {
 	t.Run("Update nil org", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
@@ -283,7 +283,7 @@ func TestUpdateOrg(t *testing.T) {
 	t.Run("Update different org with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgCli := api.NewOrgServiceClient(globalAdminGRPCConn)
@@ -298,7 +298,7 @@ func TestUpdateOrg(t *testing.T) {
 	t.Run("Partial update invalid field mask", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
@@ -316,7 +316,7 @@ func TestUpdateOrg(t *testing.T) {
 	t.Run("Partial update org by unknown org", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
@@ -334,7 +334,7 @@ func TestUpdateOrg(t *testing.T) {
 	t.Run("Update org by unknown org", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
@@ -349,7 +349,7 @@ func TestUpdateOrg(t *testing.T) {
 	t.Run("Update org validation failure", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
@@ -378,7 +378,7 @@ func TestDeleteOrg(t *testing.T) {
 	t.Run("Delete org by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
@@ -394,7 +394,7 @@ func TestDeleteOrg(t *testing.T) {
 		t.Run("Read org by deleted ID", func(t *testing.T) {
 			t.Parallel()
 
-			ctx, cancel := context.WithTimeout(context.Background(),
+			ctx, cancel := context.WithTimeout(t.Context(),
 				testTimeout)
 			defer cancel()
 
@@ -411,7 +411,7 @@ func TestDeleteOrg(t *testing.T) {
 	t.Run("Delete org with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgCli := api.NewOrgServiceClient(globalAdminGRPCConn)
@@ -425,7 +425,7 @@ func TestDeleteOrg(t *testing.T) {
 	t.Run("Delete org by unknown ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
@@ -440,7 +440,7 @@ func TestDeleteOrg(t *testing.T) {
 func TestListOrgs(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	orgIDs := []string{}
@@ -461,7 +461,7 @@ func TestListOrgs(t *testing.T) {
 	t.Run("List orgs by valid org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
@@ -486,7 +486,7 @@ func TestListOrgs(t *testing.T) {
 	t.Run("List orgs by valid org ID with next page", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
@@ -509,7 +509,7 @@ func TestListOrgs(t *testing.T) {
 	t.Run("List orgs with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		secCli := api.NewOrgServiceClient(globalAdminGRPCConn)
@@ -523,7 +523,7 @@ func TestListOrgs(t *testing.T) {
 	t.Run("List orgs by invalid page token", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)

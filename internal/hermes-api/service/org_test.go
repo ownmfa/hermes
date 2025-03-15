@@ -34,7 +34,7 @@ func TestCreateOrg(t *testing.T) {
 		orger.EXPECT().Create(gomock.Any(), org).Return(retOrg, nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: org.GetId(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -49,7 +49,7 @@ func TestCreateOrg(t *testing.T) {
 	t.Run("Create org with invalid session", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgSvc := NewOrg(nil)
@@ -63,7 +63,7 @@ func TestCreateOrg(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -85,7 +85,7 @@ func TestCreateOrg(t *testing.T) {
 			dao.ErrInvalidFormat).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: org.GetId(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -112,7 +112,7 @@ func TestGetOrg(t *testing.T) {
 		orger.EXPECT().Read(gomock.Any(), org.GetId()).Return(retOrg, nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: org.GetId(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -127,7 +127,7 @@ func TestGetOrg(t *testing.T) {
 	t.Run("Get org with invalid session", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgSvc := NewOrg(nil)
@@ -141,7 +141,7 @@ func TestGetOrg(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -161,7 +161,7 @@ func TestGetOrg(t *testing.T) {
 			dao.ErrNotFound).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -188,7 +188,7 @@ func TestUpdateOrg(t *testing.T) {
 		orger.EXPECT().Update(gomock.Any(), org).Return(retOrg, nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: org.GetId(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -219,7 +219,7 @@ func TestUpdateOrg(t *testing.T) {
 			Return(retMerged, nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: org.GetId(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -238,7 +238,7 @@ func TestUpdateOrg(t *testing.T) {
 	t.Run("Update org with invalid session", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgSvc := NewOrg(nil)
@@ -252,7 +252,7 @@ func TestUpdateOrg(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -271,7 +271,7 @@ func TestUpdateOrg(t *testing.T) {
 		org := random.Org("api-org")
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: org.GetId(), Role: api.Role_AUTHENTICATOR,
 			}), testTimeout)
 		defer cancel()
@@ -287,7 +287,7 @@ func TestUpdateOrg(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -306,7 +306,7 @@ func TestUpdateOrg(t *testing.T) {
 		org := random.Org("api-org")
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -333,7 +333,7 @@ func TestUpdateOrg(t *testing.T) {
 			Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: orgID, Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -355,7 +355,7 @@ func TestUpdateOrg(t *testing.T) {
 		org.Name = random.String(41)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: org.GetId(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -380,7 +380,7 @@ func TestUpdateOrg(t *testing.T) {
 			dao.ErrInvalidFormat).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: org.GetId(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -404,7 +404,7 @@ func TestDeleteOrg(t *testing.T) {
 		orger.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -419,7 +419,7 @@ func TestDeleteOrg(t *testing.T) {
 	t.Run("Delete org with invalid session", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgSvc := NewOrg(nil)
@@ -432,7 +432,7 @@ func TestDeleteOrg(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -451,7 +451,7 @@ func TestDeleteOrg(t *testing.T) {
 			Return(dao.ErrNotFound).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -483,7 +483,7 @@ func TestListOrgs(t *testing.T) {
 			Return(orgs, int32(3), nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: orgID, Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -517,7 +517,7 @@ func TestListOrgs(t *testing.T) {
 			Return(orgs, int32(3), nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: orgID, Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -535,7 +535,7 @@ func TestListOrgs(t *testing.T) {
 	t.Run("List orgs with invalid session", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		orgSvc := NewOrg(nil)
@@ -554,7 +554,7 @@ func TestListOrgs(t *testing.T) {
 		orger.EXPECT().Read(gomock.Any(), org.GetId()).Return(org, nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: org.GetId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -578,7 +578,7 @@ func TestListOrgs(t *testing.T) {
 			dao.ErrNotFound).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: org.GetId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -594,7 +594,7 @@ func TestListOrgs(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -616,7 +616,7 @@ func TestListOrgs(t *testing.T) {
 			gomock.Any()).Return(nil, int32(0), dao.ErrInvalidFormat).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: "aaa", Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -646,7 +646,7 @@ func TestListOrgs(t *testing.T) {
 			Return(orgs, int32(3), nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: orgID, Role: api.Role_SYS_ADMIN,
 			}), testTimeout)
 		defer cancel()

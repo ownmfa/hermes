@@ -21,7 +21,7 @@ func TestListEvents(t *testing.T) {
 	t.Run("List events by valid identity ID with ts", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -47,7 +47,7 @@ func TestListEvents(t *testing.T) {
 			event.IdentityId = createIdentity.GetIdentity().GetId()
 			events = append(events, event)
 
-			ctx, cancel := context.WithTimeout(context.Background(),
+			ctx, cancel := context.WithTimeout(t.Context(),
 				testTimeout)
 			defer cancel()
 
@@ -61,7 +61,7 @@ func TestListEvents(t *testing.T) {
 				events[j].GetCreatedAt().AsTime())
 		})
 
-		ctx, cancel = context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel = context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		// Verify results by identity ID.
@@ -94,7 +94,7 @@ func TestListEvents(t *testing.T) {
 	t.Run("List events are isolated by org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createOrg, err := globalOrgDAO.Create(ctx, random.Org("api-event"))
@@ -119,7 +119,7 @@ func TestListEvents(t *testing.T) {
 	t.Run("List events by invalid time range", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		evCli := api.NewEventServiceClient(globalAdminGRPCConn)
@@ -136,7 +136,7 @@ func TestListEvents(t *testing.T) {
 	t.Run("List events by invalid identity ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		evCli := api.NewEventServiceClient(globalAdminGRPCConn)
@@ -163,7 +163,7 @@ func TestLatestEvents(t *testing.T) {
 			event := random.Event("api-event", globalAdminOrgID)
 			events = append(events, event)
 
-			ctx, cancel := context.WithTimeout(context.Background(),
+			ctx, cancel := context.WithTimeout(t.Context(),
 				testTimeout)
 			defer cancel()
 
@@ -177,7 +177,7 @@ func TestLatestEvents(t *testing.T) {
 				events[j].GetCreatedAt().AsTime())
 		})
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		// Verify results.
@@ -234,7 +234,7 @@ func TestLatestEvents(t *testing.T) {
 	t.Run("Latest events are isolated by org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createOrg, err := globalOrgDAO.Create(ctx, random.Org("api-event"))
@@ -257,7 +257,7 @@ func TestLatestEvents(t *testing.T) {
 	t.Run("Latest events by invalid identity ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		evCli := api.NewEventServiceClient(globalAdminGRPCConn)

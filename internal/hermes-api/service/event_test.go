@@ -36,7 +36,7 @@ func TestListEvents(t *testing.T) {
 			end, start).Return([]*api.Event{retEvent}, nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: event.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -55,7 +55,7 @@ func TestListEvents(t *testing.T) {
 	t.Run("List events with invalid session", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		evSvc := NewEvent(nil)
@@ -69,7 +69,7 @@ func TestListEvents(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
@@ -85,7 +85,7 @@ func TestListEvents(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -109,7 +109,7 @@ func TestListEvents(t *testing.T) {
 			gomock.Any()).Return(nil, dao.ErrInvalidFormat).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: "aaa", Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -138,7 +138,7 @@ func TestLatestEvents(t *testing.T) {
 			event.GetIdentityId()).Return([]*api.Event{retEvent}, nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: orgID, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -156,7 +156,7 @@ func TestLatestEvents(t *testing.T) {
 	t.Run("Latest events with invalid session", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		evSvc := NewEvent(nil)
@@ -170,7 +170,7 @@ func TestLatestEvents(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
@@ -190,7 +190,7 @@ func TestLatestEvents(t *testing.T) {
 			gomock.Any()).Return(nil, dao.ErrInvalidFormat).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: "aaa", Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()

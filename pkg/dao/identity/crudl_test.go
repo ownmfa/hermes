@@ -20,7 +20,7 @@ const testTimeout = 22 * time.Second
 func TestCreate(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-identity"))
@@ -39,7 +39,7 @@ func TestCreate(t *testing.T) {
 			createApp.GetId())
 		createIdentity, _ := proto.Clone(identity).(*api.Identity)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, createOTP, retSecret, err := globalIdentDAO.Create(
@@ -65,7 +65,7 @@ func TestCreate(t *testing.T) {
 			createApp.GetId())
 		createIdentity, _ := proto.Clone(identity).(*api.Identity)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, createOTP, retSecret, err := globalIdentDAO.Create(
@@ -91,7 +91,7 @@ func TestCreate(t *testing.T) {
 			createApp.GetId())
 		createIdentity, _ := proto.Clone(identity).(*api.Identity)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, createOTP, retSecret, err := globalIdentDAO.Create(
@@ -117,7 +117,7 @@ func TestCreate(t *testing.T) {
 			createApp.GetId())
 		createIdentity, _ := proto.Clone(identity).(*api.Identity)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, createOTP, retSecret, err := globalIdentDAO.Create(
@@ -143,7 +143,7 @@ func TestCreate(t *testing.T) {
 			createApp.GetId())
 		createIdentity, _ := proto.Clone(identity).(*api.Identity)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, createOTP, retSecret, err := globalIdentDAO.Create(
@@ -169,7 +169,7 @@ func TestCreate(t *testing.T) {
 			createOrg.GetId(), createApp.GetId())
 		createIdentity, _ := proto.Clone(identity).(*api.Identity)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, createOTP, retSecret, err := globalIdentDAO.Create(
@@ -197,7 +197,7 @@ func TestCreate(t *testing.T) {
 			createApp.GetId())
 		identity.Comment = "dao-identity-" + random.String(80)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, createOTP, retSecret, err := globalIdentDAO.Create(
@@ -214,7 +214,7 @@ func TestCreate(t *testing.T) {
 	t.Run("Create valid identity by unknown app", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, createOTP, retSecret, err := globalIdentDAO.Create(
@@ -232,7 +232,7 @@ func TestCreate(t *testing.T) {
 func TestRead(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-identity"))
@@ -253,7 +253,7 @@ func TestRead(t *testing.T) {
 	t.Run("Read HOTP identity by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
@@ -275,7 +275,7 @@ func TestRead(t *testing.T) {
 	t.Run("Read SMS identity by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, createOTP, _, err := globalIdentDAO.Create(ctx,
@@ -299,7 +299,7 @@ func TestRead(t *testing.T) {
 	t.Run("Read Pushover identity by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, createOTP, _, err := globalIdentDAO.Create(ctx,
@@ -323,7 +323,7 @@ func TestRead(t *testing.T) {
 	t.Run("Read email identity by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, createOTP, _, err := globalIdentDAO.Create(ctx,
@@ -347,7 +347,7 @@ func TestRead(t *testing.T) {
 	t.Run("Read backup codes identity by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, createOTP, _, err := globalIdentDAO.Create(ctx,
@@ -371,7 +371,7 @@ func TestRead(t *testing.T) {
 	t.Run("Read security questions identity by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, createOTP, _, err := globalIdentDAO.Create(ctx,
@@ -395,7 +395,7 @@ func TestRead(t *testing.T) {
 	t.Run("Read identity by unknown ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
@@ -410,7 +410,7 @@ func TestRead(t *testing.T) {
 	t.Run("Read identity by unknown app", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
@@ -425,7 +425,7 @@ func TestRead(t *testing.T) {
 	t.Run("Reads are isolated by org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
@@ -440,7 +440,7 @@ func TestRead(t *testing.T) {
 	t.Run("Read identity by invalid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		readIdentity, readOTP, err := globalIdentDAO.Read(ctx,
@@ -456,7 +456,7 @@ func TestRead(t *testing.T) {
 func TestUpdateStatus(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-identity"))
@@ -471,7 +471,7 @@ func TestUpdateStatus(t *testing.T) {
 	t.Run("Update identity status by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, _, _, err := globalIdentDAO.Create(ctx,
@@ -492,7 +492,7 @@ func TestUpdateStatus(t *testing.T) {
 	t.Run("Update identity status by unknown ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		updateIdentity, err := globalIdentDAO.UpdateStatus(ctx,
@@ -506,7 +506,7 @@ func TestUpdateStatus(t *testing.T) {
 	t.Run("Status updates are isolated by org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, _, _, err := globalIdentDAO.Create(ctx,
@@ -526,7 +526,7 @@ func TestUpdateStatus(t *testing.T) {
 func TestDelete(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-identity"))
@@ -541,7 +541,7 @@ func TestDelete(t *testing.T) {
 	t.Run("Delete identity by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, _, _, err := globalIdentDAO.Create(ctx,
@@ -557,7 +557,7 @@ func TestDelete(t *testing.T) {
 		t.Run("Read identity by deleted ID", func(t *testing.T) {
 			t.Parallel()
 
-			ctx, cancel := context.WithTimeout(context.Background(),
+			ctx, cancel := context.WithTimeout(t.Context(),
 				testTimeout)
 			defer cancel()
 
@@ -574,7 +574,7 @@ func TestDelete(t *testing.T) {
 	t.Run("Delete identity by unknown ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		err := globalIdentDAO.Delete(ctx, uuid.NewString(), createOrg.GetId(),
@@ -586,7 +586,7 @@ func TestDelete(t *testing.T) {
 	t.Run("Delete identity by unknown app", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, _, _, err := globalIdentDAO.Create(ctx,
@@ -603,7 +603,7 @@ func TestDelete(t *testing.T) {
 	t.Run("Deletes are isolated by org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, _, _, err := globalIdentDAO.Create(ctx,
@@ -621,7 +621,7 @@ func TestDelete(t *testing.T) {
 func TestList(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-identity"))
@@ -697,7 +697,7 @@ func TestList(t *testing.T) {
 	t.Run("List identities by valid org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		listIdentities, listCount, err := globalIdentDAO.List(ctx,
@@ -721,7 +721,7 @@ func TestList(t *testing.T) {
 	t.Run("List identities by valid org ID and pagination", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		listIdentities, listCount, err := globalIdentDAO.List(ctx,
@@ -745,7 +745,7 @@ func TestList(t *testing.T) {
 	t.Run("List identities by valid org ID with limit", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		listIdentities, listCount, err := globalIdentDAO.List(ctx,
@@ -760,7 +760,7 @@ func TestList(t *testing.T) {
 	t.Run("List identities with app filter", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		listIdentities, listCount, err := globalIdentDAO.List(ctx,
@@ -784,7 +784,7 @@ func TestList(t *testing.T) {
 	t.Run("List identities with app filter and pagination", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		listIdentities, listCount, err := globalIdentDAO.List(ctx,
@@ -808,7 +808,7 @@ func TestList(t *testing.T) {
 	t.Run("List identities by unknown app", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		listIdentities, listCount, err := globalIdentDAO.List(ctx,
@@ -823,7 +823,7 @@ func TestList(t *testing.T) {
 	t.Run("Lists are isolated by org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		listIdentities, listCount, err := globalIdentDAO.List(ctx,
@@ -838,7 +838,7 @@ func TestList(t *testing.T) {
 	t.Run("List identities by invalid org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		listIdentities, listCount, err := globalIdentDAO.List(ctx,

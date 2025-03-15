@@ -34,7 +34,7 @@ func TestCreateApp(t *testing.T) {
 		apper.EXPECT().Create(gomock.Any(), app).Return(retApp, nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: app.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -49,7 +49,7 @@ func TestCreateApp(t *testing.T) {
 	t.Run("Create app with invalid session", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
@@ -63,7 +63,7 @@ func TestCreateApp(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_VIEWER,
 			}), testTimeout)
 		defer cancel()
@@ -86,7 +86,7 @@ func TestCreateApp(t *testing.T) {
 			dao.ErrInvalidFormat).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: app.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -114,7 +114,7 @@ func TestGetApp(t *testing.T) {
 			nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: app.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -129,7 +129,7 @@ func TestGetApp(t *testing.T) {
 	t.Run("Get app with invalid session", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
@@ -143,7 +143,7 @@ func TestGetApp(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
@@ -163,7 +163,7 @@ func TestGetApp(t *testing.T) {
 			Return(nil, dao.ErrNotFound).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -190,7 +190,7 @@ func TestUpdateApp(t *testing.T) {
 		apper.EXPECT().Update(gomock.Any(), app).Return(retApp, nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: app.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -229,7 +229,7 @@ func TestUpdateApp(t *testing.T) {
 			Return(retMerged, nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: app.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -248,7 +248,7 @@ func TestUpdateApp(t *testing.T) {
 	t.Run("Update app with invalid session", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
@@ -262,7 +262,7 @@ func TestUpdateApp(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_VIEWER,
 			}), testTimeout)
 		defer cancel()
@@ -278,7 +278,7 @@ func TestUpdateApp(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -297,7 +297,7 @@ func TestUpdateApp(t *testing.T) {
 		app := random.App("api-app", uuid.NewString())
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -325,7 +325,7 @@ func TestUpdateApp(t *testing.T) {
 			Return(nil, dao.ErrNotFound).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: orgID, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -348,7 +348,7 @@ func TestUpdateApp(t *testing.T) {
 		app.Name = random.String(41)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: app.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -375,7 +375,7 @@ func TestUpdateApp(t *testing.T) {
 			dao.ErrInvalidFormat).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: app.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -402,7 +402,7 @@ func TestDeleteApp(t *testing.T) {
 			Return(nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -417,7 +417,7 @@ func TestDeleteApp(t *testing.T) {
 	t.Run("Delete app with invalid session", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
@@ -430,7 +430,7 @@ func TestDeleteApp(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_VIEWER,
 			}), testTimeout)
 		defer cancel()
@@ -449,7 +449,7 @@ func TestDeleteApp(t *testing.T) {
 			Return(dao.ErrNotFound).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -481,7 +481,7 @@ func TestListApps(t *testing.T) {
 			Return(apps, int32(3), nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: orgID, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -515,7 +515,7 @@ func TestListApps(t *testing.T) {
 			Return(apps, int32(3), nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: orgID, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -533,7 +533,7 @@ func TestListApps(t *testing.T) {
 	t.Run("List apps with invalid session", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
@@ -547,7 +547,7 @@ func TestListApps(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
@@ -563,7 +563,7 @@ func TestListApps(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -585,7 +585,7 @@ func TestListApps(t *testing.T) {
 			gomock.Any()).Return(nil, int32(0), dao.ErrInvalidFormat).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: "aaa", Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -615,7 +615,7 @@ func TestListApps(t *testing.T) {
 			Return(apps, int32(3), nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: orgID, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()

@@ -24,7 +24,7 @@ func TestNotifyMessages(t *testing.T) {
 
 	traceID := uuid.New()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	createOrg, err := globalOrgDAO.Create(ctx, random.Org("not"))
@@ -112,7 +112,7 @@ func TestNotifyMessages(t *testing.T) {
 				TraceId:    traceID.String(),
 			}
 
-			ctx, cancel := context.WithTimeout(context.Background(),
+			ctx, cancel := context.WithTimeout(t.Context(),
 				testTimeout)
 			defer cancel()
 
@@ -138,7 +138,7 @@ func TestNotifyMessagesError(t *testing.T) {
 
 	traceID := uuid.New()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	createOrg, err := globalOrgDAO.Create(ctx, random.Org("not"))
@@ -242,7 +242,7 @@ func TestNotifyMessagesError(t *testing.T) {
 					TraceId:    traceID.String(),
 				}
 
-				ctx, cancel := context.WithTimeout(context.Background(),
+				ctx, cancel := context.WithTimeout(t.Context(),
 					testTimeout)
 				defer cancel()
 
