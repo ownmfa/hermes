@@ -26,7 +26,7 @@ import (
 func TestCreateIdentity(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -42,7 +42,7 @@ func TestCreateIdentity(t *testing.T) {
 		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			createApp.GetId())
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -91,7 +91,7 @@ func TestCreateIdentity(t *testing.T) {
 		identity := random.SMSIdentity("api-identity", uuid.NewString(),
 			createApp.GetId())
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -116,7 +116,7 @@ func TestCreateIdentity(t *testing.T) {
 		identity := random.PushoverIdentity("api-identity", uuid.NewString(),
 			createApp.GetId())
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -141,7 +141,7 @@ func TestCreateIdentity(t *testing.T) {
 		identity := random.EmailIdentity("api-identity", uuid.NewString(),
 			createApp.GetId())
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -166,7 +166,7 @@ func TestCreateIdentity(t *testing.T) {
 		identity := random.BackupCodesIdentity("api-identity", uuid.NewString(),
 			createApp.GetId())
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -192,7 +192,7 @@ func TestCreateIdentity(t *testing.T) {
 		identity := random.SecurityQuestionsIdentity("api-identity",
 			uuid.NewString(), createApp.GetId())
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -216,7 +216,7 @@ func TestCreateIdentity(t *testing.T) {
 	t.Run("Create valid identity with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(secondaryViewerGRPCConn)
@@ -238,7 +238,7 @@ func TestCreateIdentity(t *testing.T) {
 			uuid.NewString())
 		identity.Comment = "api-identity-" + random.String(80)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -276,7 +276,7 @@ func TestCreateIdentity(t *testing.T) {
 			t.Run(fmt.Sprintf("Can create %v", test), func(t *testing.T) {
 				t.Parallel()
 
-				ctx, cancel := context.WithTimeout(context.Background(),
+				ctx, cancel := context.WithTimeout(t.Context(),
 					testTimeout)
 				defer cancel()
 
@@ -301,7 +301,7 @@ func TestCreateIdentity(t *testing.T) {
 			SmsMethod: &api.SMSMethod{Phone: random.String(10)},
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -316,7 +316,7 @@ func TestCreateIdentity(t *testing.T) {
 func TestActivateIdentity(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -329,7 +329,7 @@ func TestActivateIdentity(t *testing.T) {
 	t.Run("Activate HOTP identity by valid ID with event", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -402,7 +402,7 @@ func TestActivateIdentity(t *testing.T) {
 			createApp.GetId())
 		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{}
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -455,7 +455,7 @@ func TestActivateIdentity(t *testing.T) {
 			},
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -492,7 +492,7 @@ func TestActivateIdentity(t *testing.T) {
 	t.Run("Activate SMS identity by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -539,7 +539,7 @@ func TestActivateIdentity(t *testing.T) {
 	t.Run("Activate identity with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(secondaryViewerGRPCConn)
@@ -557,7 +557,7 @@ func TestActivateIdentity(t *testing.T) {
 	t.Run("Activate identity by unknown ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -575,7 +575,7 @@ func TestActivateIdentity(t *testing.T) {
 	t.Run("Activates are isolated by org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -601,7 +601,7 @@ func TestActivateIdentity(t *testing.T) {
 	t.Run("Activate identity that is already active", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -651,7 +651,7 @@ func TestActivateIdentity(t *testing.T) {
 	t.Run("Activate identity by unknown/expired passcode", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -676,7 +676,7 @@ func TestActivateIdentity(t *testing.T) {
 	t.Run("Activate identity by invalid passcode", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -702,7 +702,7 @@ func TestActivateIdentity(t *testing.T) {
 func TestChallengeIdentity(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -715,7 +715,7 @@ func TestChallengeIdentity(t *testing.T) {
 	t.Run("Challenge HOTP identity by valid ID with event", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -758,7 +758,7 @@ func TestChallengeIdentity(t *testing.T) {
 	})
 
 	t.Run("Challenge SMS identity by valid ID", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -802,7 +802,7 @@ func TestChallengeIdentity(t *testing.T) {
 	t.Run("Challenge identity with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(secondaryViewerGRPCConn)
@@ -817,7 +817,7 @@ func TestChallengeIdentity(t *testing.T) {
 	t.Run("Challenge identity by unknown ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -832,7 +832,7 @@ func TestChallengeIdentity(t *testing.T) {
 	t.Run("Challenges are isolated by org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -859,7 +859,7 @@ func TestChallengeIdentity(t *testing.T) {
 			api.Role_SYS_ADMIN, api.Plan_PRO)
 		require.NoError(t, err)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(adminStarterGRPCConn)
@@ -899,7 +899,7 @@ func TestChallengeIdentity(t *testing.T) {
 	})
 
 	t.Run("Challenge SMS identity by invalid rate", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -976,7 +976,7 @@ func TestChallengeIdentity(t *testing.T) {
 func TestVerifyIdentity(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -989,7 +989,7 @@ func TestVerifyIdentity(t *testing.T) {
 	t.Run("Verify HOTP identity by valid ID with event", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -1063,7 +1063,7 @@ func TestVerifyIdentity(t *testing.T) {
 			createApp.GetId())
 		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{}
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -1118,7 +1118,7 @@ func TestVerifyIdentity(t *testing.T) {
 			},
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -1157,7 +1157,7 @@ func TestVerifyIdentity(t *testing.T) {
 	t.Run("Verify SMS identity by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -1212,7 +1212,7 @@ func TestVerifyIdentity(t *testing.T) {
 	t.Run("Verify backup codes identity by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -1240,7 +1240,7 @@ func TestVerifyIdentity(t *testing.T) {
 		identity := random.SecurityQuestionsIdentity("api-identity",
 			uuid.NewString(), createApp.GetId())
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -1259,7 +1259,7 @@ func TestVerifyIdentity(t *testing.T) {
 	t.Run("Verify identity with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(secondaryViewerGRPCConn)
@@ -1275,7 +1275,7 @@ func TestVerifyIdentity(t *testing.T) {
 	t.Run("Verify identity by unknown ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -1291,7 +1291,7 @@ func TestVerifyIdentity(t *testing.T) {
 	t.Run("Verifications are isolated by org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -1315,7 +1315,7 @@ func TestVerifyIdentity(t *testing.T) {
 	t.Run("Verify identity that not activated", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -1373,7 +1373,7 @@ func TestVerifyIdentity(t *testing.T) {
 	t.Run("Verify identity by expired passcode", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -1423,7 +1423,7 @@ func TestVerifyIdentity(t *testing.T) {
 	t.Run("Verify identity by reused passcode", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -1457,7 +1457,7 @@ func TestVerifyIdentity(t *testing.T) {
 			createApp.GetId())
 		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{}
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -1498,7 +1498,7 @@ func TestVerifyIdentity(t *testing.T) {
 	t.Run("Verify identity by invalid answer", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
@@ -1522,7 +1522,7 @@ func TestVerifyIdentity(t *testing.T) {
 func TestGetIdentity(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -1542,7 +1542,7 @@ func TestGetIdentity(t *testing.T) {
 	t.Run("Get identity by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -1558,7 +1558,7 @@ func TestGetIdentity(t *testing.T) {
 	t.Run("Get identity by unknown ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -1576,7 +1576,7 @@ func TestGetIdentity(t *testing.T) {
 	t.Run("Gets are isolated by org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		secCli := api.NewAppIdentityServiceClient(secondaryAdminGRPCConn)
@@ -1596,7 +1596,7 @@ func TestDeleteIdentity(t *testing.T) {
 	t.Run("Delete identity by valid ID with event", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -1647,7 +1647,7 @@ func TestDeleteIdentity(t *testing.T) {
 		t.Run("Read identity by deleted ID", func(t *testing.T) {
 			t.Parallel()
 
-			ctx, cancel := context.WithTimeout(context.Background(),
+			ctx, cancel := context.WithTimeout(t.Context(),
 				testTimeout)
 			defer cancel()
 
@@ -1665,7 +1665,7 @@ func TestDeleteIdentity(t *testing.T) {
 	t.Run("Delete identity with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(secondaryViewerGRPCConn)
@@ -1680,7 +1680,7 @@ func TestDeleteIdentity(t *testing.T) {
 	t.Run("Delete identity by unknown ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -1695,7 +1695,7 @@ func TestDeleteIdentity(t *testing.T) {
 	t.Run("Deletes are isolated by org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -1726,7 +1726,7 @@ func TestDeleteIdentity(t *testing.T) {
 func TestListIdentities(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -1756,7 +1756,7 @@ func TestListIdentities(t *testing.T) {
 	t.Run("List identities by valid org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -1780,7 +1780,7 @@ func TestListIdentities(t *testing.T) {
 	t.Run("List identities by valid org ID with next page", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminKeyGRPCConn)
@@ -1805,7 +1805,7 @@ func TestListIdentities(t *testing.T) {
 	t.Run("List identities with app filter", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -1829,7 +1829,7 @@ func TestListIdentities(t *testing.T) {
 	t.Run("Lists are isolated by org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		secCli := api.NewAppIdentityServiceClient(secondaryAdminGRPCConn)
@@ -1844,7 +1844,7 @@ func TestListIdentities(t *testing.T) {
 	t.Run("List identities by invalid page token", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)

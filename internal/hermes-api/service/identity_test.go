@@ -55,7 +55,7 @@ func TestCreateIdentity(t *testing.T) {
 			Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), Role: api.Role_ADMIN,
 				TraceID: traceID,
 			}), testTimeout)
@@ -96,7 +96,7 @@ func TestCreateIdentity(t *testing.T) {
 			Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
 				Role: api.Role_ADMIN, TraceID: traceID,
 			}), testTimeout)
@@ -139,7 +139,7 @@ func TestCreateIdentity(t *testing.T) {
 			Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
 				Role: api.Role_ADMIN, TraceID: traceID,
 			}), testTimeout)
@@ -178,7 +178,7 @@ func TestCreateIdentity(t *testing.T) {
 			Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
 				Role: api.Role_ADMIN, TraceID: traceID,
 			}), testTimeout)
@@ -231,7 +231,7 @@ func TestCreateIdentity(t *testing.T) {
 			Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), Role: api.Role_ADMIN,
 				TraceID: traceID,
 			}), testTimeout)
@@ -285,7 +285,7 @@ func TestCreateIdentity(t *testing.T) {
 			Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
 				Role: api.Role_ADMIN, TraceID: traceID,
 			}), testTimeout)
@@ -335,7 +335,7 @@ func TestCreateIdentity(t *testing.T) {
 			Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
 				Role: api.Role_ADMIN, TraceID: traceID,
 			}), testTimeout)
@@ -355,7 +355,7 @@ func TestCreateIdentity(t *testing.T) {
 	t.Run("Create identity with invalid session", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
@@ -370,7 +370,7 @@ func TestCreateIdentity(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_VIEWER,
 			}), testTimeout)
 		defer cancel()
@@ -404,7 +404,7 @@ func TestCreateIdentity(t *testing.T) {
 				t.Parallel()
 
 				ctx, cancel := context.WithTimeout(session.NewContext(
-					context.Background(), &session.Session{
+					t.Context(), &session.Session{
 						OrgID: test.GetOrgId(), OrgPlan: api.Plan_STARTER,
 						Role: api.Role_ADMIN,
 					}), testTimeout)
@@ -431,7 +431,7 @@ func TestCreateIdentity(t *testing.T) {
 		}
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
 				Role: api.Role_ADMIN,
 			}), testTimeout)
@@ -458,7 +458,7 @@ func TestCreateIdentity(t *testing.T) {
 			GetPhone()).Return(notify.ErrInvalidSMS).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
 				Role: api.Role_ADMIN,
 			}), testTimeout)
@@ -485,7 +485,7 @@ func TestCreateIdentity(t *testing.T) {
 			GetPushoverKey()).Return(notify.ErrInvalidPushover).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
 				Role: api.Role_ADMIN,
 			}), testTimeout)
@@ -513,7 +513,7 @@ func TestCreateIdentity(t *testing.T) {
 			false, dao.ErrInvalidFormat).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -544,7 +544,7 @@ func TestCreateIdentity(t *testing.T) {
 			dao.ErrInvalidFormat).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -572,7 +572,7 @@ func TestCreateIdentity(t *testing.T) {
 			&oath.OTP{}, false, nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
 				Role: api.Role_ADMIN,
 			}), testTimeout)
@@ -621,7 +621,7 @@ func TestVerify(t *testing.T) {
 		cacher.EXPECT().Set(gomock.Any(), key.HOTPCounter(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId()), int64(6)).Return(nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, cacher, nil, nil, "")
@@ -660,7 +660,7 @@ func TestVerify(t *testing.T) {
 		cacher.EXPECT().Set(gomock.Any(), ikey.TOTPOffset(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId()), -1).Return(nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, cacher, nil, nil, "")
@@ -699,7 +699,7 @@ func TestVerify(t *testing.T) {
 		cacher.EXPECT().Set(gomock.Any(), ikey.TOTPOffset(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId()), -3).Return(nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, cacher, nil, nil, "")
@@ -738,7 +738,7 @@ func TestVerify(t *testing.T) {
 		cacher.EXPECT().Set(gomock.Any(), key.HOTPCounter(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId()), int64(6)).Return(nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, cacher, nil, nil, "")
@@ -770,7 +770,7 @@ func TestVerify(t *testing.T) {
 			identity.GetAppId(), identity.GetId(), "861821"), 1).Return(true, nil).
 			Times(1)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, cacher, nil, nil, "")
@@ -798,7 +798,7 @@ func TestVerify(t *testing.T) {
 		identityer.EXPECT().Read(gomock.Any(), identity.GetId(), identity.GetOrgId(),
 			identity.GetAppId()).Return(retIdentity, otp, nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, nil, nil, nil, "")
@@ -817,7 +817,7 @@ func TestVerify(t *testing.T) {
 		identityer.EXPECT().Read(gomock.Any(), gomock.Any(), gomock.Any(),
 			gomock.Any()).Return(nil, nil, dao.ErrNotFound).Times(1)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, nil, nil, nil, "")
@@ -841,7 +841,7 @@ func TestVerify(t *testing.T) {
 		identityer.EXPECT().Read(gomock.Any(), identity.GetId(), identity.GetOrgId(),
 			identity.GetAppId()).Return(retIdentity, nil, nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, nil, nil, nil, "")
@@ -869,7 +869,7 @@ func TestVerify(t *testing.T) {
 			identity.GetAppId(), identity.GetId(), "")).Return(false, int64(0),
 			dao.ErrNotFound).Times(1)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, cacher, nil, nil, "")
@@ -897,7 +897,7 @@ func TestVerify(t *testing.T) {
 			identity.GetAppId(), identity.GetId(), "")).Return(false, int64(0), nil).
 			Times(1)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, cacher, nil, nil, "")
@@ -925,7 +925,7 @@ func TestVerify(t *testing.T) {
 			identity.GetAppId(), identity.GetId(), "861821"), 1).Return(false,
 			dao.ErrNotFound).Times(1)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, cacher, nil, nil, "")
@@ -957,7 +957,7 @@ func TestVerify(t *testing.T) {
 			identity.GetAppId(), identity.GetId(), "861821"), 1).Return(false, nil).
 			Times(1)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, cacher, nil, nil, "")
@@ -992,7 +992,7 @@ func TestVerify(t *testing.T) {
 			identity.GetAppId(), identity.GetId())).Return(false, int64(0),
 			dao.ErrNotFound).Times(1)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, cacher, nil, nil, "")
@@ -1028,7 +1028,7 @@ func TestVerify(t *testing.T) {
 			identity.GetAppId(), identity.GetId())).Return(false, int64(0),
 			dao.ErrNotFound).Times(1)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, cacher, nil, nil, "")
@@ -1064,7 +1064,7 @@ func TestVerify(t *testing.T) {
 			identity.GetAppId(), identity.GetId())).Return(false, int64(0),
 			dao.ErrNotFound).Times(1)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, cacher, nil, nil, "")
@@ -1093,7 +1093,7 @@ func TestVerify(t *testing.T) {
 			identity.GetAppId(), identity.GetId(), "0000000"), 1).Return(true, nil).
 			Times(1)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, cacher, nil, nil, "")
@@ -1127,7 +1127,7 @@ func TestVerify(t *testing.T) {
 		cacher.EXPECT().GetI(gomock.Any(), key.HOTPCounter(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId())).Return(false, int64(0), nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, cacher, nil, nil, "")
@@ -1155,7 +1155,7 @@ func TestVerify(t *testing.T) {
 		identityer.EXPECT().Read(gomock.Any(), identity.GetId(), identity.GetOrgId(),
 			identity.GetAppId()).Return(retIdentity, otp, nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, nil, nil, nil, "")
@@ -1192,7 +1192,7 @@ func TestVerify(t *testing.T) {
 			identity.GetAppId(), identity.GetId()), int64(6)).Return(dao.ErrNotFound).
 			Times(1)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, cacher, nil, nil, "")
@@ -1232,7 +1232,7 @@ func TestVerify(t *testing.T) {
 			identity.GetAppId(), identity.GetId()), -1).Return(dao.ErrNotFound).
 			Times(1)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, cacher, nil, nil, "")
@@ -1289,7 +1289,7 @@ func TestActivateIdentity(t *testing.T) {
 			Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), Role: api.Role_ADMIN,
 				TraceID: traceID,
 			}), testTimeout)
@@ -1310,7 +1310,7 @@ func TestActivateIdentity(t *testing.T) {
 	t.Run("Activate identity with invalid session", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
@@ -1325,7 +1325,7 @@ func TestActivateIdentity(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
@@ -1361,7 +1361,7 @@ func TestActivateIdentity(t *testing.T) {
 			Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), Role: api.Role_ADMIN,
 				TraceID: traceID,
 			}), testTimeout)
@@ -1407,7 +1407,7 @@ func TestActivateIdentity(t *testing.T) {
 			identity.GetAppId(), identity.GetId()), int64(6)).Return(nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -1447,7 +1447,7 @@ func TestChallengeIdentity(t *testing.T) {
 			Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
 				Role: api.Role_ADMIN, TraceID: traceID,
 			}), testTimeout)
@@ -1483,7 +1483,7 @@ func TestChallengeIdentity(t *testing.T) {
 		nInPubTopic := "topic-" + random.String(10)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
 				Role: api.Role_ADMIN,
 			}), testTimeout)
@@ -1524,7 +1524,7 @@ func TestChallengeIdentity(t *testing.T) {
 	t.Run("Challenge identity with invalid session", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
@@ -1537,7 +1537,7 @@ func TestChallengeIdentity(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
@@ -1556,7 +1556,7 @@ func TestChallengeIdentity(t *testing.T) {
 			gomock.Any()).Return(nil, nil, dao.ErrNotFound).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -1580,7 +1580,7 @@ func TestChallengeIdentity(t *testing.T) {
 			identity.GetAppId()).Return(identity, nil, nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_STARTER,
 				Role: api.Role_ADMIN,
 			}), testTimeout)
@@ -1610,7 +1610,7 @@ func TestChallengeIdentity(t *testing.T) {
 			Return(false, dao.ErrNotFound).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
 				Role: api.Role_ADMIN,
 			}), testTimeout)
@@ -1649,7 +1649,7 @@ func TestChallengeIdentity(t *testing.T) {
 			Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
 				Role: api.Role_ADMIN, TraceID: traceID,
 			}), testTimeout)
@@ -1684,7 +1684,7 @@ func TestChallengeIdentity(t *testing.T) {
 			Return(dao.ErrNotFound).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
 				Role: api.Role_ADMIN,
 			}), testTimeout)
@@ -1742,7 +1742,7 @@ func TestVerifyIdentity(t *testing.T) {
 			Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), Role: api.Role_ADMIN,
 				TraceID: traceID,
 			}), testTimeout)
@@ -1759,7 +1759,7 @@ func TestVerifyIdentity(t *testing.T) {
 	t.Run("Verify identity with invalid session", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
@@ -1772,7 +1772,7 @@ func TestVerifyIdentity(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
@@ -1806,7 +1806,7 @@ func TestVerifyIdentity(t *testing.T) {
 			Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), Role: api.Role_ADMIN,
 				TraceID: traceID,
 			}), testTimeout)
@@ -1838,7 +1838,7 @@ func TestGetIdentity(t *testing.T) {
 			nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -1856,7 +1856,7 @@ func TestGetIdentity(t *testing.T) {
 	t.Run("Get identity with invalid session", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
@@ -1871,7 +1871,7 @@ func TestGetIdentity(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
@@ -1892,7 +1892,7 @@ func TestGetIdentity(t *testing.T) {
 			gomock.Any()).Return(nil, nil, dao.ErrNotFound).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -1932,7 +1932,7 @@ func TestDeleteIdentity(t *testing.T) {
 			Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), Role: api.Role_ADMIN,
 				TraceID: traceID,
 			}), testTimeout)
@@ -1949,7 +1949,7 @@ func TestDeleteIdentity(t *testing.T) {
 	t.Run("Delete identity with invalid session", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
@@ -1962,7 +1962,7 @@ func TestDeleteIdentity(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_VIEWER,
 			}), testTimeout)
 		defer cancel()
@@ -1981,7 +1981,7 @@ func TestDeleteIdentity(t *testing.T) {
 			gomock.Any()).Return(dao.ErrNotFound).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -2017,7 +2017,7 @@ func TestListIdentities(t *testing.T) {
 			int32(51), "").Return(identities, int32(3), nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: orgID, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -2056,7 +2056,7 @@ func TestListIdentities(t *testing.T) {
 			"").Return(identities, int32(3), nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: orgID, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -2075,7 +2075,7 @@ func TestListIdentities(t *testing.T) {
 	t.Run("List identities with invalid session", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
@@ -2090,7 +2090,7 @@ func TestListIdentities(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
@@ -2107,7 +2107,7 @@ func TestListIdentities(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -2130,7 +2130,7 @@ func TestListIdentities(t *testing.T) {
 			dao.ErrInvalidFormat).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: "aaa", Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
@@ -2164,7 +2164,7 @@ func TestListIdentities(t *testing.T) {
 			"").Return(identities, int32(3), nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
-			context.Background(), &session.Session{
+			t.Context(), &session.Session{
 				OrgID: orgID, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()

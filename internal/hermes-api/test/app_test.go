@@ -22,7 +22,7 @@ func TestCreateApp(t *testing.T) {
 
 		app := random.App("api-app", uuid.NewString())
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -40,7 +40,7 @@ func TestCreateApp(t *testing.T) {
 	t.Run("Create valid app with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(secondaryViewerGRPCConn)
@@ -59,7 +59,7 @@ func TestCreateApp(t *testing.T) {
 		app := random.App("api-app", uuid.NewString())
 		app.Name = "api-app-" + random.String(40)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -77,7 +77,7 @@ func TestCreateApp(t *testing.T) {
 func TestGetApp(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -90,7 +90,7 @@ func TestGetApp(t *testing.T) {
 	t.Run("Get app by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -104,7 +104,7 @@ func TestGetApp(t *testing.T) {
 	t.Run("Get app by unknown ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -119,7 +119,7 @@ func TestGetApp(t *testing.T) {
 	t.Run("Gets are isolated by org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		secCli := api.NewAppIdentityServiceClient(secondaryAdminGRPCConn)
@@ -140,7 +140,7 @@ func TestUpdateApp(t *testing.T) {
 
 		app := random.App("api-app", uuid.NewString())
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -180,7 +180,7 @@ func TestUpdateApp(t *testing.T) {
 
 		app := random.App("api-app", uuid.NewString())
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminKeyGRPCConn)
@@ -222,7 +222,7 @@ func TestUpdateApp(t *testing.T) {
 	t.Run("Update nil app", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -237,7 +237,7 @@ func TestUpdateApp(t *testing.T) {
 	t.Run("Update app with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(secondaryViewerGRPCConn)
@@ -253,7 +253,7 @@ func TestUpdateApp(t *testing.T) {
 	t.Run("Update app with insufficient key role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(secondaryViewerKeyGRPCConn)
@@ -271,7 +271,7 @@ func TestUpdateApp(t *testing.T) {
 
 		app := random.App("api-app", uuid.NewString())
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -291,7 +291,7 @@ func TestUpdateApp(t *testing.T) {
 
 		app := random.App("api-app", uuid.NewString())
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -311,7 +311,7 @@ func TestUpdateApp(t *testing.T) {
 
 		app := random.App("api-app", uuid.NewString())
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -328,7 +328,7 @@ func TestUpdateApp(t *testing.T) {
 
 		app := random.App("api-app", uuid.NewString())
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -355,7 +355,7 @@ func TestUpdateApp(t *testing.T) {
 
 		app := random.App("api-app", uuid.NewString())
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -384,7 +384,7 @@ func TestDeleteApp(t *testing.T) {
 	t.Run("Delete app by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -402,7 +402,7 @@ func TestDeleteApp(t *testing.T) {
 		t.Run("Read app by deleted ID", func(t *testing.T) {
 			t.Parallel()
 
-			ctx, cancel := context.WithTimeout(context.Background(),
+			ctx, cancel := context.WithTimeout(t.Context(),
 				testTimeout)
 			defer cancel()
 
@@ -419,7 +419,7 @@ func TestDeleteApp(t *testing.T) {
 	t.Run("Delete app with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(secondaryViewerGRPCConn)
@@ -433,7 +433,7 @@ func TestDeleteApp(t *testing.T) {
 	t.Run("Delete app by unknown ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -447,7 +447,7 @@ func TestDeleteApp(t *testing.T) {
 	t.Run("Deletes are isolated by org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -469,7 +469,7 @@ func TestDeleteApp(t *testing.T) {
 func TestListApps(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	appIDs := []string{}
@@ -490,7 +490,7 @@ func TestListApps(t *testing.T) {
 	t.Run("List apps by valid org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
@@ -513,7 +513,7 @@ func TestListApps(t *testing.T) {
 	t.Run("List apps by valid org ID with next page", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminKeyGRPCConn)
@@ -537,7 +537,7 @@ func TestListApps(t *testing.T) {
 	t.Run("Lists are isolated by org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		secCli := api.NewAppIdentityServiceClient(secondaryAdminGRPCConn)
@@ -551,7 +551,7 @@ func TestListApps(t *testing.T) {
 	t.Run("List apps by invalid page token", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)

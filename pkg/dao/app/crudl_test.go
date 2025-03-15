@@ -20,7 +20,7 @@ const testTimeout = 8 * time.Second
 func TestCreate(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-app"))
@@ -33,7 +33,7 @@ func TestCreate(t *testing.T) {
 		app := random.App("dao-app", createOrg.GetId())
 		createApp, _ := proto.Clone(app).(*api.App)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createApp, err := globalAppDAO.Create(ctx, createApp)
@@ -52,7 +52,7 @@ func TestCreate(t *testing.T) {
 		app := random.App("dao-app", createOrg.GetId())
 		app.Name = "dao-app-" + random.String(40)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createApp, err := globalAppDAO.Create(ctx, app)
@@ -65,7 +65,7 @@ func TestCreate(t *testing.T) {
 func TestRead(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-app"))
@@ -80,7 +80,7 @@ func TestRead(t *testing.T) {
 	t.Run("Read app by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		readApp, err := globalAppDAO.Read(ctx, createApp.GetId(), createApp.GetOrgId())
@@ -92,7 +92,7 @@ func TestRead(t *testing.T) {
 	t.Run("Read app by unknown ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		readApp, err := globalAppDAO.Read(ctx, uuid.NewString(),
@@ -105,7 +105,7 @@ func TestRead(t *testing.T) {
 	t.Run("Reads are isolated by org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		readApp, err := globalAppDAO.Read(ctx, createApp.GetId(),
@@ -118,7 +118,7 @@ func TestRead(t *testing.T) {
 	t.Run("Read app by invalid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		readApp, err := globalAppDAO.Read(ctx, random.String(10),
@@ -132,7 +132,7 @@ func TestRead(t *testing.T) {
 func TestUpdate(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-app"))
@@ -142,7 +142,7 @@ func TestUpdate(t *testing.T) {
 	t.Run("Update app by valid app", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createApp, err := globalAppDAO.Create(ctx, random.App("dao-app",
@@ -179,7 +179,7 @@ func TestUpdate(t *testing.T) {
 	t.Run("Update unknown app", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		updateApp, err := globalAppDAO.Update(ctx, random.App("dao-app",
@@ -192,7 +192,7 @@ func TestUpdate(t *testing.T) {
 	t.Run("Updates are isolated by org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createApp, err := globalAppDAO.Create(ctx, random.App("dao-app",
@@ -214,7 +214,7 @@ func TestUpdate(t *testing.T) {
 	t.Run("Update app by invalid app", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createApp, err := globalAppDAO.Create(ctx, random.App("dao-app",
@@ -236,7 +236,7 @@ func TestUpdate(t *testing.T) {
 func TestDelete(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-app"))
@@ -246,7 +246,7 @@ func TestDelete(t *testing.T) {
 	t.Run("Delete app by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createApp, err := globalAppDAO.Create(ctx, random.App("dao-app",
@@ -261,7 +261,7 @@ func TestDelete(t *testing.T) {
 		t.Run("Read app by deleted ID", func(t *testing.T) {
 			t.Parallel()
 
-			ctx, cancel := context.WithTimeout(context.Background(),
+			ctx, cancel := context.WithTimeout(t.Context(),
 				testTimeout)
 			defer cancel()
 
@@ -276,7 +276,7 @@ func TestDelete(t *testing.T) {
 	t.Run("Delete app by unknown ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		err := globalAppDAO.Delete(ctx, uuid.NewString(), createOrg.GetId())
@@ -287,7 +287,7 @@ func TestDelete(t *testing.T) {
 	t.Run("Deletes are isolated by org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createApp, err := globalAppDAO.Create(ctx, random.App("dao-app",
@@ -304,7 +304,7 @@ func TestDelete(t *testing.T) {
 func TestList(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-app"))
@@ -332,7 +332,7 @@ func TestList(t *testing.T) {
 	t.Run("List apps by valid org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		listApps, listCount, err := globalAppDAO.List(ctx, createOrg.GetId(),
@@ -358,7 +358,7 @@ func TestList(t *testing.T) {
 	t.Run("List apps by valid org ID with pagination", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		listApps, listCount, err := globalAppDAO.List(ctx, createOrg.GetId(),
@@ -384,7 +384,7 @@ func TestList(t *testing.T) {
 	t.Run("List apps by valid org ID with limit", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		listApps, listCount, err := globalAppDAO.List(ctx, createOrg.GetId(),
@@ -399,7 +399,7 @@ func TestList(t *testing.T) {
 	t.Run("Lists are isolated by org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		listApps, listCount, err := globalAppDAO.List(ctx, uuid.NewString(),
@@ -414,7 +414,7 @@ func TestList(t *testing.T) {
 	t.Run("List apps by invalid org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		listApps, listCount, err := globalAppDAO.List(ctx, random.String(10),

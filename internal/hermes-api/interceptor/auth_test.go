@@ -137,7 +137,7 @@ func TestAuth(t *testing.T) {
 			orger.EXPECT().Read(gomock.Any(), test.inpOrg.GetId()).
 				Return(test.inpOrg, test.inpOrgErr).Times(test.inpOrgTimes)
 
-			ctx, cancel := context.WithTimeout(context.Background(),
+			ctx, cancel := context.WithTimeout(t.Context(),
 				testTimeout)
 			defer cancel()
 			if test.inpMD != nil {

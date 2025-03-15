@@ -20,7 +20,7 @@ const testTimeout = 6 * time.Second
 func TestCreate(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-event"))
@@ -30,7 +30,7 @@ func TestCreate(t *testing.T) {
 	t.Run("Create valid events", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		err = globalEvDAO.Create(ctx, random.Event("dao-event", createOrg.GetId()))
@@ -44,7 +44,7 @@ func TestCreate(t *testing.T) {
 		event := random.Event("dao-event", createOrg.GetId())
 		event.Error = "dao-event-" + random.String(255)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		err := globalEvDAO.Create(ctx, event)
@@ -61,7 +61,7 @@ func TestList(t *testing.T) {
 
 		identityID := uuid.NewString()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-event"))
@@ -75,7 +75,7 @@ func TestList(t *testing.T) {
 			event.IdentityId = identityID
 			events = append(events, event)
 
-			ctx, cancel := context.WithTimeout(context.Background(),
+			ctx, cancel := context.WithTimeout(t.Context(),
 				testTimeout)
 			defer cancel()
 
@@ -89,7 +89,7 @@ func TestList(t *testing.T) {
 				events[j].GetCreatedAt().AsTime())
 		})
 
-		ctx, cancel = context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel = context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		// Verify results.
@@ -108,7 +108,7 @@ func TestList(t *testing.T) {
 	t.Run("Lists are isolated by org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-event"))
@@ -132,7 +132,7 @@ func TestList(t *testing.T) {
 	t.Run("List events by invalid org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		listEvents, err := globalEvDAO.List(ctx, random.String(10),
@@ -149,7 +149,7 @@ func TestLatest(t *testing.T) {
 	t.Run("Latest events", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-event"))
@@ -162,7 +162,7 @@ func TestLatest(t *testing.T) {
 			event := random.Event("dao-event", createOrg.GetId())
 			events = append(events, event)
 
-			ctx, cancel := context.WithTimeout(context.Background(),
+			ctx, cancel := context.WithTimeout(t.Context(),
 				testTimeout)
 			defer cancel()
 
@@ -176,7 +176,7 @@ func TestLatest(t *testing.T) {
 				events[j].GetCreatedAt().AsTime())
 		})
 
-		ctx, cancel = context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel = context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		// Verify results.
@@ -220,7 +220,7 @@ func TestLatest(t *testing.T) {
 	t.Run("Latest events are isolated by org ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-event"))
@@ -243,7 +243,7 @@ func TestLatest(t *testing.T) {
 	t.Run("Latest events by invalid app ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		latEvents, err := globalEvDAO.Latest(ctx, uuid.NewString(),

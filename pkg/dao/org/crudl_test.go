@@ -27,7 +27,7 @@ func TestCreate(t *testing.T) {
 		org := random.Org("dao-org")
 		createOrg, _ := proto.Clone(org).(*api.Org)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createOrg, err := globalOrgDAO.Create(ctx, createOrg)
@@ -48,7 +48,7 @@ func TestCreate(t *testing.T) {
 		org.Name = strings.ToUpper(org.GetName())
 		createOrg, _ := proto.Clone(org).(*api.Org)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createOrg, err := globalOrgDAO.Create(ctx, createOrg)
@@ -68,7 +68,7 @@ func TestCreate(t *testing.T) {
 		org := random.Org("dao-org")
 		org.Name = "dao-org-" + random.String(40)
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createOrg, err := globalOrgDAO.Create(ctx, org)
@@ -84,7 +84,7 @@ func TestRead(t *testing.T) {
 	t.Run("Read org by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-org"))
@@ -100,7 +100,7 @@ func TestRead(t *testing.T) {
 	t.Run("Read org by unknown ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		readOrg, err := globalOrgDAO.Read(ctx, uuid.NewString())
@@ -112,7 +112,7 @@ func TestRead(t *testing.T) {
 	t.Run("Read org by invalid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		readOrg, err := globalOrgDAO.Read(ctx, random.String(10))
@@ -128,7 +128,7 @@ func TestReadUpdateDeleteCache(t *testing.T) {
 	t.Run("Read cached org by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createOrg, err := globalOrgDAOCache.Create(ctx, random.Org("dao-org"))
@@ -149,7 +149,7 @@ func TestReadUpdateDeleteCache(t *testing.T) {
 	t.Run("Read updated org by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createOrg, err := globalOrgDAOCache.Create(ctx, random.Org("dao-org"))
@@ -183,7 +183,7 @@ func TestReadUpdateDeleteCache(t *testing.T) {
 	t.Run("Read deleted org by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createOrg, err := globalOrgDAOCache.Create(ctx, random.Org("dao-org"))
@@ -208,7 +208,7 @@ func TestReadUpdateDeleteCache(t *testing.T) {
 	t.Run("Read org by unknown ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		readOrg, err := globalOrgDAOCache.Read(ctx, uuid.NewString())
@@ -220,7 +220,7 @@ func TestReadUpdateDeleteCache(t *testing.T) {
 	t.Run("Read org by invalid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		readOrg, err := globalOrgDAOCache.Read(ctx, random.String(10))
@@ -236,7 +236,7 @@ func TestUpdate(t *testing.T) {
 	t.Run("Update org by valid org", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-org"))
@@ -270,7 +270,7 @@ func TestUpdate(t *testing.T) {
 	t.Run("Update unknown org", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		updateOrg, err := globalOrgDAO.Update(ctx, random.Org("dao-org"))
@@ -282,7 +282,7 @@ func TestUpdate(t *testing.T) {
 	t.Run("Update org by invalid org", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-org"))
@@ -307,7 +307,7 @@ func TestDelete(t *testing.T) {
 	t.Run("Delete org by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		createOrg, err := globalOrgDAO.Create(ctx, random.Org("dao-org"))
@@ -321,7 +321,7 @@ func TestDelete(t *testing.T) {
 		t.Run("Read org by deleted ID", func(t *testing.T) {
 			t.Parallel()
 
-			ctx, cancel := context.WithTimeout(context.Background(),
+			ctx, cancel := context.WithTimeout(t.Context(),
 				testTimeout)
 			defer cancel()
 
@@ -335,7 +335,7 @@ func TestDelete(t *testing.T) {
 	t.Run("Delete org by unknown ID", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		err := globalOrgDAO.Delete(ctx, uuid.NewString())
@@ -347,7 +347,7 @@ func TestDelete(t *testing.T) {
 func TestList(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
 	orgIDs := []string{}
@@ -368,7 +368,7 @@ func TestList(t *testing.T) {
 	t.Run("List orgs", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		listOrgs, listCount, err := globalOrgDAO.List(ctx, time.Time{}, "", 0)
@@ -392,7 +392,7 @@ func TestList(t *testing.T) {
 	t.Run("List orgs with pagination", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		listOrgs, listCount, err := globalOrgDAO.List(ctx, orgTSes[1],
@@ -407,7 +407,7 @@ func TestList(t *testing.T) {
 	t.Run("List orgs with limit", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(context.Background(), testTimeout)
+		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
 		listOrgs, listCount, err := globalOrgDAO.List(ctx, time.Time{}, "", 2)
