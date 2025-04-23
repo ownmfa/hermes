@@ -52,6 +52,17 @@ func (o *OTP) Secret() string {
 	return base32NoPad.EncodeToString(o.Key)
 }
 
+// QR generates a key QR code, in Google Authenticator-compatible format, as a
+// PNG image.
+func (o *OTP) QR(issuer string) ([]byte, error) {
+	uri, err := o.uri(issuer)
+	if err != nil {
+		return nil, err
+	}
+
+	return qrcode.Encode(uri, qrcode.Medium, 200)
+}
+
 // validate validates OTP fields.
 func (o *OTP) validate() error {
 	switch o.Algorithm {
@@ -117,15 +128,4 @@ func (o *OTP) uri(issuer string) (string, error) {
 
 	// Manually unescape double-escaped spaces.
 	return strings.ReplaceAll(uri.String(), "%2520", "%20"), nil
-}
-
-// QR generates a key QR code, in Google Authenticator-compatible format, as a
-// PNG image.
-func (o *OTP) QR(issuer string) ([]byte, error) {
-	uri, err := o.uri(issuer)
-	if err != nil {
-		return nil, err
-	}
-
-	return qrcode.Encode(uri, qrcode.Medium, 200)
 }
