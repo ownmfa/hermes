@@ -33,7 +33,7 @@ jobs:
         env:
           LOOKUP_ADDR: nsqlookupd:4160
       redis:
-        image: redis:7-alpine
+        image: redis:8-alpine
     steps:
       - name: Deps
         # Add packages needed to support checkout, builds, and tests

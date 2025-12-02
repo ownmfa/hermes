@@ -22,10 +22,9 @@ func Auth(
 	skipPaths map[string]struct{}, pwtKey []byte, cache cache.Cacher,
 	orgDAO service.Orger,
 ) grpc.UnaryServerInterceptor {
-	return func(
-		ctx context.Context, req interface{}, info *grpc.UnaryServerInfo,
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler,
-	) (interface{}, error) {
+	) (any, error) {
 		if _, ok := skipPaths[info.FullMethod]; ok {
 			return handler(ctx, req)
 		}
