@@ -150,7 +150,7 @@ func (d *DAO) List(
 
 	// Build list query.
 	query := listApps
-	args := []interface{}{orgID}
+	args := []any{orgID}
 
 	if prevID != "" && !lBoundTS.IsZero() {
 		query += listAppsTSAndID

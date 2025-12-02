@@ -189,7 +189,7 @@ func (d *DAO) List(
 
 	// Build list query.
 	query := listOrgs
-	args := []interface{}{}
+	args := []any{}
 
 	if prevID != "" && !lBoundTS.IsZero() {
 		query += listOrgsTSAndID

@@ -210,7 +210,7 @@ func (d *DAO) List(
 ) ([]*api.Identity, int32, error) {
 	// Build count query.
 	cQuery := countIdentities
-	cArgs := []interface{}{orgID}
+	cArgs := []any{orgID}
 
 	if appID != "" {
 		cQuery += countIdentitiesApp
@@ -226,7 +226,7 @@ func (d *DAO) List(
 
 	// Build list query.
 	lQuery := listIdentities
-	lArgs := []interface{}{orgID}
+	lArgs := []any{orgID}
 
 	if prevID != "" && !lBoundTS.IsZero() {
 		lQuery += fmt.Sprintf(listIdentitiesTSAndID, 2, 2, 3)

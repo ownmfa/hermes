@@ -131,7 +131,7 @@ func (d *DAO) Latest(ctx context.Context, orgID, appID, identityID string) (
 ) {
 	// Build latest query.
 	query := latestEvents
-	args := []interface{}{orgID}
+	args := []any{orgID}
 
 	switch {
 	case appID != "" && identityID != "":
