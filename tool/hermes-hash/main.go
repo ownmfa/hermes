@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
-	"github.com/ownmfa/hermes/pkg/crypto"
+	"github.com/ownmfa/hermes/pkg/auth"
 )
 
 const usage = `Usage:
@@ -36,7 +36,7 @@ func main() {
 	switch {
 	// Hash password.
 	case flag.NArg() == 2 && flag.Arg(0) == "pass":
-		hash, err := crypto.HashPass(flag.Arg(1))
+		hash, err := auth.HashPass(flag.Arg(1))
 		checkErr(err)
 
 		_, err = fmt.Fprintf(os.Stdout, "%s\n", hash)

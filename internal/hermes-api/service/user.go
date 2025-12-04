@@ -10,7 +10,7 @@ import (
 
 	"github.com/mennanov/fmutils"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
-	"github.com/ownmfa/hermes/pkg/crypto"
+	"github.com/ownmfa/hermes/pkg/auth"
 	"github.com/ownmfa/hermes/pkg/hlog"
 	"github.com/ownmfa/proto/go/api"
 	"google.golang.org/grpc"
@@ -169,16 +169,16 @@ func (u *User) UpdateUserPassword(
 		return nil, errPerm(api.Role_ADMIN)
 	}
 
-	if err := crypto.CheckPass(req.GetPassword()); err != nil {
+	if err := auth.CheckPass(req.GetPassword()); err != nil {
 		return nil, errToStatus(err)
 	}
 
-	hash, err := crypto.HashPass(req.GetPassword())
+	hash, err := auth.HashPass(req.GetPassword())
 	if err != nil {
 		logger := hlog.FromContext(ctx)
 		logger.Errorf("UpdateUserPassword crypto.HashPass: %v", err)
 
-		return nil, errToStatus(crypto.ErrWeakPass)
+		return nil, errToStatus(auth.ErrWeakPass)
 	}
 
 	if err := u.userDAO.UpdatePassword(ctx, req.GetId(), sess.OrgID,

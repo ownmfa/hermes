@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/ownmfa/hermes/pkg/crypto"
+	"github.com/ownmfa/hermes/pkg/auth"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/ownmfa/hermes/proto/go/token"
 	"github.com/ownmfa/proto/go/api"
@@ -47,7 +47,7 @@ func TestGenerateWebToken(t *testing.T) {
 		{
 			[]byte{},
 			uuid.NewString(), uuid.NewString(), 0,
-			crypto.ErrKeyLength.Error(),
+			auth.ErrKeyLength.Error(),
 		},
 	}
 
@@ -102,7 +102,7 @@ func TestGenerateKeyToken(t *testing.T) {
 		{
 			[]byte{},
 			uuid.NewString(), uuid.NewString(), 0,
-			crypto.ErrKeyLength.Error(),
+			auth.ErrKeyLength.Error(),
 		},
 	}
 
@@ -130,14 +130,14 @@ func TestValidateWebToken(t *testing.T) {
 	_, err := rand.Read(key)
 	require.NoError(t, err)
 
-	badCipher, err := crypto.Encrypt(key, []byte("aaa"))
+	badCipher, err := auth.Encrypt(key, []byte("aaa"))
 	require.NoError(t, err)
 
 	oldToken := &token.Web{ExpiresAt: timestamppb.New(time.Now().Add(-2 *
 		WebTokenExp * time.Second))}
 	bOldToken, err := proto.Marshal(oldToken)
 	require.NoError(t, err)
-	eOldToken, err := crypto.Encrypt(key, bOldToken)
+	eOldToken, err := auth.Encrypt(key, bOldToken)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -204,7 +204,7 @@ func TestValidateKeyToken(t *testing.T) {
 	_, err := rand.Read(key)
 	require.NoError(t, err)
 
-	badCipher, err := crypto.Encrypt(key, []byte("aaa"))
+	badCipher, err := auth.Encrypt(key, []byte("aaa"))
 	require.NoError(t, err)
 
 	tests := []struct {

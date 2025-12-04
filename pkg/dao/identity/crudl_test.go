@@ -267,7 +267,6 @@ func TestRead(t *testing.T) {
 		require.Equal(t, createOTP, readOTP)
 		require.Equal(t, createIdentity.GetSoftwareHotpMethod().GetHash(),
 			hashCryptoToAPI[readOTP.Hash])
-		//nolint:gosec // Safe conversion for limited values.
 		require.Equal(t, createIdentity.GetSoftwareHotpMethod().GetDigits(),
 			int32(readOTP.Digits))
 	})

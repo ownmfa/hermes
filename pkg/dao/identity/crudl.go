@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ownmfa/hermes/pkg/crypto"
+	"github.com/ownmfa/hermes/pkg/auth"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/hlog"
 	"github.com/ownmfa/hermes/pkg/oath"
@@ -43,14 +43,14 @@ func (d *DAO) Create(ctx context.Context, identity *api.Identity) (
 		return nil, nil, false, dao.DBToSentinel(err)
 	}
 
-	secretEnc, err := crypto.Encrypt(d.secretKey, otp.Key)
+	secretEnc, err := auth.Encrypt(d.secretKey, otp.Key)
 	if err != nil {
 		return nil, nil, false, dao.DBToSentinel(err)
 	}
 
 	answerEnc := []byte{}
 	if otp.Answer != "" {
-		answerEnc, err = crypto.Encrypt(d.secretKey, []byte(otp.Answer))
+		answerEnc, err = auth.Encrypt(d.secretKey, []byte(otp.Answer))
 		if err != nil {
 			return nil, nil, false, dao.DBToSentinel(err)
 		}
@@ -96,7 +96,7 @@ func (d *DAO) Read(ctx context.Context, identityID, orgID, appID string) (
 	}
 
 	if len(answerEnc) > 0 {
-		answer, err := crypto.Decrypt(d.secretKey, answerEnc)
+		answer, err := auth.Decrypt(d.secretKey, answerEnc)
 		if err != nil {
 			return nil, nil, dao.DBToSentinel(err)
 		}
@@ -109,7 +109,7 @@ func (d *DAO) Read(ctx context.Context, identityID, orgID, appID string) (
 	identity.CreatedAt = timestamppb.New(createdAt)
 	identity.UpdatedAt = timestamppb.New(updatedAt)
 
-	secret, err := crypto.Decrypt(d.secretKey, secretEnc)
+	secret, err := auth.Decrypt(d.secretKey, secretEnc)
 	if err != nil {
 		return nil, nil, dao.DBToSentinel(err)
 	}
@@ -276,7 +276,7 @@ func (d *DAO) List(
 		}
 
 		if len(answerEnc) > 0 {
-			answer, err := crypto.Decrypt(d.secretKey, answerEnc)
+			answer, err := auth.Decrypt(d.secretKey, answerEnc)
 			if err != nil {
 				return nil, 0, dao.DBToSentinel(err)
 			}

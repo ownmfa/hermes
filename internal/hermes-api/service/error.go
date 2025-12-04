@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ownmfa/hermes/pkg/crypto"
+	"github.com/ownmfa/hermes/pkg/auth"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/hlog"
 	"github.com/ownmfa/hermes/pkg/notify"
@@ -23,7 +23,7 @@ const (
 
 // errToCode maps DAO errors to gRPC error codes.
 var errToCode = map[error]codes.Code{
-	crypto.ErrWeakPass:        codes.InvalidArgument,
+	auth.ErrWeakPass:          codes.InvalidArgument,
 	dao.ErrAlreadyExists:      codes.AlreadyExists,
 	dao.ErrInvalidFormat:      codes.InvalidArgument,
 	dao.ErrNotFound:           codes.NotFound,
