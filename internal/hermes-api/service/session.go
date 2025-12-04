@@ -10,8 +10,8 @@ import (
 
 	"github.com/ownmfa/hermes/internal/hermes-api/key"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
+	"github.com/ownmfa/hermes/pkg/auth"
 	"github.com/ownmfa/hermes/pkg/cache"
-	"github.com/ownmfa/hermes/pkg/crypto"
 	"github.com/ownmfa/hermes/pkg/hlog"
 	"github.com/ownmfa/proto/go/api"
 	"google.golang.org/grpc"
@@ -64,7 +64,7 @@ func (s *Session) Login(ctx context.Context, req *api.LoginRequest) (
 	// Hash the provided password if an error is returned to prevent account
 	// enumeration attacks.
 	if err != nil {
-		_, hashErr := crypto.HashPass(req.GetPassword())
+		_, hashErr := auth.HashPass(req.GetPassword())
 		logger.Debugf("Login s.userDAO.ReadByEmail Email, OrgName, err, "+
 			"hashErr: %v, %v, %v, %v", req.GetEmail(), req.GetOrgName(), err, hashErr)
 
@@ -74,7 +74,7 @@ func (s *Session) Login(ctx context.Context, req *api.LoginRequest) (
 	logger.Logger = logger.WithField("userID", user.GetId()).WithField("orgID",
 		user.GetOrgId())
 
-	if err := crypto.CompareHashPass(hash, req.GetPassword()); err != nil ||
+	if err := auth.CompareHashPass(hash, req.GetPassword()); err != nil ||
 		user.GetRole() < api.Role_VIEWER {
 		logger.Debugf("Login crypto.CompareHashPass err, user.Role: %v, %s",
 			err, user.GetRole())

@@ -26,7 +26,6 @@ func TestMethodToOTP(t *testing.T) {
 	email := random.Email()
 	phone := random.String(10)
 	pushoverKey := random.String(10)
-	//nolint:gosec // Safe conversion for limited values.
 	backupCodes := int32(random.Intn(5) + 6)
 	answer := random.String(80)
 
@@ -174,7 +173,6 @@ func TestOTPToMethod(t *testing.T) {
 	t.Parallel()
 
 	answer := random.String(80)
-	//nolint:gosec // Safe conversion for limited values.
 	backupCodes := int32(random.Intn(5) + 6)
 	email := random.Email()
 	pushoverKey := random.String(30)

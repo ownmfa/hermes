@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/ownmfa/hermes/pkg/auth"
 	"github.com/ownmfa/hermes/pkg/consterr"
-	"github.com/ownmfa/hermes/pkg/crypto"
 	"github.com/ownmfa/hermes/proto/go/token"
 	"github.com/ownmfa/proto/go/api"
 	"google.golang.org/protobuf/proto"
@@ -57,7 +57,7 @@ func GenerateWebToken(pwtKey []byte, user *api.User) (
 	}
 
 	// Encrypt and encode PWT.
-	ePWT, err := crypto.Encrypt(pwtKey, bPWT)
+	ePWT, err := auth.Encrypt(pwtKey, bPWT)
 	if err != nil {
 		return "", nil, err
 	}
@@ -94,7 +94,7 @@ func GenerateKeyToken(pwtKey []byte, keyID, orgID string, role api.Role) (
 	}
 
 	// Encrypt and encode PWT.
-	ePWT, err := crypto.Encrypt(pwtKey, bPWT)
+	ePWT, err := auth.Encrypt(pwtKey, bPWT)
 	if err != nil {
 		return "", err
 	}
@@ -110,7 +110,7 @@ func ValidateWebToken(pwtKey []byte, ciphertoken string) (*Session, error) {
 		return nil, err
 	}
 
-	bPWT, err := crypto.Decrypt(pwtKey, ePWT)
+	bPWT, err := auth.Decrypt(pwtKey, ePWT)
 	if err != nil {
 		return nil, err
 	}

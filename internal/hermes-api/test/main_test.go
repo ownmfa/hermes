@@ -11,8 +11,8 @@ import (
 
 	iapi "github.com/ownmfa/hermes/internal/hermes-api/api"
 	"github.com/ownmfa/hermes/internal/hermes-api/config"
+	"github.com/ownmfa/hermes/pkg/auth"
 	"github.com/ownmfa/hermes/pkg/cache"
-	"github.com/ownmfa/hermes/pkg/crypto"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/dao/event"
 	"github.com/ownmfa/hermes/pkg/dao/identity"
@@ -106,7 +106,7 @@ func TestMain(m *testing.M) {
 	}
 
 	globalPass = random.String(10)
-	globalHash, err = crypto.HashPass(globalPass)
+	globalHash, err = auth.HashPass(globalPass)
 	if err != nil {
 		log.Fatalf("TestMain crypto.HashPass: %v", err)
 	}

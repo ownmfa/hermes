@@ -161,7 +161,6 @@ func BackupCodesIdentity(prefix, orgID, appID string) *api.Identity {
 			api.IdentityStatus_UNVERIFIED,
 			api.IdentityStatus_ACTIVATED,
 		}[Intn(2)],
-		//nolint:gosec // Safe conversion for limited values.
 		MethodOneof: &api.Identity_BackupCodesMethod{
 			BackupCodesMethod: &api.BackupsCodesMethod{
 				Passcodes: int32(Intn(5) + 6),

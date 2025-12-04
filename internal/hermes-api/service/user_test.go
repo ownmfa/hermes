@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
-	"github.com/ownmfa/hermes/pkg/crypto"
+	"github.com/ownmfa/hermes/pkg/auth"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/test/matcher"
 	"github.com/ownmfa/hermes/pkg/test/random"
@@ -531,7 +531,7 @@ func TestUpdateUserPassword(t *testing.T) {
 			})
 		t.Logf("err: %v", err)
 		require.Equal(t, status.Error(codes.InvalidArgument,
-			crypto.ErrWeakPass.Error()), err)
+			auth.ErrWeakPass.Error()), err)
 	})
 
 	t.Run("Update user password by unknown ID", func(t *testing.T) {

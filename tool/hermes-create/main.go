@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/ownmfa/hermes/pkg/crypto"
+	"github.com/ownmfa/hermes/pkg/auth"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/dao/app"
 	"github.com/ownmfa/hermes/pkg/dao/identity"
@@ -144,7 +144,7 @@ func main() {
 		fallthrough
 	// Create user.
 	case "user":
-		hash, err := crypto.HashPass(flag.Arg(3))
+		hash, err := auth.HashPass(flag.Arg(3))
 		checkErr(err)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 6*time.Second)

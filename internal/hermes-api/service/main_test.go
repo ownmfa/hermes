@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ownmfa/hermes/pkg/crypto"
+	"github.com/ownmfa/hermes/pkg/auth"
 	"github.com/ownmfa/hermes/pkg/test/random"
 )
 
@@ -27,7 +27,7 @@ func TestMain(m *testing.M) {
 	var err error
 
 	globalPass = random.String(10)
-	globalHash, err = crypto.HashPass(globalPass)
+	globalHash, err = auth.HashPass(globalPass)
 	if err != nil {
 		log.Fatalf("TestMain crypto.HashPass: %v", err)
 	}
