@@ -265,8 +265,8 @@ func TestCreateKey(t *testing.T) {
 		createKey, err := keySvc.CreateKey(ctx, &api.CreateKeyRequest{Key: key})
 		t.Logf("key, createKey, err: %+v, %+v, %v", key, createKey, err)
 		require.Nil(t, createKey)
-		require.Equal(t, status.Error(codes.InvalidArgument, "invalid format"),
-			err)
+		require.Equal(t, status.Error(codes.InvalidArgument,
+			"dao: invalid format"), err)
 	})
 
 	t.Run("Create invalid token", func(t *testing.T) {
@@ -290,7 +290,7 @@ func TestCreateKey(t *testing.T) {
 		t.Logf("key, createKey, err: %+v, %+v, %v", key, createKey, err)
 		require.Nil(t, createKey)
 		require.Equal(t, status.Error(codes.Unknown,
-			"crypto: incorrect key length"), err)
+			"auth: incorrect key length"), err)
 	})
 }
 
@@ -304,8 +304,8 @@ func TestDeleteKey(t *testing.T) {
 		keyer := NewMockKeyer(ctrl)
 		keyer.EXPECT().Delete(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(nil).Times(1)
-		cacher := cache.NewMockCacher(ctrl)
-		cacher.EXPECT().Set(gomock.Any(), gomock.Any(), "").Return(nil).Times(1)
+		cacher := cache.NewMockCacher[int64](ctrl)
+		cacher.EXPECT().Set(gomock.Any(), gomock.Any(), int64(1)).Return(nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			t.Context(), &session.Session{
@@ -350,8 +350,8 @@ func TestDeleteKey(t *testing.T) {
 	t.Run("Delete key with cacher error", func(t *testing.T) {
 		t.Parallel()
 
-		cacher := cache.NewMockCacher(gomock.NewController(t))
-		cacher.EXPECT().Set(gomock.Any(), gomock.Any(), "").
+		cacher := cache.NewMockCacher[int64](gomock.NewController(t))
+		cacher.EXPECT().Set(gomock.Any(), gomock.Any(), int64(1)).
 			Return(dao.ErrInvalidFormat).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
@@ -364,8 +364,8 @@ func TestDeleteKey(t *testing.T) {
 		_, err := keySvc.DeleteKey(ctx,
 			&api.DeleteKeyRequest{Id: uuid.NewString()})
 		t.Logf("err: %v", err)
-		require.Equal(t, status.Error(codes.InvalidArgument, "invalid format"),
-			err)
+		require.Equal(t, status.Error(codes.InvalidArgument,
+			"dao: invalid format"), err)
 	})
 
 	t.Run("Delete key by unknown ID", func(t *testing.T) {
@@ -375,8 +375,9 @@ func TestDeleteKey(t *testing.T) {
 		keyer := NewMockKeyer(ctrl)
 		keyer.EXPECT().Delete(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(dao.ErrNotFound).Times(1)
-		cacher := cache.NewMockCacher(ctrl)
-		cacher.EXPECT().Set(gomock.Any(), gomock.Any(), "").Return(nil).Times(1)
+		cacher := cache.NewMockCacher[int64](ctrl)
+		cacher.EXPECT().Set(gomock.Any(), gomock.Any(), int64(1)).Return(nil).
+			Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			t.Context(), &session.Session{
@@ -388,7 +389,8 @@ func TestDeleteKey(t *testing.T) {
 		_, err := keySvc.DeleteKey(ctx,
 			&api.DeleteKeyRequest{Id: uuid.NewString()})
 		t.Logf("err: %v", err)
-		require.Equal(t, status.Error(codes.NotFound, "object not found"), err)
+		require.Equal(t, status.Error(codes.NotFound, "dao: object not found"),
+			err)
 	})
 }
 
@@ -509,8 +511,8 @@ func TestListKeys(t *testing.T) {
 		listKeys, err := keySvc.ListKeys(ctx, &api.ListKeysRequest{})
 		t.Logf("listKeys, err: %+v, %v", listKeys, err)
 		require.Nil(t, listKeys)
-		require.Equal(t, status.Error(codes.InvalidArgument, "invalid format"),
-			err)
+		require.Equal(t, status.Error(codes.InvalidArgument,
+			"dao: invalid format"), err)
 	})
 
 	t.Run("List keys with generation failure", func(t *testing.T) {

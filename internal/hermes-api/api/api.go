@@ -81,8 +81,13 @@ func New(cfg *config.Config) (*API, error) {
 		return nil, err
 	}
 
-	// Set up cache connection.
-	redis, err := cache.NewRedis(cfg.RedisHost + ":6379")
+	// Set up cache connections.
+	iRedis, err := cache.NewRedis[int64](cfg.RedisHost + ":6379")
+	if err != nil {
+		return nil, err
+	}
+
+	bRedis, err := cache.NewRedis[[]byte](cfg.RedisHost + ":6379")
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +98,7 @@ func New(cfg *config.Config) (*API, error) {
 		hlog.Error("New notify secrets not found, using notify.NewFake()")
 		n = notify.NewFake()
 	} else {
-		n = notify.New(redis, cfg.SMSKeyID, "", cfg.SMSKeySecret, "",
+		n = notify.New(iRedis, cfg.SMSKeyID, "", cfg.SMSKeySecret, "",
 			cfg.PushoverAPIKey, "", "")
 	}
 
@@ -114,22 +119,22 @@ func New(cfg *config.Config) (*API, error) {
 		"/ownmfa.api.UserService/UpdateUser":       {},
 	}
 
-	orgDAO := org.NewDAO(pgRW, pgRO, redis, orgExp)
+	orgDAO := org.NewDAO(pgRW, pgRO, bRedis, orgExp)
 	srv := grpc.NewServer(grpc.ChainUnaryInterceptor(
 		interceptor.Log(nil),
-		interceptor.Auth(skipAuth, cfg.PWTKey, redis, orgDAO),
+		interceptor.Auth(skipAuth, cfg.PWTKey, iRedis, orgDAO),
 		interceptor.Validate(skipValidate),
 	))
 
 	api.RegisterAppIdentityServiceServer(srv,
 		service.NewAppIdentity(app.NewDAO(pgRW, pgRO), identity.NewDAO(pgRW,
-			pgRO, cfg.IdentityKey), event.NewDAO(pgRW, pgRO), redis, n, nsq,
+			pgRO, cfg.IdentityKey), event.NewDAO(pgRW, pgRO), iRedis, n, nsq,
 			cfg.NSQPubTopic))
 	api.RegisterEventServiceServer(srv, service.NewEvent(event.NewDAO(pgRW,
 		pgRO)))
 	api.RegisterOrgServiceServer(srv, service.NewOrg(orgDAO))
 	api.RegisterSessionServiceServer(srv, service.NewSession(user.NewDAO(pgRW,
-		pgRO), key.NewDAO(pgRW, pgRO), redis, cfg.PWTKey))
+		pgRO), key.NewDAO(pgRW, pgRO), iRedis, cfg.PWTKey))
 	api.RegisterUserServiceServer(srv, service.NewUser(user.NewDAO(pgRW, pgRO)))
 
 	// Register gRPC-Gateway handlers.

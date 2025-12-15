@@ -185,12 +185,14 @@ func otpToMethod(identity *api.Identity, otp *oath.OTP, meta *otpMeta) {
 	case otp.Algorithm == oath.HOTP:
 		identity.MethodOneof = &api.Identity_SoftwareHotpMethod{
 			SoftwareHotpMethod: &api.SoftwareHOTPMethod{
+				//nolint:gosec // Safe conversion for limited values.
 				Hash: hashCryptoToAPI[otp.Hash], Digits: int32(otp.Digits),
 			},
 		}
 	case otp.Algorithm == oath.TOTP:
 		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{
 			SoftwareTotpMethod: &api.SoftwareTOTPMethod{
+				//nolint:gosec // Safe conversion for limited values.
 				Hash: hashCryptoToAPI[otp.Hash], Digits: int32(otp.Digits),
 			},
 		}

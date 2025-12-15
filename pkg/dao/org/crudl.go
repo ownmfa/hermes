@@ -2,10 +2,12 @@ package org
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/ownmfa/hermes/pkg/cache"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/hlog"
 	"github.com/ownmfa/proto/go/api"
@@ -46,12 +48,12 @@ func (d *DAO) Read(ctx context.Context, orgID string) (*api.Org, error) {
 	org := &api.Org{}
 
 	if d.cache != nil {
-		ok, bOrg, err := d.cache.GetB(ctx, orgKey(orgID))
-		if err != nil {
+		bOrg, err := d.cache.Get(ctx, orgKey(orgID))
+		if err != nil && !errors.Is(err, cache.ErrNotFound) {
 			return nil, dao.DBToSentinel(err)
 		}
 
-		if ok {
+		if !errors.Is(err, cache.ErrNotFound) {
 			if err := proto.Unmarshal(bOrg, org); err != nil {
 				return nil, dao.DBToSentinel(err)
 			}

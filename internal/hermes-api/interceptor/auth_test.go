@@ -49,7 +49,6 @@ func TestAuth(t *testing.T) {
 		inpHandlerErr error
 		inpSkipPaths  map[string]struct{}
 		inpInfo       *grpc.UnaryServerInfo
-		inpCache      bool
 		inpCacheErr   error
 		inpCacheTimes int
 		inpOrg        *api.Org
@@ -60,65 +59,72 @@ func TestAuth(t *testing.T) {
 		{
 			[]string{"authorization", "Bearer " + webToken},
 			nil, nil,
-			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, false, nil, 0,
+			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, cache.ErrNotFound, 0,
 			&api.Org{Id: user.GetOrgId(), Status: api.Status_ACTIVE}, nil, 1, nil,
 		},
 		{
 			[]string{"authorization", "Bearer " + keyToken},
 			nil, nil,
-			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, false, nil, 1,
+			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, cache.ErrNotFound, 1,
 			&api.Org{Id: user.GetOrgId(), Status: api.Status_ACTIVE}, nil, 1, nil,
 		},
 		{
 			nil, errTestFunc,
 			map[string]struct{}{skipPath: {}},
-			&grpc.UnaryServerInfo{FullMethod: skipPath}, false, nil, 0,
+			&grpc.UnaryServerInfo{FullMethod: skipPath}, cache.ErrNotFound, 0,
 			&api.Org{}, nil, 0, errTestFunc,
 		},
 		{
 			nil, errTestFunc, nil, &grpc.UnaryServerInfo{
 				FullMethod: random.String(10),
-			}, false, nil, 0, &api.Org{}, nil, 0,
+			}, cache.ErrNotFound, 0, &api.Org{}, nil, 0,
 			status.Error(codes.Unauthenticated, "unauthorized"),
 		},
 		{
 			[]string{}, errTestFunc, nil, &grpc.UnaryServerInfo{
 				FullMethod: random.String(10),
-			}, false, nil, 0, &api.Org{}, nil, 0, status.Error(
+			}, cache.ErrNotFound, 0, &api.Org{}, nil, 0, status.Error(
 				codes.Unauthenticated, "unauthorized"),
 		},
 		{
 			[]string{"authorization", "NoBearer " + webToken},
 			errTestFunc, nil,
-			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, false, nil, 0,
+			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, cache.ErrNotFound, 0,
 			&api.Org{}, nil, 0, status.Error(codes.Unauthenticated,
 				"unauthorized"),
 		},
 		{
 			[]string{"authorization", "Bearer ..."},
 			errTestFunc, nil,
-			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, false, nil, 0,
+			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, cache.ErrNotFound, 0,
 			&api.Org{}, nil, 0, status.Error(codes.Unauthenticated,
 				"unauthorized"),
 		},
 		{
 			[]string{"authorization", "Bearer " + keyToken},
 			errTestFunc, nil,
-			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, true, nil, 1,
+			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, nil, 1,
+			&api.Org{}, nil, 0, status.Error(codes.Unauthenticated,
+				"unauthorized"),
+		},
+		{
+			[]string{"authorization", "Bearer " + keyToken},
+			errTestFunc, nil,
+			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, errTestFunc, 1,
 			&api.Org{}, nil, 0, status.Error(codes.Unauthenticated,
 				"unauthorized"),
 		},
 		{
 			[]string{"authorization", "Bearer " + webToken},
 			errTestFunc, nil,
-			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, false, nil, 0,
+			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, cache.ErrNotFound, 0,
 			&api.Org{Id: user.GetOrgId(), Status: api.Status_ACTIVE}, errTestFunc, 1,
 			status.Error(codes.Unauthenticated, "unauthorized"),
 		},
 		{
 			[]string{"authorization", "Bearer " + webToken},
 			errTestFunc, nil,
-			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, false, nil, 0,
+			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, cache.ErrNotFound, 0,
 			&api.Org{Id: user.GetOrgId(), Status: api.Status_DISABLED}, nil, 1,
 			status.Error(codes.Unauthenticated, "unauthorized"),
 		},
@@ -129,10 +135,9 @@ func TestAuth(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			cacher := cache.NewMockCacher(ctrl)
-			cacher.EXPECT().Get(gomock.Any(), gomock.Any()).
-				Return(test.inpCache, "", test.inpCacheErr).
-				Times(test.inpCacheTimes)
+			cacher := cache.NewMockCacher[int64](ctrl)
+			cacher.EXPECT().Get(gomock.Any(), gomock.Any()).Return(int64(1),
+				test.inpCacheErr).Times(test.inpCacheTimes)
 			orger := service.NewMockOrger(ctrl)
 			orger.EXPECT().Read(gomock.Any(), test.inpOrg.GetId()).
 				Return(test.inpOrg, test.inpOrgErr).Times(test.inpOrgTimes)

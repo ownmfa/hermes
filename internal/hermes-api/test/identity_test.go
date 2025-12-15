@@ -362,11 +362,10 @@ func TestActivateIdentity(t *testing.T) {
 		require.WithinDuration(t, time.Now(),
 			activateIdentity.GetUpdatedAt().AsTime(), 2*time.Second)
 
-		ok, counter, err := globalCache.GetI(ctx, key.HOTPCounter(
+		counter, err := globalCache.Get(ctx, key.HOTPCounter(
 			activateIdentity.GetOrgId(), activateIdentity.GetAppId(),
 			activateIdentity.GetId()))
-		t.Logf("ok, counter, err: %v, %v, %v", ok, counter, err)
-		require.True(t, ok)
+		t.Logf("counter, err: %v, %v", counter, err)
 		require.NoError(t, err)
 		require.Equal(t, int64(6), counter)
 
@@ -431,11 +430,10 @@ func TestActivateIdentity(t *testing.T) {
 		require.WithinDuration(t, time.Now(),
 			activateIdentity.GetUpdatedAt().AsTime(), 2*time.Second)
 
-		ok, counter, err := globalCache.GetI(ctx, ikey.TOTPOffset(
+		counter, err := globalCache.Get(ctx, ikey.TOTPOffset(
 			activateIdentity.GetOrgId(), activateIdentity.GetAppId(),
 			activateIdentity.GetId()))
-		t.Logf("ok, counter, err: %v, %v, %v", ok, counter, err)
-		require.True(t, ok)
+		t.Logf("counter, err: %v, %v", counter, err)
 		require.NoError(t, err)
 		require.Equal(t, int64(-1), counter)
 	})
@@ -480,11 +478,10 @@ func TestActivateIdentity(t *testing.T) {
 		require.WithinDuration(t, time.Now(),
 			activateIdentity.GetUpdatedAt().AsTime(), 2*time.Second)
 
-		ok, counter, err := globalCache.GetI(ctx, ikey.TOTPOffset(
+		counter, err := globalCache.Get(ctx, ikey.TOTPOffset(
 			activateIdentity.GetOrgId(), activateIdentity.GetAppId(),
 			activateIdentity.GetId()))
-		t.Logf("ok, counter, err: %v, %v, %v", ok, counter, err)
-		require.True(t, ok)
+		t.Logf("counter, err: %v, %v", counter, err)
 		require.NoError(t, err)
 		require.Equal(t, int64(-3), counter)
 	})
@@ -510,11 +507,10 @@ func TestActivateIdentity(t *testing.T) {
 		passcode, err := otp.HOTP(5)
 		require.NoError(t, err)
 
-		ok, err := globalCache.SetIfNotExist(ctx, key.Expire(
-			createIdentity.GetIdentity().GetOrgId(), createIdentity.GetIdentity().GetAppId(),
-			createIdentity.GetIdentity().GetId(), passcode), 1)
-		require.True(t, ok)
-		require.NoError(t, err)
+		require.NoError(t, globalCache.SetIfNotExist(ctx, key.Expire(
+			createIdentity.GetIdentity().GetOrgId(),
+			createIdentity.GetIdentity().GetAppId(),
+			createIdentity.GetIdentity().GetId(), passcode), 1))
 
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
@@ -527,11 +523,10 @@ func TestActivateIdentity(t *testing.T) {
 		require.WithinDuration(t, time.Now(),
 			activateIdentity.GetUpdatedAt().AsTime(), 2*time.Second)
 
-		ok, counter, err := globalCache.GetI(ctx, key.HOTPCounter(
+		counter, err := globalCache.Get(ctx, key.HOTPCounter(
 			activateIdentity.GetOrgId(), activateIdentity.GetAppId(),
 			activateIdentity.GetId()))
-		t.Logf("ok, counter, err: %v, %v, %v", ok, counter, err)
-		require.True(t, ok)
+		t.Logf("counter, err: %v, %v", counter, err)
 		require.NoError(t, err)
 		require.Equal(t, int64(6), counter)
 	})
@@ -568,8 +563,8 @@ func TestActivateIdentity(t *testing.T) {
 			})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
 		require.Nil(t, activateIdentity)
-		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
-			"not found")
+		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
+			"dao: object not found")
 	})
 
 	t.Run("Activates are isolated by org ID", func(t *testing.T) {
@@ -594,8 +589,8 @@ func TestActivateIdentity(t *testing.T) {
 			})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
 		require.Nil(t, activateIdentity)
-		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
-			"not found")
+		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
+			"dao: object not found")
 	})
 
 	t.Run("Activate identity that is already active", func(t *testing.T) {
@@ -825,8 +820,8 @@ func TestChallengeIdentity(t *testing.T) {
 			Id: uuid.NewString(), AppId: uuid.NewString(),
 		})
 		t.Logf("err: %v", err)
-		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
-			"not found")
+		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
+			"dao: object not found")
 	})
 
 	t.Run("Challenges are isolated by org ID", func(t *testing.T) {
@@ -848,8 +843,8 @@ func TestChallengeIdentity(t *testing.T) {
 			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 		})
 		t.Logf("err: %v", err)
-		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
-			"not found")
+		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
+			"dao: object not found")
 	})
 
 	t.Run("Challenge identity with insufficient plan", func(t *testing.T) {
@@ -1175,11 +1170,10 @@ func TestVerifyIdentity(t *testing.T) {
 		passcode, err := otp.HOTP(5)
 		require.NoError(t, err)
 
-		ok, err := globalCache.SetIfNotExist(ctx, key.Expire(
-			createIdentity.GetIdentity().GetOrgId(), createIdentity.GetIdentity().GetAppId(),
-			createIdentity.GetIdentity().GetId(), passcode), 1)
-		require.True(t, ok)
-		require.NoError(t, err)
+		require.NoError(t, globalCache.SetIfNotExist(ctx, key.Expire(
+			createIdentity.GetIdentity().GetOrgId(),
+			createIdentity.GetIdentity().GetAppId(),
+			createIdentity.GetIdentity().GetId(), passcode), 1))
 
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
@@ -1195,11 +1189,10 @@ func TestVerifyIdentity(t *testing.T) {
 		passcode, err = otp.HOTP(6)
 		require.NoError(t, err)
 
-		ok, err = globalCache.SetIfNotExist(ctx, key.Expire(
-			createIdentity.GetIdentity().GetOrgId(), createIdentity.GetIdentity().GetAppId(),
-			createIdentity.GetIdentity().GetId(), passcode), 1)
-		require.True(t, ok)
-		require.NoError(t, err)
+		require.NoError(t, globalCache.SetIfNotExist(ctx, key.Expire(
+			createIdentity.GetIdentity().GetOrgId(),
+			createIdentity.GetIdentity().GetAppId(),
+			createIdentity.GetIdentity().GetId(), passcode), 1))
 
 		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
 			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
@@ -1284,8 +1277,8 @@ func TestVerifyIdentity(t *testing.T) {
 			Passcode: "000000",
 		})
 		t.Logf("err: %v", err)
-		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
-			"not found")
+		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
+			"dao: object not found")
 	})
 
 	t.Run("Verifications are isolated by org ID", func(t *testing.T) {
@@ -1308,8 +1301,8 @@ func TestVerifyIdentity(t *testing.T) {
 			Passcode: "000000",
 		})
 		t.Logf("err: %v", err)
-		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
-			"not found")
+		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
+			"dao: object not found")
 	})
 
 	t.Run("Verify identity that not activated", func(t *testing.T) {
@@ -1391,11 +1384,10 @@ func TestVerifyIdentity(t *testing.T) {
 		passcode, err := otp.HOTP(5)
 		require.NoError(t, err)
 
-		ok, err := globalCache.SetIfNotExist(ctx, key.Expire(
-			createIdentity.GetIdentity().GetOrgId(), createIdentity.GetIdentity().GetAppId(),
-			createIdentity.GetIdentity().GetId(), passcode), 1)
-		require.True(t, ok)
-		require.NoError(t, err)
+		require.NoError(t, globalCache.SetIfNotExist(ctx, key.Expire(
+			createIdentity.GetIdentity().GetOrgId(),
+			createIdentity.GetIdentity().GetAppId(),
+			createIdentity.GetIdentity().GetId(), passcode), 1))
 
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
@@ -1569,8 +1561,8 @@ func TestGetIdentity(t *testing.T) {
 			})
 		t.Logf("getIdentity, err: %+v, %v", getIdentity, err)
 		require.Nil(t, getIdentity)
-		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
-			"not found")
+		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
+			"dao: object not found")
 	})
 
 	t.Run("Gets are isolated by org ID", func(t *testing.T) {
@@ -1585,8 +1577,8 @@ func TestGetIdentity(t *testing.T) {
 		})
 		t.Logf("getIdentity, err: %+v, %v", getIdentity, err)
 		require.Nil(t, getIdentity)
-		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
-			"not found")
+		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
+			"dao: object not found")
 	})
 }
 
@@ -1658,7 +1650,7 @@ func TestDeleteIdentity(t *testing.T) {
 			t.Logf("getIdentity, err: %+v, %v", getIdentity, err)
 			require.Nil(t, getIdentity)
 			require.EqualError(t, err, "rpc error: code = NotFound desc = "+
-				"object not found")
+				"dao: object not found")
 		})
 	})
 
@@ -1688,8 +1680,8 @@ func TestDeleteIdentity(t *testing.T) {
 			Id: uuid.NewString(), AppId: uuid.NewString(),
 		})
 		t.Logf("err: %v", err)
-		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
-			"not found")
+		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
+			"dao: object not found")
 	})
 
 	t.Run("Deletes are isolated by org ID", func(t *testing.T) {
@@ -1718,8 +1710,8 @@ func TestDeleteIdentity(t *testing.T) {
 			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
 		})
 		t.Logf("err: %v", err)
-		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
-			"not found")
+		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
+			"dao: object not found")
 	})
 }
 

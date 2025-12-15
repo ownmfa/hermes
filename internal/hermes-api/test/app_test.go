@@ -112,8 +112,8 @@ func TestGetApp(t *testing.T) {
 			&api.GetAppRequest{Id: uuid.NewString()})
 		t.Logf("getApp, err: %+v, %v", getApp, err)
 		require.Nil(t, getApp)
-		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
-			"not found")
+		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
+			"dao: object not found")
 	})
 
 	t.Run("Gets are isolated by org ID", func(t *testing.T) {
@@ -127,8 +127,8 @@ func TestGetApp(t *testing.T) {
 			&api.GetAppRequest{Id: createApp.GetId()})
 		t.Logf("getApp, err: %+v, %v", getApp, err)
 		require.Nil(t, getApp)
-		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
-			"not found")
+		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
+			"dao: object not found")
 	})
 }
 
@@ -302,8 +302,8 @@ func TestUpdateApp(t *testing.T) {
 		})
 		t.Logf("updateApp, err: %+v, %v", updateApp, err)
 		require.Nil(t, updateApp)
-		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
-			"not found")
+		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
+			"dao: object not found")
 	})
 
 	t.Run("Update app by unknown app", func(t *testing.T) {
@@ -319,8 +319,8 @@ func TestUpdateApp(t *testing.T) {
 			&api.UpdateAppRequest{App: app})
 		t.Logf("updateApp, err: %+v, %v", updateApp, err)
 		require.Nil(t, updateApp)
-		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
-			"not found")
+		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
+			"dao: object not found")
 	})
 
 	t.Run("Updates are isolated by org ID", func(t *testing.T) {
@@ -346,8 +346,8 @@ func TestUpdateApp(t *testing.T) {
 			&api.UpdateAppRequest{App: createApp})
 		t.Logf("updateApp, err: %+v, %v", updateApp, err)
 		require.Nil(t, updateApp)
-		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
-			"not found")
+		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
+			"dao: object not found")
 	})
 
 	t.Run("Update app validation failure", func(t *testing.T) {
@@ -412,7 +412,7 @@ func TestDeleteApp(t *testing.T) {
 			t.Logf("getApp, err: %+v, %v", getApp, err)
 			require.Nil(t, getApp)
 			require.EqualError(t, err, "rpc error: code = NotFound desc = "+
-				"object not found")
+				"dao: object not found")
 		})
 	})
 
@@ -440,8 +440,8 @@ func TestDeleteApp(t *testing.T) {
 		_, err := aiCli.DeleteApp(ctx,
 			&api.DeleteAppRequest{Id: uuid.NewString()})
 		t.Logf("err: %v", err)
-		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
-			"not found")
+		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
+			"dao: object not found")
 	})
 
 	t.Run("Deletes are isolated by org ID", func(t *testing.T) {
@@ -461,8 +461,8 @@ func TestDeleteApp(t *testing.T) {
 		_, err = secCli.DeleteApp(ctx,
 			&api.DeleteAppRequest{Id: createApp.GetId()})
 		t.Logf("err: %v", err)
-		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
-			"not found")
+		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
+			"dao: object not found")
 	})
 }
 

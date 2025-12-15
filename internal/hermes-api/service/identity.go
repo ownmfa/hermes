@@ -15,6 +15,7 @@ import (
 
 	ikey "github.com/ownmfa/hermes/internal/hermes-api/key"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
+	"github.com/ownmfa/hermes/pkg/cache"
 	"github.com/ownmfa/hermes/pkg/consterr"
 	"github.com/ownmfa/hermes/pkg/hlog"
 	"github.com/ownmfa/hermes/pkg/key"
@@ -67,7 +68,8 @@ func (ai *AppIdentity) validatePlan(
 				"invalid E.164 phone number")
 		}
 
-		if err := ai.notify.ValidateSMS(ctx, m.SmsMethod.GetPhone()); err != nil {
+		if err := ai.notify.ValidateSMS(ctx,
+			m.SmsMethod.GetPhone()); err != nil {
 			return errToStatus(err)
 		}
 	case *api.Identity_PushoverMethod:
@@ -107,7 +109,8 @@ func (ai *AppIdentity) CreateIdentity(
 	}
 
 	// Validate notification methods and apply plan limits.
-	if err := ai.validatePlan(ctx, sess.OrgPlan, req.GetIdentity()); err != nil {
+	if err := ai.validatePlan(ctx, sess.OrgPlan,
+		req.GetIdentity()); err != nil {
 		return nil, err
 	}
 
@@ -187,26 +190,26 @@ func (ai *AppIdentity) verify(
 	switch identity.GetMethodOneof().(type) {
 	case *api.Identity_SmsMethod, *api.Identity_PushoverMethod,
 		*api.Identity_EmailMethod:
-		ok, _, err := ai.cache.GetI(ctx, key.Expire(identity.GetOrgId(),
+		_, err := ai.cache.Get(ctx, key.Expire(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId(), passcode))
+		if errors.Is(err, cache.ErrNotFound) {
+			return oath.ErrInvalidPasscode
+		}
 		if err != nil {
 			return err
-		}
-		if !ok {
-			return oath.ErrInvalidPasscode
 		}
 	}
 
 	// Disallow passcode reuse, even when counter tracking would prevent it. Do
 	// not expire to support backup codes.
 	if _, ok := identity.GetMethodOneof().(*api.Identity_SecurityQuestionsMethod); !ok {
-		ok, err := ai.cache.SetIfNotExist(ctx, ikey.Reuse(identity.GetOrgId(),
+		err := ai.cache.SetIfNotExist(ctx, ikey.Reuse(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId(), passcode), 1)
+		if errors.Is(err, cache.ErrAlreadyExists) {
+			return oath.ErrInvalidPasscode
+		}
 		if err != nil {
 			return err
-		}
-		if !ok {
-			return oath.ErrInvalidPasscode
 		}
 	}
 
@@ -225,9 +228,9 @@ func (ai *AppIdentity) verify(
 		*api.Identity_PushoverMethod, *api.Identity_EmailMethod:
 		// Retrieve current HOTP counter. If not found, use the zero value.
 		var curr int64
-		_, curr, err = ai.cache.GetI(ctx, key.HOTPCounter(identity.GetOrgId(),
+		curr, err = ai.cache.Get(ctx, key.HOTPCounter(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId()))
-		if err != nil {
+		if err != nil && !errors.Is(err, cache.ErrNotFound) {
 			return err
 		}
 
@@ -236,9 +239,9 @@ func (ai *AppIdentity) verify(
 		*api.Identity_AppleIosTotpMethod:
 		// Retrieve TOTP window offset. If not found, use the zero value.
 		var off int64
-		_, off, err = ai.cache.GetI(ctx, ikey.TOTPOffset(identity.GetOrgId(),
+		off, err = ai.cache.Get(ctx, ikey.TOTPOffset(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId()))
-		if err != nil {
+		if err != nil && !errors.Is(err, cache.ErrNotFound) {
 			return err
 		}
 
@@ -246,9 +249,9 @@ func (ai *AppIdentity) verify(
 	case *api.Identity_HardwareTotpMethod:
 		// Retrieve TOTP window offset. If not found, use the zero value.
 		var off int64
-		_, off, err = ai.cache.GetI(ctx, ikey.TOTPOffset(identity.GetOrgId(),
+		off, err = ai.cache.Get(ctx, ikey.TOTPOffset(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId()))
-		if err != nil {
+		if err != nil && !errors.Is(err, cache.ErrNotFound) {
 			return err
 		}
 
@@ -281,7 +284,7 @@ func (ai *AppIdentity) verify(
 		}
 	case offset != 0:
 		if err = ai.cache.Set(ctx, ikey.TOTPOffset(identity.GetOrgId(),
-			identity.GetAppId(), identity.GetId()), offset); err != nil {
+			identity.GetAppId(), identity.GetId()), int64(offset)); err != nil {
 			return err
 		}
 	}
@@ -318,7 +321,8 @@ func (ai *AppIdentity) ActivateIdentity(
 	}
 
 	if err := ai.verify(ctx, req.GetId(), sess.OrgID, req.GetAppId(),
-		api.IdentityStatus_UNVERIFIED, req.GetPasscode(), 1000, 6, 20); err != nil {
+		api.IdentityStatus_UNVERIFIED, req.GetPasscode(), 1000, 6,
+		20); err != nil {
 		if errors.Is(err, errExpStatus) ||
 			errors.Is(err, oath.ErrInvalidPasscode) {
 			writeEvent(api.EventStatus_ACTIVATE_FAIL, err.Error())
@@ -382,12 +386,10 @@ func (ai *AppIdentity) ChallengeIdentity(
 		}
 
 		// Rate limit.
-		notifyKey := ikey.Challenge(identity.GetOrgId(), identity.GetAppId(), identity.GetId())
-		ok, err := ai.cache.SetIfNotExistTTL(ctx, notifyKey, 1, notifyRate)
-		if err != nil {
-			return nil, errToStatus(err)
-		}
-		if !ok {
+		notifyKey := ikey.Challenge(identity.GetOrgId(), identity.GetAppId(),
+			identity.GetId())
+		err := ai.cache.SetIfNotExistTTL(ctx, notifyKey, 1, notifyRate)
+		if errors.Is(err, cache.ErrAlreadyExists) {
 			writeEvent(api.EventStatus_CHALLENGE_FAIL, "rate limit exceeded")
 
 			if err := grpc.SetHeader(ctx, metadata.Pairs(StatusCodeKey,
@@ -396,6 +398,9 @@ func (ai *AppIdentity) ChallengeIdentity(
 			}
 
 			return nil, status.Error(codes.Unavailable, "rate limit exceeded")
+		}
+		if err != nil {
+			return nil, errToStatus(err)
 		}
 
 		// Add logging fields.
@@ -472,8 +477,9 @@ func (ai *AppIdentity) VerifyIdentity(
 	}
 
 	if err := ai.verify(ctx, req.GetId(), sess.OrgID, req.GetAppId(),
-		api.IdentityStatus_ACTIVATED, req.GetPasscode(), oath.DefaultHOTPLookAhead,
-		oath.DefaultTOTPLookAhead, oath.DefaultTOTPLookAhead); err != nil {
+		api.IdentityStatus_ACTIVATED, req.GetPasscode(),
+		oath.DefaultHOTPLookAhead, oath.DefaultTOTPLookAhead,
+		oath.DefaultTOTPLookAhead); err != nil {
 		if errors.Is(err, errExpStatus) ||
 			errors.Is(err, oath.ErrInvalidPasscode) {
 			writeEvent(api.EventStatus_VERIFY_FAIL, err.Error())
@@ -496,7 +502,8 @@ func (ai *AppIdentity) GetIdentity(
 		return nil, errPerm(api.Role_VIEWER)
 	}
 
-	identity, _, err := ai.identDAO.Read(ctx, req.GetId(), sess.OrgID, req.GetAppId())
+	identity, _, err := ai.identDAO.Read(ctx, req.GetId(), sess.OrgID,
+		req.GetAppId())
 	if err != nil {
 		return nil, errToStatus(err)
 	}

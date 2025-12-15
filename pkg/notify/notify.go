@@ -5,7 +5,7 @@ import "github.com/ownmfa/hermes/pkg/cache"
 // notify contains methods to send notifications and implements the Notifier
 // interface.
 type notify struct {
-	cache cache.Cacher
+	cache cache.Cacher[int64]
 
 	twilio         *twilio
 	pushoverAppKey string
@@ -17,7 +17,7 @@ var _ Notifier = &notify{}
 
 // New builds a new Notifier and returns it.
 func New(
-	cache cache.Cacher, smsKeyID, smsAccountID, smsKeySecret, smsPhone,
+	cache cache.Cacher[int64], smsKeyID, smsAccountID, smsKeySecret, smsPhone,
 	pushoverAppKey, emailDomain, emailAPIKey string,
 ) Notifier {
 	return &notify{

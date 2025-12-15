@@ -103,13 +103,14 @@ func TestNotifyMessages(t *testing.T) {
 				test.inpNIn.GetOrgId(), test.inpNIn.GetAppId()).
 				Return(test.inpIdentity, otp, nil).Times(1)
 
-			cacher := cache.NewMockCacher(ctrl)
+			cacher := cache.NewMockCacher[int64](ctrl)
 			cacher.EXPECT().Incr(gomock.Any(), key.HOTPCounter(
 				test.inpNIn.GetOrgId(), test.inpNIn.GetAppId(),
 				test.inpNIn.GetIdentityId())).Return(int64(5), nil).Times(1)
 			cacher.EXPECT().SetIfNotExistTTL(gomock.Any(), key.Expire(
-				test.inpNIn.GetOrgId(), test.inpNIn.GetAppId(), test.inpNIn.GetIdentityId(),
-				"861821"), 1, test.inpExpire).Return(true, nil).Times(1)
+				test.inpNIn.GetOrgId(), test.inpNIn.GetAppId(),
+				test.inpNIn.GetIdentityId(), "861821"), int64(1), test.inpExpire).
+				Return(nil).Times(1)
 
 			apper := NewMockapper(ctrl)
 			apper.EXPECT().Read(gomock.Any(), test.inpNIn.GetAppId(),
@@ -277,17 +278,16 @@ func TestNotifyMessagesError(t *testing.T) {
 				gomock.Any()).Return(test.inpIdentity, test.inpOTP,
 				test.inpIdentityErr).Times(test.inpIdentityTimes)
 
-			cacher := cache.NewMockCacher(ctrl)
+			cacher := cache.NewMockCacher[int64](ctrl)
 			cacher.EXPECT().Incr(gomock.Any(), gomock.Any()).Return(int64(5),
 				test.inpIncrErr).Times(test.inpIncrTimes)
+			cacher.EXPECT().SetIfNotExistTTL(gomock.Any(), gomock.Any(),
+				int64(1), test.inpExpire).Return(test.inpSetIfNotExistTTLErr).
+				Times(test.inpSetIfNotExistTTLTimes)
 
 			apper := NewMockapper(ctrl)
 			apper.EXPECT().Read(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(test.inpApp, test.inpAppErr).Times(test.inpAppTimes)
-
-			cacher.EXPECT().SetIfNotExistTTL(gomock.Any(), gomock.Any(), 1,
-				test.inpExpire).Return(true, test.inpSetIfNotExistTTLErr).
-				Times(test.inpSetIfNotExistTTLTimes)
 
 			notifier := notify.NewMockNotifier(ctrl)
 			notifier.EXPECT().SMS(gomock.Any(),
