@@ -2,6 +2,7 @@ package interceptor
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	"github.com/ownmfa/hermes/internal/hermes-api/key"
@@ -19,7 +20,7 @@ import (
 // Auth performs authentication and authorization via web token, and implements
 // the grpc.UnaryServerInterceptor type signature.
 func Auth(
-	skipPaths map[string]struct{}, pwtKey []byte, cache cache.Cacher,
+	skipPaths map[string]struct{}, pwtKey []byte, c cache.Cacher[int64],
 	orgDAO service.Orger,
 ) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo,
@@ -51,10 +52,11 @@ func Auth(
 			return nil, status.Error(codes.Unauthenticated, "unauthorized")
 		}
 
-		// Check for disabled API key.
+		// Check for disabled API key. Disabled can return nil or non-nil except
+		//  cache.ErrNotFound.
 		if sess.KeyID != "" {
-			if ok, _, err := cache.Get(ctx, key.Disabled(sess.OrgID,
-				sess.KeyID)); ok || err != nil {
+			if _, err := c.Get(ctx, key.Disabled(sess.OrgID,
+				sess.KeyID)); !errors.Is(err, cache.ErrNotFound) {
 				return nil, status.Error(codes.Unauthenticated, "unauthorized")
 			}
 		}

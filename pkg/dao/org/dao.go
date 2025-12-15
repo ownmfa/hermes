@@ -13,13 +13,13 @@ import (
 type DAO struct {
 	rw    *sql.DB
 	ro    *sql.DB
-	cache cache.Cacher
+	cache cache.Cacher[[]byte]
 	exp   time.Duration
 }
 
 // NewDAO instantiates and returns a new DAO with organization read caching.
 // Cache can be set to nil to disable caching.
-func NewDAO(rw *sql.DB, ro *sql.DB, cache cache.Cacher,
+func NewDAO(rw *sql.DB, ro *sql.DB, cache cache.Cacher[[]byte],
 	exp time.Duration,
 ) *DAO {
 	return &DAO{

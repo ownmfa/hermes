@@ -50,7 +50,7 @@ type Notifier struct {
 	appDAO   apper
 	identDAO identityer
 	evDAO    eventer
-	cache    cache.Cacher
+	cache    cache.Cacher[int64]
 
 	notQueue queue.Queuer
 	nInSub   queue.Subber
@@ -77,7 +77,7 @@ func New(cfg *config.Config) (*Notifier, error) {
 	}
 
 	// Set up cache connection.
-	redis, err := cache.NewRedis(cfg.RedisHost + ":6379")
+	redis, err := cache.NewRedis[int64](cfg.RedisHost + ":6379")
 	if err != nil {
 		return nil, err
 	}

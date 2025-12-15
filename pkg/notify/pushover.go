@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gregdel/pushover"
+	"github.com/ownmfa/hermes/pkg/cache"
 	"github.com/ownmfa/hermes/pkg/consterr"
 	"github.com/ownmfa/hermes/pkg/metric"
 )
@@ -80,15 +81,15 @@ func (n *notify) pushover(
 
 	// Support modified Pushover rate limit of 2 per second, serially:
 	// https://pushover.net/api#friendly
-	ok, err := n.cache.SetIfNotExistTTL(ctx, poKey, 1, poRateDelay)
-	if err != nil {
+	err := n.cache.SetIfNotExistTTL(ctx, poKey, 1, poRateDelay)
+	if err != nil && !errors.Is(err, cache.ErrAlreadyExists) {
 		return err
 	}
-	for !ok {
+	for errors.Is(err, cache.ErrAlreadyExists) {
 		time.Sleep(poRateDelay)
 
-		ok, err = n.cache.SetIfNotExistTTL(ctx, poKey, 1, poRateDelay)
-		if err != nil {
+		err = n.cache.SetIfNotExistTTL(ctx, poKey, 1, poRateDelay)
+		if err != nil && !errors.Is(err, cache.ErrAlreadyExists) {
 			return err
 		}
 	}

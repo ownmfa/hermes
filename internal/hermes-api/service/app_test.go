@@ -95,8 +95,8 @@ func TestCreateApp(t *testing.T) {
 		createApp, err := aiSvc.CreateApp(ctx, &api.CreateAppRequest{App: app})
 		t.Logf("app, createApp, err: %+v, %+v, %v", app, createApp, err)
 		require.Nil(t, createApp)
-		require.Equal(t, status.Error(codes.InvalidArgument, "invalid format"),
-			err)
+		require.Equal(t, status.Error(codes.InvalidArgument,
+			"dao: invalid format"), err)
 	})
 }
 
@@ -173,7 +173,8 @@ func TestGetApp(t *testing.T) {
 			&api.GetAppRequest{Id: uuid.NewString()})
 		t.Logf("getApp, err: %+v, %v", getApp, err)
 		require.Nil(t, getApp)
-		require.Equal(t, status.Error(codes.NotFound, "object not found"), err)
+		require.Equal(t, status.Error(codes.NotFound, "dao: object not found"),
+			err)
 	})
 }
 
@@ -338,7 +339,8 @@ func TestUpdateApp(t *testing.T) {
 		})
 		t.Logf("part, updateApp, err: %+v, %+v, %v", part, updateApp, err)
 		require.Nil(t, updateApp)
-		require.Equal(t, status.Error(codes.NotFound, "object not found"), err)
+		require.Equal(t, status.Error(codes.NotFound, "dao: object not found"),
+			err)
 	})
 
 	t.Run("Update app validation failure", func(t *testing.T) {
@@ -386,8 +388,8 @@ func TestUpdateApp(t *testing.T) {
 		})
 		t.Logf("app, updateApp, err: %+v, %+v, %v", app, updateApp, err)
 		require.Nil(t, updateApp)
-		require.Equal(t, status.Error(codes.InvalidArgument, "invalid format"),
-			err)
+		require.Equal(t, status.Error(codes.InvalidArgument,
+			"dao: invalid format"), err)
 	})
 }
 
@@ -458,7 +460,8 @@ func TestDeleteApp(t *testing.T) {
 		_, err := aiSvc.DeleteApp(ctx,
 			&api.DeleteAppRequest{Id: uuid.NewString()})
 		t.Logf("err: %v", err)
-		require.Equal(t, status.Error(codes.NotFound, "object not found"), err)
+		require.Equal(t, status.Error(codes.NotFound, "dao: object not found"),
+			err)
 	})
 }
 
@@ -594,8 +597,8 @@ func TestListApps(t *testing.T) {
 		listApps, err := aiSvc.ListApps(ctx, &api.ListAppsRequest{})
 		t.Logf("listApps, err: %+v, %v", listApps, err)
 		require.Nil(t, listApps)
-		require.Equal(t, status.Error(codes.InvalidArgument, "invalid format"),
-			err)
+		require.Equal(t, status.Error(codes.InvalidArgument,
+			"dao: invalid format"), err)
 	})
 
 	t.Run("List apps with generation failure", func(t *testing.T) {

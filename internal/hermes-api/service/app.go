@@ -41,7 +41,7 @@ type AppIdentity struct {
 	appDAO   Apper
 	identDAO Identityer
 	evDAO    Eventer
-	cache    cache.Cacher
+	cache    cache.Cacher[int64]
 
 	notify notify.Notifier
 
@@ -50,9 +50,9 @@ type AppIdentity struct {
 }
 
 // NewAppIdentity instantiates and returns a new AppIdentity service.
-func NewAppIdentity(
-	appDAO Apper, identDAO Identityer, evDAO Eventer, cache cache.Cacher,
-	notify notify.Notifier, pubQueue queue.Queuer, pubTopic string,
+func NewAppIdentity(appDAO Apper, identDAO Identityer, evDAO Eventer,
+	cache cache.Cacher[int64], notify notify.Notifier, pubQueue queue.Queuer,
+	pubTopic string,
 ) *AppIdentity {
 	return &AppIdentity{
 		appDAO:   appDAO,

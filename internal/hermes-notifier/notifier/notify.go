@@ -148,14 +148,14 @@ func (not *Notifier) notifyMessages() {
 		}
 
 		ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
-		ok, err := not.cache.SetIfNotExistTTL(ctx, key.Expire(identity.GetOrgId(),
+		err = not.cache.SetIfNotExistTTL(ctx, key.Expire(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId(), passcode), 1, expire)
 		cancel()
-		if err != nil || !ok {
+		if err != nil {
 			msg.Requeue()
 			metric.Incr("error", map[string]string{"func": "setifnotexistttl"})
 			logger.Errorf("notifyMessages set expiration collision or error: "+
-				"%v, %v", ok, err)
+				"%v", err)
 
 			continue
 		}

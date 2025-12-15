@@ -2,9 +2,11 @@ package notify
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
+	"github.com/ownmfa/hermes/pkg/cache"
 	"github.com/ownmfa/hermes/pkg/consterr"
 )
 
@@ -44,15 +46,15 @@ func (n *notify) SMS(
 	// queue up to 4 hours worth of messages (14,400), but at the risk of abuse
 	// by fraudulent users:
 	// https://support.twilio.com/hc/en-us/articles/115002943027-Understanding-Twilio-Rate-Limits-and-Message-Queues
-	ok, err := n.cache.SetIfNotExistTTL(ctx, smsKey, 1, smsRateDelay)
-	if err != nil {
+	err := n.cache.SetIfNotExistTTL(ctx, smsKey, 1, smsRateDelay)
+	if err != nil && !errors.Is(err, cache.ErrAlreadyExists) {
 		return err
 	}
-	for !ok {
+	for errors.Is(err, cache.ErrAlreadyExists) {
 		time.Sleep(smsRateDelay)
 
-		ok, err = n.cache.SetIfNotExistTTL(ctx, smsKey, 1, smsRateDelay)
-		if err != nil {
+		err = n.cache.SetIfNotExistTTL(ctx, smsKey, 1, smsRateDelay)
+		if err != nil && !errors.Is(err, cache.ErrAlreadyExists) {
 			return err
 		}
 	}

@@ -148,8 +148,8 @@ func TestGetOrg(t *testing.T) {
 			&api.GetOrgRequest{Id: uuid.NewString()})
 		t.Logf("getOrg, err: %+v, %v", getOrg, err)
 		require.Nil(t, getOrg)
-		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
-			"not found")
+		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
+			"dao: object not found")
 	})
 }
 
@@ -327,8 +327,8 @@ func TestUpdateOrg(t *testing.T) {
 		})
 		t.Logf("updateOrg, err: %+v, %v", updateOrg, err)
 		require.Nil(t, updateOrg)
-		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
-			"not found")
+		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
+			"dao: object not found")
 	})
 
 	t.Run("Update org by unknown org", func(t *testing.T) {
@@ -342,8 +342,8 @@ func TestUpdateOrg(t *testing.T) {
 			&api.UpdateOrgRequest{Org: random.Org("api-org")})
 		t.Logf("updateOrg, err: %+v, %v", updateOrg, err)
 		require.Nil(t, updateOrg)
-		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
-			"not found")
+		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
+			"dao: object not found")
 	})
 
 	t.Run("Update org validation failure", func(t *testing.T) {
@@ -404,7 +404,7 @@ func TestDeleteOrg(t *testing.T) {
 			t.Logf("getOrg, err: %+v, %v", getOrg, err)
 			require.Nil(t, getOrg)
 			require.EqualError(t, err, "rpc error: code = NotFound desc = "+
-				"object not found")
+				"dao: object not found")
 		})
 	})
 
@@ -432,8 +432,8 @@ func TestDeleteOrg(t *testing.T) {
 		_, err := orgCli.DeleteOrg(ctx,
 			&api.DeleteOrgRequest{Id: uuid.NewString()})
 		t.Logf("err: %v", err)
-		require.EqualError(t, err, "rpc error: code = NotFound desc = object "+
-			"not found")
+		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
+			"dao: object not found")
 	})
 }
 

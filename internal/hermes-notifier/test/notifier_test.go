@@ -168,10 +168,9 @@ func TestNotifyMessagesError(t *testing.T) {
 	passcode, err := otp.HOTP(1)
 	require.NoError(t, err)
 
-	ok, err := globalCache.SetIfNotExist(ctx, key.Expire(createOrg.GetId(),
-		createApp.GetId(), createExpIdentity.GetId(), passcode), 1)
-	require.True(t, ok)
-	require.NoError(t, err)
+	require.NoError(t, globalCache.SetIfNotExist(ctx, key.Expire(
+		createOrg.GetId(), createApp.GetId(), createExpIdentity.GetId(),
+		passcode), ""))
 
 	badTemplApp := random.App("not", createOrg.GetId())
 	badTemplApp.SubjectTemplate = `{{if`

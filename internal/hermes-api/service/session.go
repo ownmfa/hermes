@@ -35,14 +35,14 @@ type Session struct {
 
 	userDAO Userer
 	keyDAO  Keyer
-	cache   cache.Cacher
+	cache   cache.Cacher[int64]
 
 	pwtKey []byte
 }
 
 // NewSession instantiates and returns a new Session service.
 func NewSession(
-	userDAO Userer, keyDAO Keyer, cache cache.Cacher, pwtKey []byte,
+	userDAO Userer, keyDAO Keyer, cache cache.Cacher[int64], pwtKey []byte,
 ) *Session {
 	return &Session{
 		userDAO: userDAO,
@@ -60,13 +60,15 @@ func (s *Session) Login(ctx context.Context, req *api.LoginRequest) (
 	logger := hlog.FromContext(ctx)
 
 	// Read an active user by email and active organization.
-	user, hash, err := s.userDAO.ReadByEmail(ctx, req.GetEmail(), req.GetOrgName())
+	user, hash, err := s.userDAO.ReadByEmail(ctx, req.GetEmail(),
+		req.GetOrgName())
 	// Hash the provided password if an error is returned to prevent account
 	// enumeration attacks.
 	if err != nil {
 		_, hashErr := auth.HashPass(req.GetPassword())
 		logger.Debugf("Login s.userDAO.ReadByEmail Email, OrgName, err, "+
-			"hashErr: %v, %v, %v, %v", req.GetEmail(), req.GetOrgName(), err, hashErr)
+			"hashErr: %v, %v, %v, %v", req.GetEmail(), req.GetOrgName(), err,
+			hashErr)
 
 		return nil, status.Error(codes.Unauthenticated, "unauthorized")
 	}
@@ -116,8 +118,8 @@ func (s *Session) CreateKey(ctx context.Context, req *api.CreateKeyRequest) (
 		return nil, errToStatus(err)
 	}
 
-	token, err := session.GenerateKeyToken(s.pwtKey, key.GetId(), key.GetOrgId(),
-		key.GetRole())
+	token, err := session.GenerateKeyToken(s.pwtKey, key.GetId(),
+		key.GetOrgId(), key.GetRole())
 	if err != nil {
 		logger.Errorf("CreateKey session.GenerateKeyToken: %v", err)
 
@@ -141,10 +143,10 @@ func (s *Session) DeleteKey(ctx context.Context, req *api.DeleteKeyRequest) (
 		return nil, errPerm(api.Role_ADMIN)
 	}
 
-	// Disable API key before removing record. If a faulty key ID is given,
+	// Disable API key before removing record. If an unclaimed key ID is given,
 	// it will be confined to this org.
 	if err := s.cache.Set(ctx, key.Disabled(sess.OrgID, req.GetId()),
-		""); err != nil {
+		1); err != nil {
 		return nil, errToStatus(err)
 	}
 

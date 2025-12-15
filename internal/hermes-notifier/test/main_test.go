@@ -29,7 +29,7 @@ var (
 	globalAppDAO   *app.DAO
 	globalIdentDAO *identity.DAO
 	globalEvDAO    *event.DAO
-	globalCache    cache.Cacher
+	globalCache    cache.Cacher[string]
 )
 
 func TestMain(m *testing.M) {
@@ -85,7 +85,7 @@ func TestMain(m *testing.M) {
 	globalEvDAO = event.NewDAO(pg, pg)
 
 	// Set up cache connection.
-	globalCache, err = cache.NewRedis(cfg.RedisHost + ":6379")
+	globalCache, err = cache.NewRedis[string](cfg.RedisHost + ":6379")
 	if err != nil {
 		log.Fatalf("TestMain cache.NewRedis: %v", err)
 	}
