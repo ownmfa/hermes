@@ -633,9 +633,9 @@ func TestList(t *testing.T) {
 	t.Logf("createApp, err: %+v, %v", createApp, err)
 	require.NoError(t, err)
 
-	identityIDs := []string{}
-	identityComments := []string{}
-	identityTSes := []time.Time{}
+	identityIDs := make([]string, 0, 3)
+	identityComments := make([]string, 0, 3)
+	identityTSes := make([]time.Time, 0, 3)
 	for range 3 {
 		createIdentity, _, _, err := globalIdentDAO.Create(ctx,
 			random.HOTPIdentity("dao-identity", createOrg.GetId(), createApp.GetId()))

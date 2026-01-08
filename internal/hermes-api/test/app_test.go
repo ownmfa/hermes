@@ -472,8 +472,8 @@ func TestListApps(t *testing.T) {
 	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
 
-	appIDs := []string{}
-	appNames := []string{}
+	appIDs := make([]string, 0, 3)
+	appNames := make([]string, 0, 3)
 	for range 3 {
 		app := random.App("api-app", uuid.NewString())
 

@@ -1728,8 +1728,8 @@ func TestListIdentities(t *testing.T) {
 	t.Logf("createApp, err: %+v, %v", createApp, err)
 	require.NoError(t, err)
 
-	identityIDs := []string{}
-	identityComments := []string{}
+	identityIDs := make([]string, 0, 3)
+	identityComments := make([]string, 0, 3)
 	for range 3 {
 		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
 			createApp.GetId())

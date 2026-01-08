@@ -39,7 +39,7 @@ func TestListEvents(t *testing.T) {
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
-		events := []*api.Event{}
+		events := make([]*api.Event, 0, 5)
 
 		for range 5 {
 			event := random.Event("api-event", globalAdminOrgID)
@@ -157,7 +157,7 @@ func TestLatestEvents(t *testing.T) {
 	t.Run("Latest events", func(t *testing.T) {
 		t.Parallel()
 
-		events := []*api.Event{}
+		events := make([]*api.Event, 0, 5)
 
 		for range 5 {
 			event := random.Event("api-event", globalAdminOrgID)
