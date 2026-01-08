@@ -311,11 +311,11 @@ func TestList(t *testing.T) {
 	t.Logf("createOrg, err: %+v, %v", createOrg, err)
 	require.NoError(t, err)
 
-	appIDs := []string{}
-	appNames := []string{}
-	appEmails := []string{}
-	appPushoverKeys := []string{}
-	appTSes := []time.Time{}
+	appIDs := make([]string, 0, 3)
+	appNames := make([]string, 0, 3)
+	appEmails := make([]string, 0, 3)
+	appPushoverKeys := make([]string, 0, 3)
+	appTSes := make([]time.Time, 0, 3)
 	for range 3 {
 		createApp, err := globalAppDAO.Create(ctx, random.App("dao-app",
 			createOrg.GetId()))
