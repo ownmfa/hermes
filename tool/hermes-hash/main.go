@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/auth"
@@ -25,7 +26,10 @@ func main() {
 	}
 
 	flag.Usage = func() {
-		_, err := fmt.Fprintf(flag.CommandLine.Output(), usage, os.Args[0])
+		p, err := os.Executable()
+		checkErr(err)
+
+		_, err = fmt.Fprintf(flag.CommandLine.Output(), usage, filepath.Base(p))
 		checkErr(err)
 
 		flag.PrintDefaults()
