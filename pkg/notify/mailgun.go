@@ -58,6 +58,7 @@ func (t *mailgun) sendEmail(
 
 	// Send request.
 	client := &http.Client{}
+	//nolint:gosec // Built from constants and configuration.
 	resp, err := client.Do(req)
 	if err != nil {
 		return err

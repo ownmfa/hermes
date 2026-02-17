@@ -8,6 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -44,7 +45,10 @@ func main() {
 	}
 
 	flag.Usage = func() {
-		_, err := fmt.Fprintf(flag.CommandLine.Output(), usage, os.Args[0])
+		p, err := os.Executable()
+		checkErr(err)
+
+		_, err = fmt.Fprintf(flag.CommandLine.Output(), usage, filepath.Base(p))
 		checkErr(err)
 
 		flag.PrintDefaults()
