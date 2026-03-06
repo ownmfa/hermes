@@ -28,7 +28,7 @@ const (
 	ErrHashSupport      consterr.Error = "oath: unsupported hash function"
 	ErrDigitsRange      consterr.Error = "oath: digits outside supported range"
 	ErrKeyLength        consterr.Error = "oath: insufficient key length"
-	//#nosec G101 // false positive for hardcoded credentials
+	// #nosec G101 // False positive for hardcoded credentials.
 	ErrInvalidPasscode consterr.Error = "oath: invalid passcode"
 )
 
