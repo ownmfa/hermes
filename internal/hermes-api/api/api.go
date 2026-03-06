@@ -46,7 +46,7 @@ const (
 
 // Errors returned due to insufficient key length.
 const (
-	//#nosec G101 // false positive for hardcoded credentials
+	// #nosec G101 // False positive for hardcoded credentials.
 	errPWTLength      consterr.Error = "pwt key must be 32 bytes"
 	errIdentityLength consterr.Error = "identity key must be 32 bytes"
 )
@@ -198,7 +198,6 @@ func New(cfg *config.Config) (*API, error) {
 
 // Serve starts the listener.
 func (api *API) Serve() {
-	//#nosec G102 // service should listen on all interfaces
 	lis, err := net.Listen("tcp", api.apiHost+GRPCPort)
 	if err != nil {
 		hlog.Fatalf("Serve net.Listen: %v", err)
