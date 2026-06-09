@@ -496,14 +496,16 @@ func TestListKeys(t *testing.T) {
 	t.Run("List keys by invalid org ID", func(t *testing.T) {
 		t.Parallel()
 
+		invalid := random.String(10)
+
 		keyer := NewMockKeyer(gomock.NewController(t))
-		keyer.EXPECT().List(gomock.Any(), "aaa", gomock.Any(), gomock.Any(),
+		keyer.EXPECT().List(gomock.Any(), invalid, gomock.Any(), gomock.Any(),
 			gomock.Any()).Return(nil, int32(0),
 			dao.ErrInvalidFormat).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			t.Context(), &session.Session{
-				OrgID: "aaa", Role: api.Role_ADMIN,
+				OrgID: invalid, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 

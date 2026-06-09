@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/stretchr/testify/require"
 )
 
@@ -31,7 +32,8 @@ func TestGenerate(t *testing.T) {
 			"", "", `{{if`, "", "unclosed action",
 		},
 		{
-			"", "", `{{template "aaa"}}`, "", "no such template",
+			"", "", `{{template "` + random.String(10) + `"}}`, "",
+			"no such template",
 		},
 	}
 

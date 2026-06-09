@@ -335,7 +335,7 @@ func TestNotifyMessagesError(t *testing.T) {
 				not.notifyMessages()
 			}()
 
-			bNIn := []byte("not-aaa")
+			bNIn := []byte{0x00}
 			if test.inpNIn != nil {
 				bNIn, err = proto.Marshal(test.inpNIn)
 				require.NoError(t, err)

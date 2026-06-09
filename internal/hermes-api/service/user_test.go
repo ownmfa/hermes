@@ -374,7 +374,7 @@ func TestUpdateUser(t *testing.T) {
 		userSvc := NewUser(nil)
 		updateUser, err := userSvc.UpdateUser(ctx, &api.UpdateUserRequest{
 			User: user, UpdateMask: &fieldmaskpb.FieldMask{
-				Paths: []string{"aaa"},
+				Paths: []string{random.String(10)},
 			},
 		})
 		t.Logf("user, updateUser, err: %+v, %+v, %v", user, updateUser, err)
@@ -797,13 +797,15 @@ func TestListUsers(t *testing.T) {
 	t.Run("List users by invalid org ID", func(t *testing.T) {
 		t.Parallel()
 
+		invalid := random.String(10)
+
 		userer := NewMockUserer(gomock.NewController(t))
-		userer.EXPECT().List(gomock.Any(), "aaa", gomock.Any(), gomock.Any(),
+		userer.EXPECT().List(gomock.Any(), invalid, gomock.Any(), gomock.Any(),
 			gomock.Any()).Return(nil, int32(0), dao.ErrInvalidFormat).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			t.Context(), &session.Session{
-				OrgID: "aaa", Role: api.Role_ADMIN,
+				OrgID: invalid, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 

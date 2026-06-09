@@ -218,7 +218,7 @@ func TestNotifyMessagesError(t *testing.T) {
 		t.Run(fmt.Sprintf("Cannot notify %+v", test), func(t *testing.T) {
 			t.Parallel()
 
-			bNIn := []byte("not-aaa")
+			bNIn := []byte{0x00}
 			if test.inpNIn != nil {
 				var err error
 				bNIn, err = proto.Marshal(test.inpNIn)

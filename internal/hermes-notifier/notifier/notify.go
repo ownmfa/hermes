@@ -16,6 +16,10 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// metricTagFunc is the metric function tag.
+const metricTagFunc = "func"
+
+// Constants used for expiration.
 const (
 	smsPushoverExpire = 3 * time.Minute
 	emailExpire       = 6 * time.Minute
@@ -36,7 +40,8 @@ func (not *Notifier) notifyMessages() {
 			msg.Ack()
 
 			if !bytes.Equal([]byte{queue.Prime}, msg.Payload()) {
-				metric.Incr("error", map[string]string{"func": "unmarshal"})
+				metric.Incr("error",
+					map[string]string{metricTagFunc: "unmarshal"})
 				hlog.Errorf("notifyMessages proto.Unmarshal nIn, err: %+v, %v",
 					nIn, err)
 			}
@@ -62,7 +67,8 @@ func (not *Notifier) notifyMessages() {
 		cancel()
 		if err != nil {
 			msg.Requeue()
-			metric.Incr("error", map[string]string{"func": "readidentity"})
+			metric.Incr("error",
+				map[string]string{metricTagFunc: "readidentity"})
 			logger.Errorf("notifyMessages not.identDAO.Read: %v", err)
 
 			continue
@@ -79,7 +85,7 @@ func (not *Notifier) notifyMessages() {
 		cancel()
 		if err != nil {
 			msg.Requeue()
-			metric.Incr("error", map[string]string{"func": "incr"})
+			metric.Incr("error", map[string]string{metricTagFunc: "incr"})
 			logger.Errorf("notifyMessages not.cache.Incr: %v", err)
 
 			continue
@@ -89,7 +95,7 @@ func (not *Notifier) notifyMessages() {
 		passcode, err := otp.HOTP(counter)
 		if err != nil {
 			msg.Requeue()
-			metric.Incr("error", map[string]string{"func": "hotp"})
+			metric.Incr("error", map[string]string{metricTagFunc: "hotp"})
 			logger.Errorf("notifyMessages otp.HOTP: %v", err)
 
 			continue
@@ -101,7 +107,7 @@ func (not *Notifier) notifyMessages() {
 		cancel()
 		if err != nil {
 			msg.Requeue()
-			metric.Incr("error", map[string]string{"func": "readapp"})
+			metric.Incr("error", map[string]string{metricTagFunc: "readapp"})
 			logger.Errorf("notifyMessages not.appDAO.Read: %v", err)
 
 			continue
@@ -153,7 +159,8 @@ func (not *Notifier) notifyMessages() {
 		cancel()
 		if err != nil {
 			msg.Requeue()
-			metric.Incr("error", map[string]string{"func": "setifnotexistttl"})
+			metric.Incr("error",
+				map[string]string{metricTagFunc: "setifnotexistttl"})
 			logger.Errorf("notifyMessages set expiration collision or error: "+
 				"%v", err)
 
@@ -164,8 +171,8 @@ func (not *Notifier) notifyMessages() {
 		ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
 		switch m := identity.GetMethodOneof().(type) {
 		case *api.Identity_SmsMethod:
-			err = not.notify.SMS(ctx, m.SmsMethod.GetPhone(), app.GetDisplayName(),
-				passcode)
+			err = not.notify.SMS(ctx, m.SmsMethod.GetPhone(),
+				app.GetDisplayName(), passcode)
 		case *api.Identity_PushoverMethod:
 			if app.GetPushoverKey() == "" {
 				err = not.notify.Pushover(ctx, m.PushoverMethod.GetPushoverKey(),
@@ -182,7 +189,7 @@ func (not *Notifier) notifyMessages() {
 		if err != nil {
 			msg.Ack()
 			writeEvent(api.EventStatus_CHALLENGE_FAIL, err.Error())
-			metric.Incr("error", map[string]string{"func": "send"})
+			metric.Incr("error", map[string]string{metricTagFunc: "send"})
 			logger.Errorf("notifyMessages send: %v", err)
 
 			continue
@@ -207,7 +214,7 @@ func genTemplates(app *api.App, passcode string) (
 	subj, err := template.Generate(app.GetDisplayName(), passcode,
 		app.GetSubjectTemplate())
 	if err != nil {
-		metric.Incr("error", map[string]string{"func": "gensubject"})
+		metric.Incr("error", map[string]string{metricTagFunc: "gensubject"})
 
 		return "", "", "", err
 	}
@@ -215,7 +222,7 @@ func genTemplates(app *api.App, passcode string) (
 	body, err := template.Generate(app.GetDisplayName(), passcode,
 		app.GetTextBodyTemplate())
 	if err != nil {
-		metric.Incr("error", map[string]string{"func": "genbody"})
+		metric.Incr("error", map[string]string{metricTagFunc: "genbody"})
 
 		return "", "", "", err
 	}
@@ -223,7 +230,7 @@ func genTemplates(app *api.App, passcode string) (
 	htmlBody, err := template.Generate(app.GetDisplayName(), passcode,
 		string(app.GetHtmlBodyTemplate()))
 	if err != nil {
-		metric.Incr("error", map[string]string{"func": "genhtmlbody"})
+		metric.Incr("error", map[string]string{metricTagFunc: "genhtmlbody"})
 
 		return "", "", "", err
 	}

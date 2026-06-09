@@ -54,7 +54,7 @@ func TestParsePageToken(t *testing.T) {
 	bNilTSPT, err := proto.Marshal(nilTSPT)
 	require.NoError(t, err)
 
-	badUUIDPT := &token.Page{BoundTs: timestamppb.Now(), PrevId: []byte("aaa")}
+	badUUIDPT := &token.Page{BoundTs: timestamppb.Now(), PrevId: []byte{0x00}}
 	bBadUUIDPT, err := proto.Marshal(badUUIDPT)
 	require.NoError(t, err)
 
@@ -78,7 +78,7 @@ func TestParsePageToken(t *testing.T) {
 		},
 		{
 			prevID.String(), time.Time{}, base64.RawURLEncoding.EncodeToString(
-				[]byte("aaa")), "cannot parse invalid wire-format data",
+				[]byte{0x00}), "cannot parse invalid wire-format data",
 		},
 		{
 			prevID.String(), time.Time{}, base64.RawURLEncoding.EncodeToString(
@@ -86,7 +86,7 @@ func TestParsePageToken(t *testing.T) {
 		},
 		{
 			prevID.String(), time.Time{}, base64.RawURLEncoding.EncodeToString(
-				bBadUUIDPT), "invalid UUID (got 3 bytes)",
+				bBadUUIDPT), "invalid UUID (got 1 bytes)",
 		},
 	}
 

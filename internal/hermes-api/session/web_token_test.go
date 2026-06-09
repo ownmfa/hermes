@@ -130,7 +130,7 @@ func TestValidateWebToken(t *testing.T) {
 	_, err := rand.Read(key)
 	require.NoError(t, err)
 
-	badCipher, err := auth.Encrypt(key, []byte("aaa"))
+	badCipher, err := auth.Encrypt(key, []byte{0x00})
 	require.NoError(t, err)
 
 	oldToken := &token.Web{ExpiresAt: timestamppb.New(time.Now().Add(-2 *
@@ -204,7 +204,7 @@ func TestValidateKeyToken(t *testing.T) {
 	_, err := rand.Read(key)
 	require.NoError(t, err)
 
-	badCipher, err := auth.Encrypt(key, []byte("aaa"))
+	badCipher, err := auth.Encrypt(key, []byte{0x00})
 	require.NoError(t, err)
 
 	tests := []struct {

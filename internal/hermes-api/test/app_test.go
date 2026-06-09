@@ -277,7 +277,7 @@ func TestUpdateApp(t *testing.T) {
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		updateApp, err := aiCli.UpdateApp(ctx, &api.UpdateAppRequest{
 			App: app, UpdateMask: &fieldmaskpb.FieldMask{
-				Paths: []string{"aaa"},
+				Paths: []string{random.String(10)},
 			},
 		})
 		t.Logf("updateApp, err: %+v, %v", updateApp, err)

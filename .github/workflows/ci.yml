@@ -42,7 +42,7 @@ jobs:
           apk add --no-cache git make
           go env
       - name: Clone
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Build_and_Test
         run: make test
       - name: Push
@@ -51,9 +51,9 @@ jobs:
           apk add --no-cache docker docker-cli-buildx
           docker login -u ownmfa -p ${{ secrets.GHCR_PAT }} ghcr.io
           git config --global --add safe.directory /__w/hermes/hermes
-          TAG=$(git rev-parse --short=8 HEAD)
+          TAG=$(git rev-parse --short=7 HEAD)
           docker buildx create --use
-          #docker buildx build -f build/Dockerfile -t ghcr.io/ownmfa/hermes:${TAG} --platform linux/amd64,linux/arm64 --push .
-          docker buildx build -f build/Dockerfile -t ghcr.io/ownmfa/hermes:${TAG} --push .
+          #docker buildx build --progress plain -f build/Dockerfile -t ghcr.io/ownmfa/hermes:${TAG} --platform linux/amd64,linux/arm64 --push .
+          docker buildx build --progress plain -f build/Dockerfile -t ghcr.io/ownmfa/hermes:${TAG} --push .
           docker buildx rm
           docker logout ghcr.io

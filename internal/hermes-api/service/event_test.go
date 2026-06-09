@@ -104,13 +104,15 @@ func TestListEvents(t *testing.T) {
 	t.Run("List events by invalid org ID", func(t *testing.T) {
 		t.Parallel()
 
+		invalid := random.String(10)
+
 		eventer := NewMockEventer(gomock.NewController(t))
-		eventer.EXPECT().List(gomock.Any(), "aaa", gomock.Any(), gomock.Any(),
+		eventer.EXPECT().List(gomock.Any(), invalid, gomock.Any(), gomock.Any(),
 			gomock.Any()).Return(nil, dao.ErrInvalidFormat).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			t.Context(), &session.Session{
-				OrgID: "aaa", Role: api.Role_ADMIN,
+				OrgID: invalid, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -185,13 +187,15 @@ func TestLatestEvents(t *testing.T) {
 	t.Run("Latest events by invalid org ID", func(t *testing.T) {
 		t.Parallel()
 
+		invalid := random.String(10)
+
 		eventer := NewMockEventer(gomock.NewController(t))
-		eventer.EXPECT().Latest(gomock.Any(), "aaa", gomock.Any(),
+		eventer.EXPECT().Latest(gomock.Any(), invalid, gomock.Any(),
 			gomock.Any()).Return(nil, dao.ErrInvalidFormat).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			t.Context(), &session.Session{
-				OrgID: "aaa", Role: api.Role_ADMIN,
+				OrgID: invalid, Role: api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
