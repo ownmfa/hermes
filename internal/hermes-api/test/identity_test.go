@@ -8,6 +8,7 @@ import (
 	"crypto/rand"
 	"encoding/base32"
 	"fmt"
+	"slices"
 	"testing"
 	"time"
 
@@ -1217,10 +1218,11 @@ func TestVerifyIdentity(t *testing.T) {
 		require.NoError(t, err)
 
 		// Verify out of order.
-		for i := len(createIdentity.GetPasscodes()) - 1; i >= 0; i-- {
+		for _, passcode := range slices.Backward(
+			createIdentity.GetPasscodes()) {
 			_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
-				Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
-				Passcode: createIdentity.GetPasscodes()[i],
+				Id:    createIdentity.GetIdentity().GetId(),
+				AppId: createApp.GetId(), Passcode: passcode,
 			})
 			t.Logf("err: %v", err)
 			require.NoError(t, err)

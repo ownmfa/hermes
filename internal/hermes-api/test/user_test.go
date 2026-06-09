@@ -358,7 +358,7 @@ func TestUpdateUser(t *testing.T) {
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		updateUser, err := userCli.UpdateUser(ctx, &api.UpdateUserRequest{
 			User: user, UpdateMask: &fieldmaskpb.FieldMask{
-				Paths: []string{"aaa"},
+				Paths: []string{random.String(10)},
 			},
 		})
 		t.Logf("updateUser, err: %+v, %v", updateUser, err)

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc/metadata"
@@ -94,7 +95,9 @@ func TestStatusCode(t *testing.T) {
 	t.Run("Don't modify status code with invalid metadata", func(t *testing.T) {
 		t.Parallel()
 
-		mdHeader := metadata.MD{"hermes-status-code": []string{"aaa"}}
+		invalid := random.String(10)
+
+		mdHeader := metadata.MD{"hermes-status-code": []string{invalid}}
 		wHeader := http.Header{grpcStatusCodeKey: []string{strconv.Itoa(
 			http.StatusCreated)}}
 		t.Logf("mdHeader, wHeader: %+v, %+v", mdHeader, wHeader)
@@ -111,7 +114,7 @@ func TestStatusCode(t *testing.T) {
 		require.ErrorIs(t, err, strconv.ErrSyntax)
 
 		t.Logf("mdHeader, wHeader: %+v, %+v", mdHeader, wHeader)
-		require.Equal(t, metadata.MD{"hermes-status-code": []string{"aaa"}},
+		require.Equal(t, metadata.MD{"hermes-status-code": []string{invalid}},
 			mdHeader)
 		require.Equal(t, http.Header{grpcStatusCodeKey: []string{strconv.Itoa(
 			http.StatusCreated)}}, wHeader)

@@ -304,7 +304,7 @@ func TestUpdateOrg(t *testing.T) {
 		orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
 		updateOrg, err := orgCli.UpdateOrg(ctx, &api.UpdateOrgRequest{
 			Org: random.Org("api-org"), UpdateMask: &fieldmaskpb.FieldMask{
-				Paths: []string{"aaa"},
+				Paths: []string{random.String(10)},
 			},
 		})
 		t.Logf("updateOrg, err: %+v, %v", updateOrg, err)

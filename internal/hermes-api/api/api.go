@@ -190,7 +190,7 @@ func New(cfg *config.Config) (*API, error) {
 		httpSrv: &http.Server{
 			Addr:              cfg.APIHost + httpPort,
 			Handler:           gziphandler.GzipHandler(mux),
-			ReadHeaderTimeout: 60 * time.Second,
+			ReadHeaderTimeout: 10 * time.Second,
 		},
 		httpCancel: cancel,
 	}, nil
@@ -198,7 +198,9 @@ func New(cfg *config.Config) (*API, error) {
 
 // Serve starts the listener.
 func (api *API) Serve() {
-	lis, err := net.Listen("tcp", api.apiHost+GRPCPort)
+	ctx := context.Background()
+	lc := net.ListenConfig{}
+	lis, err := lc.Listen(ctx, "tcp", api.apiHost+GRPCPort)
 	if err != nil {
 		hlog.Fatalf("Serve net.Listen: %v", err)
 	}
@@ -207,7 +209,7 @@ func (api *API) Serve() {
 	go func() {
 		hlog.Infof("Listening on %v", api.apiHost+GRPCPort)
 		if err := api.grpcSrv.Serve(lis); err != nil {
-			hlog.Fatalf("Serve api.grpcSrv.Serve: %v", err)
+			hlog.Errorf("Serve api.grpcSrv.Serve: %v", err)
 		}
 	}()
 
@@ -215,7 +217,7 @@ func (api *API) Serve() {
 	go func() {
 		hlog.Infof("Listening on %v", api.httpSrv.Addr)
 		if err := api.httpSrv.ListenAndServe(); err != nil {
-			hlog.Fatalf("Serve api.httpSrv.ListenAndServe: %v", err)
+			hlog.Errorf("Serve api.httpSrv.ListenAndServe: %v", err)
 		}
 	}()
 
@@ -225,6 +227,11 @@ func (api *API) Serve() {
 	<-exitChan
 
 	hlog.Info("Serve received signal, exiting")
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	if err := api.httpSrv.Shutdown(ctx); err != nil {
+		hlog.Errorf("Serve api.httpSrv.Shutdown: %v", err)
+	}
 	api.httpCancel()
 	api.grpcSrv.GracefulStop()
 }
