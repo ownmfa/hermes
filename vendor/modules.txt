@@ -120,7 +120,7 @@ go.uber.org/mock/gomock
 ## explicit; go 1.25.0
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
-# golang.org/x/net v0.55.0
+# golang.org/x/net v0.56.0
 ## explicit; go 1.25.0
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
@@ -153,12 +153,12 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# google.golang.org/genproto/googleapis/api v0.0.0-20260608224507-4308a22a1bab
+# google.golang.org/genproto/googleapis/api v0.0.0-20260610202329-623566214e0c
 ## explicit; go 1.25.0
 google.golang.org/genproto/googleapis/api
 google.golang.org/genproto/googleapis/api/annotations
 google.golang.org/genproto/googleapis/api/httpbody
-# google.golang.org/genproto/googleapis/rpc v0.0.0-20260608224507-4308a22a1bab
+# google.golang.org/genproto/googleapis/rpc v0.0.0-20260610202329-623566214e0c
 ## explicit; go 1.25.0
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.81.1

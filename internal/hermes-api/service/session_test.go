@@ -77,8 +77,7 @@ func TestLogin(t *testing.T) {
 		})
 		t.Logf("loginResp, err: %+v, %v", loginResp, err)
 		require.Nil(t, loginResp)
-		require.Equal(t, status.Error(codes.Unauthenticated, "unauthorized"),
-			err)
+		require.Equal(t, status.Error(codes.Unauthenticated, errUnauth), err)
 	})
 
 	t.Run("Log in wrong password", func(t *testing.T) {
@@ -105,8 +104,7 @@ func TestLogin(t *testing.T) {
 		})
 		t.Logf("loginResp, err: %+v, %v", loginResp, err)
 		require.Nil(t, loginResp)
-		require.Equal(t, status.Error(codes.Unauthenticated, "unauthorized"),
-			err)
+		require.Equal(t, status.Error(codes.Unauthenticated, errUnauth), err)
 	})
 
 	t.Run("Log in unspecified user", func(t *testing.T) {
@@ -117,8 +115,8 @@ func TestLogin(t *testing.T) {
 		user.Role = api.Role_ROLE_UNSPECIFIED
 
 		userer := NewMockUserer(gomock.NewController(t))
-		userer.EXPECT().ReadByEmail(gomock.Any(), user.GetEmail(), org.GetName()).
-			Return(user, globalHash, nil).Times(1)
+		userer.EXPECT().ReadByEmail(gomock.Any(), user.GetEmail(),
+			org.GetName()).Return(user, globalHash, nil).Times(1)
 
 		pwtKey := make([]byte, 32)
 		_, err := rand.Read(pwtKey)
@@ -133,8 +131,7 @@ func TestLogin(t *testing.T) {
 		})
 		t.Logf("loginResp, err: %+v, %v", loginResp, err)
 		require.Nil(t, loginResp)
-		require.Equal(t, status.Error(codes.Unauthenticated, "unauthorized"),
-			err)
+		require.Equal(t, status.Error(codes.Unauthenticated, errUnauth), err)
 	})
 
 	t.Run("Log in nil key", func(t *testing.T) {
@@ -157,8 +154,7 @@ func TestLogin(t *testing.T) {
 		})
 		t.Logf("loginResp, err: %+v, %v", loginResp, err)
 		require.Nil(t, loginResp)
-		require.Equal(t, status.Error(codes.Unauthenticated, "unauthorized"),
-			err)
+		require.Equal(t, status.Error(codes.Unauthenticated, errUnauth), err)
 	})
 }
 

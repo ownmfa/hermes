@@ -57,13 +57,13 @@ func TestAuth(t *testing.T) {
 		err           error
 	}{
 		{
-			[]string{"authorization", "Bearer " + webToken},
+			[]string{keyAuth, "Bearer " + webToken},
 			nil, nil,
 			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, cache.ErrNotFound, 0,
 			&api.Org{Id: user.GetOrgId(), Status: api.Status_ACTIVE}, nil, 1, nil,
 		},
 		{
-			[]string{"authorization", "Bearer " + keyToken},
+			[]string{keyAuth, "Bearer " + keyToken},
 			nil, nil,
 			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, cache.ErrNotFound, 1,
 			&api.Org{Id: user.GetOrgId(), Status: api.Status_ACTIVE}, nil, 1, nil,
@@ -78,55 +78,55 @@ func TestAuth(t *testing.T) {
 			nil, errTestFunc, nil, &grpc.UnaryServerInfo{
 				FullMethod: random.String(10),
 			}, cache.ErrNotFound, 0, &api.Org{}, nil, 0,
-			status.Error(codes.Unauthenticated, "unauthorized"),
+			status.Error(codes.Unauthenticated, errUnauth),
 		},
 		{
 			[]string{}, errTestFunc, nil, &grpc.UnaryServerInfo{
 				FullMethod: random.String(10),
 			}, cache.ErrNotFound, 0, &api.Org{}, nil, 0, status.Error(
-				codes.Unauthenticated, "unauthorized"),
+				codes.Unauthenticated, errUnauth),
 		},
 		{
-			[]string{"authorization", "NoBearer " + webToken},
+			[]string{keyAuth, "NoBearer " + webToken},
 			errTestFunc, nil,
 			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, cache.ErrNotFound, 0,
 			&api.Org{}, nil, 0, status.Error(codes.Unauthenticated,
-				"unauthorized"),
+				errUnauth),
 		},
 		{
-			[]string{"authorization", "Bearer ..."},
+			[]string{keyAuth, "Bearer ..."},
 			errTestFunc, nil,
 			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, cache.ErrNotFound, 0,
 			&api.Org{}, nil, 0, status.Error(codes.Unauthenticated,
-				"unauthorized"),
+				errUnauth),
 		},
 		{
-			[]string{"authorization", "Bearer " + keyToken},
+			[]string{keyAuth, "Bearer " + keyToken},
 			errTestFunc, nil,
 			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, nil, 1,
 			&api.Org{}, nil, 0, status.Error(codes.Unauthenticated,
-				"unauthorized"),
+				errUnauth),
 		},
 		{
-			[]string{"authorization", "Bearer " + keyToken},
+			[]string{keyAuth, "Bearer " + keyToken},
 			errTestFunc, nil,
 			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, errTestFunc, 1,
 			&api.Org{}, nil, 0, status.Error(codes.Unauthenticated,
-				"unauthorized"),
+				errUnauth),
 		},
 		{
-			[]string{"authorization", "Bearer " + webToken},
+			[]string{keyAuth, "Bearer " + webToken},
 			errTestFunc, nil,
 			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, cache.ErrNotFound, 0,
 			&api.Org{Id: user.GetOrgId(), Status: api.Status_ACTIVE}, errTestFunc, 1,
-			status.Error(codes.Unauthenticated, "unauthorized"),
+			status.Error(codes.Unauthenticated, errUnauth),
 		},
 		{
-			[]string{"authorization", "Bearer " + webToken},
+			[]string{keyAuth, "Bearer " + webToken},
 			errTestFunc, nil,
 			&grpc.UnaryServerInfo{FullMethod: random.String(10)}, cache.ErrNotFound, 0,
 			&api.Org{Id: user.GetOrgId(), Status: api.Status_DISABLED}, nil, 1,
-			status.Error(codes.Unauthenticated, "unauthorized"),
+			status.Error(codes.Unauthenticated, errUnauth),
 		},
 	}
 
@@ -142,9 +142,7 @@ func TestAuth(t *testing.T) {
 			orger.EXPECT().Read(gomock.Any(), test.inpOrg.GetId()).
 				Return(test.inpOrg, test.inpOrgErr).Times(test.inpOrgTimes)
 
-			ctx, cancel := context.WithTimeout(t.Context(),
-				testTimeout)
-			defer cancel()
+			ctx := t.Context()
 			if test.inpMD != nil {
 				ctx = metadata.NewIncomingContext(ctx,
 					metadata.Pairs(test.inpMD...))
