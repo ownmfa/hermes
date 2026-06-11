@@ -116,11 +116,10 @@ func New(cfg *config.Config) (*API, error) {
 
 	orgDAO := org.NewDAO(pgRW, pgRO, cache.NewHeap[[]byte](), orgExp)
 	srv := grpc.NewServer(grpc.ChainUnaryInterceptor(
-		interceptor.Log(nil),
+		interceptor.Log(),
+		interceptor.Recover(),
 		interceptor.Auth(skipAuth, cfg.PWTKey, redis, orgDAO),
-		interceptor.Validate(skipValidate),
-	))
-
+		interceptor.Validate(skipValidate)))
 	api.RegisterAppIdentityServiceServer(srv,
 		service.NewAppIdentity(app.NewDAO(pgRW, pgRO), identity.NewDAO(pgRW,
 			pgRO, cfg.IdentityKey), event.NewDAO(pgRW, pgRO), redis, n, nsq,

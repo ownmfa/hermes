@@ -17,6 +17,12 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// Constants used for authentication maps and errors.
+const (
+	errUnauth = "unauthorized"
+	keyAuth   = "authorization"
+)
+
 // Auth performs authentication and authorization via web token, and implements
 // the grpc.UnaryServerInterceptor type signature.
 func Auth(
@@ -33,23 +39,23 @@ func Auth(
 		// Retrieve token from 'Authorization: Bearer ...' header.
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {
-			return nil, status.Error(codes.Unauthenticated, "unauthorized")
+			return nil, status.Error(codes.Unauthenticated, errUnauth)
 		}
 
-		auth := md["authorization"]
+		auth := md[keyAuth]
 		if len(auth) < 1 {
-			return nil, status.Error(codes.Unauthenticated, "unauthorized")
+			return nil, status.Error(codes.Unauthenticated, errUnauth)
 		}
 
 		if !strings.HasPrefix(auth[0], "Bearer ") {
-			return nil, status.Error(codes.Unauthenticated, "unauthorized")
+			return nil, status.Error(codes.Unauthenticated, errUnauth)
 		}
 
 		// Validate token.
 		token := strings.TrimPrefix(auth[0], "Bearer ")
 		sess, err := session.ValidateWebToken(pwtKey, token)
 		if err != nil {
-			return nil, status.Error(codes.Unauthenticated, "unauthorized")
+			return nil, status.Error(codes.Unauthenticated, errUnauth)
 		}
 
 		// Check for disabled API key. Disabled can return nil or non-nil except
@@ -57,14 +63,14 @@ func Auth(
 		if sess.KeyID != "" {
 			if _, err := c.Get(ctx, key.Disabled(sess.OrgID,
 				sess.KeyID)); !errors.Is(err, cache.ErrNotFound) {
-				return nil, status.Error(codes.Unauthenticated, "unauthorized")
+				return nil, status.Error(codes.Unauthenticated, errUnauth)
 			}
 		}
 
 		// Check for disabled organization. This read is cached.
 		org, err := orgDAO.Read(ctx, sess.OrgID)
 		if err != nil || org.GetStatus() == api.Status_DISABLED {
-			return nil, status.Error(codes.Unauthenticated, "unauthorized")
+			return nil, status.Error(codes.Unauthenticated, errUnauth)
 		}
 		sess.OrgPlan = org.GetPlan()
 
