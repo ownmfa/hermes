@@ -8,7 +8,7 @@ Install any compliant package of [Docker](https://docs.docker.com/get-started/ov
 
 ```
 brew install colima docker docker-compose docker-buildx
-colima start --cpu 3 --memory 3 --disk 16 --mount-type virtiofs --mount ~/code/go:w
+colima start --cpu 3 --memory 3 --disk 16 --mount-type virtiofs --mount ~/code/go:w --vz-rosetta
 ```
 
 Run the build and tests:
@@ -32,6 +32,25 @@ curl -v -X POST -d '{"email":"testadmin@ownmfa.com", "orgName":"testorg", "passw
 ```
 
 OpenAPI live docs are available at [http://localhost:8000/](http://localhost:8000/).
+
+## Tutorial
+
+Getting started with the Hermes API:
+
+- Log in with `/v1/sessions/login` using your provided credentials. Click `Authorize` below and enter the returned token.
+- Create an application with `/v1/applications`. For SMS and software token authentication methods, all template fields can be left empty.
+- (Optional) Create an `AUTHENTICATOR` role API key with `/v1/sessions/keys`. Re-authorize using the returned token.
+
+Activate an identity (single occurrence):
+
+- Create an identity with `/v1/applications/{identity.appID}/identities`. Only one method field is supported when creating an identity.
+- Issue the returned identity a challenge with `/v1/applications/{appID}/identities/{id}/challenge`.
+- Activate the identity with `/v1/applications/{appID}/identities/{id}/activate` using the received or generated challenge.
+
+Verify an identity (ongoing):
+
+- Issue the identity a challenge with `/v1/applications/{appID}/identities/{id}/challenge`.
+- Verify the identity with `/v1/applications/{appID}/identities/{id}/verify` using the received or generated challenge.
 
 ## Deploying
 
