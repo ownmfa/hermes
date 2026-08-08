@@ -10,7 +10,9 @@ jobs:
       image: golang:1-alpine
       env:
         GOFLAGS: -buildvcs=false
+        TEST_VALKEY_HOST: valkey
         TEST_REDIS_HOST: redis
+        TEST_REDIS_PORT: 6379
         TEST_PG_URI: pgx://postgres:postgres@postgres/hermes_test
         TEST_NSQ_PUB_ADDR: nsqd:4150
         TEST_NSQ_LOOKUP_ADDRS: nsqlookupd:4161
@@ -32,6 +34,8 @@ jobs:
           password: ${{ secrets.GHCR_PAT }}
         env:
           LOOKUP_ADDR: nsqlookupd:4160
+      valkey:
+        image: valkey/valkey:9-alpine
       redis:
         image: redis:8-alpine
     steps:

@@ -82,7 +82,7 @@ func New(cfg *config.Config) (*API, error) {
 	}
 
 	// Set up cache connection.
-	redis, err := cache.NewRedis[int64](cfg.RedisHost + ":6379")
+	valkey, err := cache.NewValkey[int64](cfg.ValkeyHost + ":6379")
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func New(cfg *config.Config) (*API, error) {
 		hlog.Error("New notify secrets not found, using notify.NewFake()")
 		n = notify.NewFake()
 	} else {
-		n = notify.New(redis, cfg.SMSKeyID, "", cfg.SMSKeySecret, "",
+		n = notify.New(valkey, cfg.SMSKeyID, "", cfg.SMSKeySecret, "",
 			cfg.PushoverAPIKey, "", "")
 	}
 
@@ -118,17 +118,18 @@ func New(cfg *config.Config) (*API, error) {
 	srv := grpc.NewServer(grpc.ChainUnaryInterceptor(
 		interceptor.Log(),
 		interceptor.Recover(),
-		interceptor.Auth(skipAuth, cfg.PWTKey, redis, orgDAO),
-		interceptor.Validate(skipValidate)))
+		interceptor.Auth(skipAuth, cfg.PWTKey, valkey, orgDAO),
+		interceptor.Validate(skipValidate),
+	))
 	api.RegisterAppIdentityServiceServer(srv,
 		service.NewAppIdentity(app.NewDAO(pgRW, pgRO), identity.NewDAO(pgRW,
-			pgRO, cfg.IdentityKey), event.NewDAO(pgRW, pgRO), redis, n, nsq,
+			pgRO, cfg.IdentityKey), event.NewDAO(pgRW, pgRO), valkey, n, nsq,
 			cfg.NSQPubTopic))
 	api.RegisterEventServiceServer(srv, service.NewEvent(event.NewDAO(pgRW,
 		pgRO)))
 	api.RegisterOrgServiceServer(srv, service.NewOrg(orgDAO))
 	api.RegisterSessionServiceServer(srv, service.NewSession(user.NewDAO(pgRW,
-		pgRO), key.NewDAO(pgRW, pgRO), redis, cfg.PWTKey))
+		pgRO), key.NewDAO(pgRW, pgRO), valkey, cfg.PWTKey))
 	api.RegisterUserServiceServer(srv, service.NewUser(user.NewDAO(pgRW, pgRO)))
 
 	// Register gRPC-Gateway handlers.

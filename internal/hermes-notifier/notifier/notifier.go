@@ -77,7 +77,7 @@ func New(cfg *config.Config) (*Notifier, error) {
 	}
 
 	// Set up cache connection.
-	redis, err := cache.NewRedis[int64](cfg.RedisHost + ":6379")
+	valkey, err := cache.NewValkey[int64](cfg.ValkeyHost + ":6379")
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func New(cfg *config.Config) (*Notifier, error) {
 		hlog.Error("New notify secrets not found, using notify.NewFake()")
 		n = notify.NewFake()
 	} else {
-		n = notify.New(redis, cfg.SMSKeyID, cfg.SMSAccountID, cfg.SMSKeySecret,
+		n = notify.New(valkey, cfg.SMSKeyID, cfg.SMSAccountID, cfg.SMSKeySecret,
 			cfg.SMSPhone, cfg.PushoverAPIKey, cfg.EmailDomain, cfg.EmailAPIKey)
 	}
 
@@ -115,7 +115,7 @@ func New(cfg *config.Config) (*Notifier, error) {
 		appDAO:   app.NewDAO(pgRW, pgRO),
 		identDAO: identity.NewDAO(pgRW, pgRO, cfg.IdentityKey),
 		evDAO:    event.NewDAO(pgRW, pgRO),
-		cache:    redis,
+		cache:    valkey,
 
 		notQueue: nsq,
 		nInSub:   nInSub,

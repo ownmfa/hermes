@@ -8,8 +8,10 @@ const pref = "TEST_"
 
 // Config holds settings used by test implementations.
 type Config struct {
-	PgURI     string
-	RedisHost string
+	PgURI      string
+	ValkeyHost string
+	RedisHost  string
+	RedisPort  string
 
 	NSQPubAddr     string
 	NSQLookupAddrs []string
@@ -22,7 +24,9 @@ func New() *Config {
 	return &Config{
 		PgURI: config.String(pref+"PG_URI",
 			"postgres://postgres:postgres@127.0.0.1/hermes_test"),
-		RedisHost: config.String(pref+"REDIS_HOST", "127.0.0.1"),
+		ValkeyHost: config.String(pref+"VALKEY_HOST", "127.0.0.1"),
+		RedisHost:  config.String(pref+"REDIS_HOST", "127.0.0.1"),
+		RedisPort:  config.String(pref+"REDIS_PORT", "6380"),
 
 		NSQPubAddr: config.String(pref+"NSQ_PUB_ADDR", "127.0.0.1:4150"),
 		NSQLookupAddrs: config.StringSlice(pref+"NSQ_LOOKUP_ADDRS",

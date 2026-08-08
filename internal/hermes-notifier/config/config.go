@@ -12,9 +12,9 @@ type Config struct {
 	StatsDAddr  string
 	Concurrency int
 
-	PgRwURI   string
-	PgRoURI   string
-	RedisHost string
+	PgRwURI    string
+	PgRoURI    string
+	ValkeyHost string
 
 	IdentityKey []byte
 
@@ -43,7 +43,7 @@ func New() *Config {
 			"postgres://postgres:postgres@127.0.0.1/hermes_test"),
 		PgRoURI: config.String(pref+"PG_RO_URI",
 			"postgres://postgres:postgres@127.0.0.1/hermes_test"),
-		RedisHost: config.String(pref+"REDIS_HOST", "127.0.0.1"),
+		ValkeyHost: config.String(pref+"VALKEY_HOST", "127.0.0.1"),
 
 		IdentityKey: config.ByteSlice(pref + "IDENTITY_KEY"),
 

@@ -11,9 +11,9 @@ type Config struct {
 	LogLevel   string
 	StatsDAddr string
 
-	PgRwURI   string
-	PgRoURI   string
-	RedisHost string
+	PgRwURI    string
+	PgRoURI    string
+	ValkeyHost string
 
 	NSQPubAddr  string
 	NSQPubTopic string
@@ -37,7 +37,7 @@ func New() *Config {
 			"postgres://postgres:postgres@127.0.0.1/hermes_test"),
 		PgRoURI: config.String(pref+"PG_RO_URI",
 			"postgres://postgres:postgres@127.0.0.1/hermes_test"),
-		RedisHost: config.String(pref+"REDIS_HOST", "127.0.0.1"),
+		ValkeyHost: config.String(pref+"VALKEY_HOST", "127.0.0.1"),
 
 		NSQPubAddr:  config.String(pref+"NSQ_PUB_ADDR", "127.0.0.1:4150"),
 		NSQPubTopic: config.String(pref+"NSQ_PUB_TOPIC", "NotifierIn"),
