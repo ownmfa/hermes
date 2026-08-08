@@ -32,11 +32,11 @@ services:
     ports:
       - "127.0.0.1:4178:4171"
 
-  redis:
-    image: redis:8-alpine
-    command: redis-server --save 300 1 --save 60 100 --appendonly no
+  valkey:
+    image: valkey/valkey:9-alpine
+    command: valkey-server --save 300 1 --save 60 100 --appendonly no
     volumes:
-      - ./volume/redis:/data
+      - ./volume/valkey:/data
 
   dogstatsd:
     image: datadog/dogstatsd:latest

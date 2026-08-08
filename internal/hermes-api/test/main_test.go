@@ -67,7 +67,7 @@ func TestMain(m *testing.M) {
 	cfg := config.New()
 	cfg.PgRwURI = testConfig.PgURI
 	cfg.PgRoURI = testConfig.PgURI
-	cfg.RedisHost = testConfig.RedisHost
+	cfg.ValkeyHost = testConfig.ValkeyHost
 
 	cfg.NSQPubAddr = testConfig.NSQPubAddr
 	cfg.NSQPubTopic += "-test-" + random.String(10)
@@ -98,9 +98,9 @@ func TestMain(m *testing.M) {
 	globalEvDAO = event.NewDAO(pg, pg)
 
 	// Set up cache connection.
-	globalCache, err = cache.NewRedis[int64](cfg.RedisHost + ":6379")
+	globalCache, err = cache.NewValkey[int64](cfg.ValkeyHost + ":6379")
 	if err != nil {
-		log.Fatalf("TestMain cache.NewRedis: %v", err)
+		log.Fatalf("TestMain cache.NewValkey: %v", err)
 	}
 
 	globalPass = random.String(10)
