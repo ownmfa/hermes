@@ -7,8 +7,8 @@ import (
 	"crypto/rand"
 	"fmt"
 	"testing"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/ownmfa/hermes/internal/hermes-api/service"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/cache"
@@ -32,12 +32,12 @@ func TestAuth(t *testing.T) {
 	_, err := rand.Read(key)
 	require.NoError(t, err)
 
-	user := random.User("auth", uuid.NewString())
+	user := random.User("auth", uuid.NewV7().String())
 	webToken, _, err := session.GenerateWebToken(key, user)
 	t.Logf("webToken, err: %v, %v", webToken, err)
 	require.NoError(t, err)
 
-	keyToken, err := session.GenerateKeyToken(key, uuid.NewString(), user.GetOrgId(),
+	keyToken, err := session.GenerateKeyToken(key, uuid.NewV7().String(), user.GetOrgId(),
 		user.GetRole())
 	t.Logf("keyToken, err: %v, %v", keyToken, err)
 	require.NoError(t, err)
@@ -84,7 +84,8 @@ func TestAuth(t *testing.T) {
 			[]string{}, errTestFunc, nil, &grpc.UnaryServerInfo{
 				FullMethod: random.String(10),
 			}, cache.ErrNotFound, 0, &api.Org{}, nil, 0, status.Error(
-				codes.Unauthenticated, errUnauth),
+				codes.Unauthenticated, errUnauth,
+			),
 		},
 		{
 			[]string{keyAuth, "NoBearer " + webToken},

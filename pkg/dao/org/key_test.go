@@ -5,8 +5,8 @@ package org
 import (
 	"fmt"
 	"testing"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,7 +17,7 @@ func TestOrgKey(t *testing.T) {
 		t.Run(fmt.Sprintf("Can key %v", i), func(t *testing.T) {
 			t.Parallel()
 
-			orgID := uuid.NewString()
+			orgID := uuid.NewV7().String()
 
 			key := orgKey(orgID)
 			t.Logf("key: %v", key)

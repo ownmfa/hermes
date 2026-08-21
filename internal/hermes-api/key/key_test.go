@@ -5,8 +5,8 @@ package key
 import (
 	"fmt"
 	"testing"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/stretchr/testify/require"
 )
@@ -18,8 +18,8 @@ func TestDisabled(t *testing.T) {
 		t.Run(fmt.Sprintf("Can key %v", i), func(t *testing.T) {
 			t.Parallel()
 
-			orgID := uuid.NewString()
-			keyID := uuid.NewString()
+			orgID := uuid.NewV7().String()
+			keyID := uuid.NewV7().String()
 
 			key := Disabled(orgID, keyID)
 			t.Logf("key: %v", key)
@@ -38,9 +38,9 @@ func TestTOTPOffset(t *testing.T) {
 		t.Run(fmt.Sprintf("Can key %v", i), func(t *testing.T) {
 			t.Parallel()
 
-			orgID := uuid.NewString()
-			appID := uuid.NewString()
-			identityID := uuid.NewString()
+			orgID := uuid.NewV7().String()
+			appID := uuid.NewV7().String()
+			identityID := uuid.NewV7().String()
 
 			key := TOTPOffset(orgID, appID, identityID)
 			t.Logf("key: %v", key)
@@ -59,9 +59,9 @@ func TestReuse(t *testing.T) {
 		t.Run(fmt.Sprintf("Can key %v", i), func(t *testing.T) {
 			t.Parallel()
 
-			orgID := uuid.NewString()
-			appID := uuid.NewString()
-			identityID := uuid.NewString()
+			orgID := uuid.NewV7().String()
+			appID := uuid.NewV7().String()
+			identityID := uuid.NewV7().String()
 			passcode := random.String(10)
 
 			key := Reuse(orgID, appID, identityID, passcode)
@@ -81,9 +81,9 @@ func TestChallenge(t *testing.T) {
 		t.Run(fmt.Sprintf("Can key %v", i), func(t *testing.T) {
 			t.Parallel()
 
-			orgID := uuid.NewString()
-			appID := uuid.NewString()
-			identityID := uuid.NewString()
+			orgID := uuid.NewV7().String()
+			appID := uuid.NewV7().String()
+			identityID := uuid.NewV7().String()
 
 			key := Challenge(orgID, appID, identityID)
 			t.Logf("key: %v", key)

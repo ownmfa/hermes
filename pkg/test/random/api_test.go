@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -39,7 +39,7 @@ func TestUser(t *testing.T) {
 			t.Parallel()
 
 			prefix := String(10)
-			orgID := uuid.NewString()
+			orgID := uuid.NewV7().String()
 
 			u1 := User(prefix, orgID)
 			u2 := User(prefix, orgID)
@@ -62,7 +62,7 @@ func TestKey(t *testing.T) {
 			t.Parallel()
 
 			prefix := String(10)
-			orgID := uuid.NewString()
+			orgID := uuid.NewV7().String()
 
 			k1 := Key(prefix, orgID)
 			k2 := Key(prefix, orgID)
@@ -83,7 +83,7 @@ func TestApp(t *testing.T) {
 			t.Parallel()
 
 			prefix := String(10)
-			orgID := uuid.NewString()
+			orgID := uuid.NewV7().String()
 
 			a1 := App(prefix, orgID)
 			a2 := App(prefix, orgID)
@@ -108,8 +108,8 @@ func TestHOTPIdentity(t *testing.T) {
 			t.Parallel()
 
 			prefix := String(10)
-			orgID := uuid.NewString()
-			appID := uuid.NewString()
+			orgID := uuid.NewV7().String()
+			appID := uuid.NewV7().String()
 
 			i1 := HOTPIdentity(prefix, orgID, appID)
 			i2 := HOTPIdentity(prefix, orgID, appID)
@@ -130,8 +130,8 @@ func TestSMSIdentity(t *testing.T) {
 			t.Parallel()
 
 			prefix := String(10)
-			orgID := uuid.NewString()
-			appID := uuid.NewString()
+			orgID := uuid.NewV7().String()
+			appID := uuid.NewV7().String()
 
 			i1 := SMSIdentity(prefix, orgID, appID)
 			i2 := SMSIdentity(prefix, orgID, appID)
@@ -152,8 +152,8 @@ func TestPushoverIdentity(t *testing.T) {
 			t.Parallel()
 
 			prefix := String(10)
-			orgID := uuid.NewString()
-			appID := uuid.NewString()
+			orgID := uuid.NewV7().String()
+			appID := uuid.NewV7().String()
 
 			i1 := PushoverIdentity(prefix, orgID, appID)
 			i2 := PushoverIdentity(prefix, orgID, appID)
@@ -174,8 +174,8 @@ func TestEmailIdentity(t *testing.T) {
 			t.Parallel()
 
 			prefix := String(10)
-			orgID := uuid.NewString()
-			appID := uuid.NewString()
+			orgID := uuid.NewV7().String()
+			appID := uuid.NewV7().String()
 
 			i1 := EmailIdentity(prefix, orgID, appID)
 			i2 := EmailIdentity(prefix, orgID, appID)
@@ -196,8 +196,8 @@ func TestBackupCodesIdentity(t *testing.T) {
 			t.Parallel()
 
 			prefix := String(10)
-			orgID := uuid.NewString()
-			appID := uuid.NewString()
+			orgID := uuid.NewV7().String()
+			appID := uuid.NewV7().String()
 
 			i1 := BackupCodesIdentity(prefix, orgID, appID)
 			i2 := BackupCodesIdentity(prefix, orgID, appID)
@@ -218,8 +218,8 @@ func TestSecurityQuestionsIdentity(t *testing.T) {
 			t.Parallel()
 
 			prefix := String(10)
-			orgID := uuid.NewString()
-			appID := uuid.NewString()
+			orgID := uuid.NewV7().String()
+			appID := uuid.NewV7().String()
 
 			i1 := SecurityQuestionsIdentity(prefix, orgID, appID)
 			i2 := SecurityQuestionsIdentity(prefix, orgID, appID)
@@ -240,7 +240,7 @@ func TestEvent(t *testing.T) {
 			t.Parallel()
 
 			prefix := String(10)
-			orgID := uuid.NewString()
+			orgID := uuid.NewV7().String()
 
 			e1 := Event(prefix, orgID)
 			e2 := Event(prefix, orgID)

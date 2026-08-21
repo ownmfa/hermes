@@ -9,8 +9,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/ownmfa/hermes/pkg/cache"
 	"github.com/ownmfa/hermes/pkg/consterr"
 	"github.com/ownmfa/hermes/pkg/key"
@@ -30,14 +30,14 @@ const errTestProc consterr.Error = "notifier: test processor error"
 func TestNotifyMessages(t *testing.T) {
 	t.Parallel()
 
-	app := random.App("not", uuid.NewString())
+	app := random.App("not", uuid.NewV7().String())
 	app.PushoverKey = ""
 	smsIdentity := random.SMSIdentity("not", app.GetOrgId(), app.GetId())
 	pushoverIdentity := random.PushoverIdentity("not", app.GetOrgId(), app.GetId())
 	emailIdentity := random.EmailIdentity("not", app.GetOrgId(), app.GetId())
 	traceID := uuid.New()
 
-	appByKey := random.App("not", uuid.NewString())
+	appByKey := random.App("not", uuid.NewV7().String())
 	appByKey.PushoverKey = random.String(30)
 	identityByKey := random.PushoverIdentity("not", appByKey.GetOrgId(), appByKey.GetId())
 
@@ -106,10 +106,12 @@ func TestNotifyMessages(t *testing.T) {
 			cacher := cache.NewMockCacher[int64](ctrl)
 			cacher.EXPECT().Incr(gomock.Any(), key.HOTPCounter(
 				test.inpNIn.GetOrgId(), test.inpNIn.GetAppId(),
-				test.inpNIn.GetIdentityId())).Return(int64(5), nil).Times(1)
+				test.inpNIn.GetIdentityId(),
+			)).Return(int64(5), nil).Times(1)
 			cacher.EXPECT().SetIfNotExistTTL(gomock.Any(), key.Expire(
 				test.inpNIn.GetOrgId(), test.inpNIn.GetAppId(),
-				test.inpNIn.GetIdentityId(), "861821"), int64(1), test.inpExpire).
+				test.inpNIn.GetIdentityId(), "861821",
+			), int64(1), test.inpExpire).
 				Return(nil).Times(1)
 
 			apper := NewMockapper(ctrl)
@@ -169,13 +171,13 @@ func TestNotifyMessages(t *testing.T) {
 func TestNotifyMessagesError(t *testing.T) {
 	t.Parallel()
 
-	app := random.App("not", uuid.NewString())
+	app := random.App("not", uuid.NewV7().String())
 	app.PushoverKey = ""
 	smsIdentity := random.SMSIdentity("not", app.GetOrgId(), app.GetId())
 	pushoverIdentity := random.PushoverIdentity("not", app.GetOrgId(), app.GetId())
 	emailIdentity := random.EmailIdentity("not", app.GetOrgId(), app.GetId())
 
-	badTemplApp := random.App("not", uuid.NewString())
+	badTemplApp := random.App("not", uuid.NewV7().String())
 	badTemplApp.SubjectTemplate = `{{if`
 
 	knownKey, err := hex.DecodeString("b76c5da0d71b5646ed38b483532cded2622d07" +

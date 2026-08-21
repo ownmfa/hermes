@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"uuid"
 
-	"github.com/google/uuid"
 	ikey "github.com/ownmfa/hermes/internal/hermes-api/key"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/cache"
@@ -36,10 +36,10 @@ func TestCreateIdentity(t *testing.T) {
 	t.Run("Create valid HOTP identity", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
-		traceID := uuid.New()
+		traceID := uuid.NewV7()
 		event := &api.Event{
 			OrgId: identity.GetOrgId(), AppId: identity.GetAppId(),
 			IdentityId: identity.GetId(), Status: api.EventStatus_IDENTITY_CREATED,
@@ -54,9 +54,10 @@ func TestCreateIdentity(t *testing.T) {
 		eventer.EXPECT().Create(gomock.Any(), event).Return(dao.ErrNotFound).
 			Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID:   identity.GetOrgId(),
+				Role:    api.Role_ADMIN,
 				TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
@@ -74,10 +75,10 @@ func TestCreateIdentity(t *testing.T) {
 	t.Run("Create valid SMS identity", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.SMSIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.SMSIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
-		traceID := uuid.New()
+		traceID := uuid.NewV7()
 		event := &api.Event{
 			OrgId: identity.GetOrgId(), AppId: identity.GetAppId(),
 			IdentityId: identity.GetId(), Status: api.EventStatus_IDENTITY_CREATED,
@@ -95,10 +96,12 @@ func TestCreateIdentity(t *testing.T) {
 		eventer.EXPECT().Create(gomock.Any(), event).Return(dao.ErrNotFound).
 			Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
-				Role: api.Role_ADMIN, TraceID: traceID,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID:   identity.GetOrgId(),
+				OrgPlan: api.Plan_PRO,
+				Role:    api.Role_ADMIN,
+				TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
 
@@ -116,10 +119,10 @@ func TestCreateIdentity(t *testing.T) {
 	t.Run("Create valid Pushover identity", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.PushoverIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.PushoverIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
-		traceID := uuid.New()
+		traceID := uuid.NewV7()
 		event := &api.Event{
 			OrgId: identity.GetOrgId(), AppId: identity.GetAppId(),
 			IdentityId: identity.GetId(),
@@ -138,10 +141,12 @@ func TestCreateIdentity(t *testing.T) {
 		eventer.EXPECT().Create(gomock.Any(), event).Return(dao.ErrNotFound).
 			Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
-				Role: api.Role_ADMIN, TraceID: traceID,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID:   identity.GetOrgId(),
+				OrgPlan: api.Plan_PRO,
+				Role:    api.Role_ADMIN,
+				TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
 
@@ -159,10 +164,10 @@ func TestCreateIdentity(t *testing.T) {
 	t.Run("Create valid email identity", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.EmailIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.EmailIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
-		traceID := uuid.New()
+		traceID := uuid.NewV7()
 		event := &api.Event{
 			OrgId: identity.GetOrgId(), AppId: identity.GetAppId(),
 			IdentityId: identity.GetId(), Status: api.EventStatus_IDENTITY_CREATED,
@@ -177,10 +182,12 @@ func TestCreateIdentity(t *testing.T) {
 		eventer.EXPECT().Create(gomock.Any(), event).Return(dao.ErrNotFound).
 			Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
-				Role: api.Role_ADMIN, TraceID: traceID,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID:   identity.GetOrgId(),
+				OrgPlan: api.Plan_PRO,
+				Role:    api.Role_ADMIN,
+				TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
 
@@ -207,11 +214,11 @@ func TestCreateIdentity(t *testing.T) {
 			Algorithm: oath.HOTP, Hash: crypto.SHA512, Digits: 7, Key: key,
 		}
 
-		app := random.App("api-app", uuid.NewString())
+		app := random.App("api-app", uuid.NewV7().String())
 		identity := random.HOTPIdentity("api-identity", app.GetOrgId(),
 			app.GetId())
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
-		traceID := uuid.New()
+		traceID := uuid.NewV7()
 		event := &api.Event{
 			OrgId: identity.GetOrgId(), AppId: identity.GetAppId(),
 			IdentityId: identity.GetId(),
@@ -230,9 +237,10 @@ func TestCreateIdentity(t *testing.T) {
 		eventer.EXPECT().Create(gomock.Any(), event).Return(dao.ErrNotFound).
 			Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID:   identity.GetOrgId(),
+				Role:    api.Role_ADMIN,
 				TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
@@ -264,11 +272,11 @@ func TestCreateIdentity(t *testing.T) {
 			Algorithm: oath.HOTP, Hash: crypto.SHA512, Digits: 7, Key: key,
 		}
 
-		identity := random.BackupCodesIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.BackupCodesIdentity("api-identity",
+			uuid.NewV7().String(), uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_ACTIVATED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
-		traceID := uuid.New()
+		traceID := uuid.NewV7()
 		event := &api.Event{
 			OrgId: identity.GetOrgId(), AppId: identity.GetAppId(),
 			IdentityId: identity.GetId(),
@@ -284,10 +292,12 @@ func TestCreateIdentity(t *testing.T) {
 		eventer.EXPECT().Create(gomock.Any(), event).Return(dao.ErrNotFound).
 			Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
-				Role: api.Role_ADMIN, TraceID: traceID,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID:   identity.GetOrgId(),
+				OrgPlan: api.Plan_PRO,
+				Role:    api.Role_ADMIN,
+				TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
 
@@ -316,10 +326,10 @@ func TestCreateIdentity(t *testing.T) {
 		}
 
 		identity := random.SecurityQuestionsIdentity("api-identity",
-			uuid.NewString(), uuid.NewString())
+			uuid.NewV7().String(), uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_ACTIVATED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
-		traceID := uuid.New()
+		traceID := uuid.NewV7()
 		event := &api.Event{
 			OrgId: identity.GetOrgId(), AppId: identity.GetAppId(),
 			IdentityId: identity.GetId(), Status: api.EventStatus_IDENTITY_CREATED,
@@ -334,10 +344,12 @@ func TestCreateIdentity(t *testing.T) {
 		eventer.EXPECT().Create(gomock.Any(), event).Return(dao.ErrNotFound).
 			Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
-				Role: api.Role_ADMIN, TraceID: traceID,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID:   identity.GetOrgId(),
+				OrgPlan: api.Plan_PRO,
+				Role:    api.Role_ADMIN,
+				TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
 
@@ -371,8 +383,9 @@ func TestCreateIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_VIEWER,
-			}), testTimeout)
+				OrgID: uuid.NewV7().String(), Role: api.Role_VIEWER,
+			},
+		), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
@@ -387,26 +400,27 @@ func TestCreateIdentity(t *testing.T) {
 		t.Parallel()
 
 		tests := []*api.Identity{
-			random.SMSIdentity("api-identity", uuid.NewString(),
-				uuid.NewString()),
-			random.PushoverIdentity("api-identity", uuid.NewString(),
-				uuid.NewString()),
-			random.EmailIdentity("api-identity", uuid.NewString(),
-				uuid.NewString()),
-			random.BackupCodesIdentity("api-identity", uuid.NewString(),
-				uuid.NewString()),
-			random.SecurityQuestionsIdentity("api-identity", uuid.NewString(),
-				uuid.NewString()),
+			random.SMSIdentity("api-identity", uuid.NewV7().String(),
+				uuid.NewV7().String()),
+			random.PushoverIdentity("api-identity", uuid.NewV7().String(),
+				uuid.NewV7().String()),
+			random.EmailIdentity("api-identity", uuid.NewV7().String(),
+				uuid.NewV7().String()),
+			random.BackupCodesIdentity("api-identity", uuid.NewV7().String(),
+				uuid.NewV7().String()),
+			random.SecurityQuestionsIdentity("api-identity",
+				uuid.NewV7().String(), uuid.NewV7().String()),
 		}
 
 		for _, test := range tests {
 			t.Run(fmt.Sprintf("Can create %v", test), func(t *testing.T) {
 				t.Parallel()
 
-				ctx, cancel := context.WithTimeout(session.NewContext(
-					t.Context(), &session.Session{
-						OrgID: test.GetOrgId(), OrgPlan: api.Plan_STARTER,
-						Role: api.Role_ADMIN,
+				ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+					&session.Session{
+						OrgID:   test.GetOrgId(),
+						OrgPlan: api.Plan_STARTER,
+						Role:    api.Role_ADMIN,
 					}), testTimeout)
 				defer cancel()
 
@@ -424,16 +438,17 @@ func TestCreateIdentity(t *testing.T) {
 	t.Run("Create identity with non-E.164 phone number", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.SMSIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.SMSIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.MethodOneof = &api.Identity_SmsMethod{
 			SmsMethod: &api.SMSMethod{Phone: random.String(10)},
 		}
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
-				Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID:   identity.GetOrgId(),
+				OrgPlan: api.Plan_PRO,
+				Role:    api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -450,17 +465,18 @@ func TestCreateIdentity(t *testing.T) {
 	t.Run("Create identity with unsupported phone number", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.SMSIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.SMSIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 
 		notifier := notify.NewMockNotifier(gomock.NewController(t))
 		notifier.EXPECT().ValidateSMS(gomock.Any(), identity.GetSmsMethod().
 			GetPhone()).Return(notify.ErrInvalidSMS).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
-				Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID:   identity.GetOrgId(),
+				OrgPlan: api.Plan_PRO,
+				Role:    api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -477,17 +493,18 @@ func TestCreateIdentity(t *testing.T) {
 	t.Run("Create identity with unsupported Pushover key", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.PushoverIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.PushoverIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 
 		notifier := notify.NewMockNotifier(gomock.NewController(t))
 		notifier.EXPECT().ValidatePushover(identity.GetPushoverMethod().
 			GetPushoverKey()).Return(notify.ErrInvalidPushover).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
-				Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID:   identity.GetOrgId(),
+				OrgPlan: api.Plan_PRO,
+				Role:    api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -504,17 +521,18 @@ func TestCreateIdentity(t *testing.T) {
 	t.Run("Create invalid identity", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Comment = random.String(81)
 
 		identityer := NewMockIdentityer(gomock.NewController(t))
 		identityer.EXPECT().Create(gomock.Any(), identity).Return(nil, nil,
 			false, dao.ErrInvalidFormat).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID: identity.GetOrgId(),
+				Role:  api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -531,7 +549,7 @@ func TestCreateIdentity(t *testing.T) {
 	t.Run("Create valid identity with OTP and invalid app", func(t *testing.T) {
 		t.Parallel()
 
-		app := random.App("api-app", uuid.NewString())
+		app := random.App("api-app", uuid.NewV7().String())
 		identity := random.HOTPIdentity("api-identity", app.GetOrgId(), app.GetId())
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
 
@@ -543,9 +561,10 @@ func TestCreateIdentity(t *testing.T) {
 		apper.EXPECT().Read(gomock.Any(), app.GetId(), app.GetOrgId()).Return(nil,
 			dao.ErrInvalidFormat).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID: identity.GetOrgId(),
+				Role:  api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -562,8 +581,8 @@ func TestCreateIdentity(t *testing.T) {
 	t.Run("Create backup codes identity with invalid OTP", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.BackupCodesIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.BackupCodesIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_ACTIVATED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
 
@@ -571,10 +590,11 @@ func TestCreateIdentity(t *testing.T) {
 		identityer.EXPECT().Create(gomock.Any(), identity).Return(retIdentity,
 			&oath.OTP{}, false, nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
-				Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID:   identity.GetOrgId(),
+				OrgPlan: api.Plan_PRO,
+				Role:    api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -603,8 +623,8 @@ func TestVerify(t *testing.T) {
 			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6, Key: knownKey,
 		}
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
 
@@ -613,9 +633,9 @@ func TestVerify(t *testing.T) {
 		identityer.EXPECT().Read(gomock.Any(), identity.GetId(), identity.GetOrgId(),
 			identity.GetAppId()).Return(retIdentity, otp, nil).Times(1)
 		cacher := cache.NewMockCacher[int64](ctrl)
-		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(
-			identity.GetOrgId(), identity.GetAppId(), identity.GetId(),
-			"861821"), int64(1)).Return(nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId(), "861821"), int64(1)).
+			Return(nil).Times(1)
 		cacher.EXPECT().Get(gomock.Any(), key.HOTPCounter(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId())).Return(int64(0),
 			cache.ErrNotFound).Times(1)
@@ -644,8 +664,8 @@ func TestVerify(t *testing.T) {
 		passcode, err := otp.TOTP(time.Now().Add(-30 * time.Second))
 		require.NoError(t, err)
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{}
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
@@ -656,9 +676,9 @@ func TestVerify(t *testing.T) {
 			identity.GetOrgId(), identity.GetAppId()).Return(retIdentity, otp,
 			nil).Times(1)
 		cacher := cache.NewMockCacher[int64](ctrl)
-		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(
-			identity.GetOrgId(), identity.GetAppId(), identity.GetId(),
-			passcode), int64(1)).Return(nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId(), passcode), int64(1)).
+			Return(nil).Times(1)
 		cacher.EXPECT().Get(gomock.Any(), ikey.TOTPOffset(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId())).Return(int64(0),
 			cache.ErrNotFound).Times(1)
@@ -687,8 +707,8 @@ func TestVerify(t *testing.T) {
 		passcode, err := otp.TOTP(time.Now().Add(-90 * time.Second))
 		require.NoError(t, err)
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		identity.MethodOneof = &api.Identity_HardwareTotpMethod{}
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
@@ -699,9 +719,9 @@ func TestVerify(t *testing.T) {
 			identity.GetOrgId(), identity.GetAppId()).Return(retIdentity, otp,
 			nil).Times(1)
 		cacher := cache.NewMockCacher[int64](ctrl)
-		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(
-			identity.GetOrgId(), identity.GetAppId(), identity.GetId(),
-			passcode), int64(1)).Return(nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId(), passcode), int64(1)).
+			Return(nil).Times(1)
 		cacher.EXPECT().Get(gomock.Any(), ikey.TOTPOffset(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId())).Return(int64(0),
 			cache.ErrNotFound).Times(1)
@@ -727,8 +747,8 @@ func TestVerify(t *testing.T) {
 			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6, Key: knownKey,
 		}
 
-		identity := random.SMSIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.SMSIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
 
@@ -741,9 +761,9 @@ func TestVerify(t *testing.T) {
 		cacher.EXPECT().Get(gomock.Any(), key.Expire(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId(), "861821")).Return(int64(0),
 			nil).Times(1)
-		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(
-			identity.GetOrgId(), identity.GetAppId(), identity.GetId(),
-			"861821"), int64(1)).Return(nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId(), "861821"), int64(1)).
+			Return(nil).Times(1)
 		cacher.EXPECT().Get(gomock.Any(), key.HOTPCounter(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId())).Return(int64(0),
 			cache.ErrNotFound).Times(1)
@@ -769,8 +789,8 @@ func TestVerify(t *testing.T) {
 			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6, Key: knownKey,
 		}
 
-		identity := random.BackupCodesIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.BackupCodesIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_ACTIVATED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
 
@@ -780,9 +800,9 @@ func TestVerify(t *testing.T) {
 			identity.GetOrgId(), identity.GetAppId()).Return(retIdentity, otp,
 			nil).Times(1)
 		cacher := cache.NewMockCacher[int64](ctrl)
-		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(
-			identity.GetOrgId(), identity.GetAppId(), identity.GetId(),
-			"861821"), int64(1)).Return(nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId(), "861821"), int64(1)).
+			Return(nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
@@ -805,7 +825,7 @@ func TestVerify(t *testing.T) {
 		}
 
 		identity := random.SecurityQuestionsIdentity("api-identity",
-			uuid.NewString(), uuid.NewString())
+			uuid.NewV7().String(), uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_ACTIVATED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
 
@@ -836,8 +856,8 @@ func TestVerify(t *testing.T) {
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, nil, nil, nil, "")
-		err := aiSvc.verify(ctx, uuid.NewString(), uuid.NewString(),
-			uuid.NewString(), api.IdentityStatus_UNVERIFIED, "",
+		err := aiSvc.verify(ctx, uuid.NewV7().String(), uuid.NewV7().String(),
+			uuid.NewV7().String(), api.IdentityStatus_UNVERIFIED, "",
 			oath.DefaultHOTPLookAhead, oath.DefaultTOTPLookAhead,
 			oath.DefaultTOTPLookAhead)
 		t.Logf("err: %v", err)
@@ -847,8 +867,8 @@ func TestVerify(t *testing.T) {
 	t.Run("Verify matching status", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_ACTIVATED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
 
@@ -870,8 +890,8 @@ func TestVerify(t *testing.T) {
 	t.Run("Verify by invalid expire cache", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.SMSIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.SMSIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
 
@@ -900,8 +920,8 @@ func TestVerify(t *testing.T) {
 	t.Run("Verify by expired passcode", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.SMSIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.SMSIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
 
@@ -930,8 +950,8 @@ func TestVerify(t *testing.T) {
 	t.Run("Verify by invalid reuse cache", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
 
@@ -941,9 +961,9 @@ func TestVerify(t *testing.T) {
 			identity.GetOrgId(), identity.GetAppId()).Return(retIdentity, nil,
 			nil).Times(1)
 		cacher := cache.NewMockCacher[int64](ctrl)
-		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(
-			identity.GetOrgId(), identity.GetAppId(), identity.GetId(),
-			"861821"), int64(1)).Return(dao.ErrNotFound).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId(), "861821"), int64(1)).
+			Return(dao.ErrNotFound).Times(1)
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
@@ -964,8 +984,8 @@ func TestVerify(t *testing.T) {
 			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6, Key: knownKey,
 		}
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
 
@@ -975,9 +995,9 @@ func TestVerify(t *testing.T) {
 			identity.GetOrgId(), identity.GetAppId()).Return(retIdentity, otp,
 			nil).Times(1)
 		cacher := cache.NewMockCacher[int64](ctrl)
-		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(
-			identity.GetOrgId(), identity.GetAppId(), identity.GetId(),
-			"861821"), int64(1)).Return(cache.ErrAlreadyExists).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId(), "861821"), int64(1)).
+			Return(cache.ErrAlreadyExists).Times(1)
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
@@ -998,8 +1018,8 @@ func TestVerify(t *testing.T) {
 			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6, Key: knownKey,
 		}
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
 
@@ -1009,9 +1029,9 @@ func TestVerify(t *testing.T) {
 			identity.GetOrgId(), identity.GetAppId()).Return(retIdentity, otp,
 			nil).Times(1)
 		cacher := cache.NewMockCacher[int64](ctrl)
-		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(
-			identity.GetOrgId(), identity.GetAppId(), identity.GetId(),
-			"0000000"), int64(1)).Return(nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId(), "0000000"), int64(1)).
+			Return(nil).Times(1)
 		cacher.EXPECT().Get(gomock.Any(), key.HOTPCounter(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId())).Return(int64(0),
 			dao.ErrNotFound).Times(1)
@@ -1035,8 +1055,8 @@ func TestVerify(t *testing.T) {
 			Algorithm: oath.TOTP, Hash: crypto.SHA512, Digits: 7, Key: knownKey,
 		}
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{}
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
@@ -1047,9 +1067,9 @@ func TestVerify(t *testing.T) {
 			identity.GetOrgId(), identity.GetAppId()).Return(retIdentity, otp,
 			nil).Times(1)
 		cacher := cache.NewMockCacher[int64](ctrl)
-		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(
-			identity.GetOrgId(), identity.GetAppId(), identity.GetId(),
-			"0000000"), int64(1)).Return(nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId(), "0000000"), int64(1)).
+			Return(nil).Times(1)
 		cacher.EXPECT().Get(gomock.Any(), ikey.TOTPOffset(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId())).Return(int64(0),
 			dao.ErrNotFound).Times(1)
@@ -1073,8 +1093,8 @@ func TestVerify(t *testing.T) {
 			Algorithm: oath.TOTP, Hash: crypto.SHA512, Digits: 7, Key: knownKey,
 		}
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		identity.MethodOneof = &api.Identity_HardwareTotpMethod{}
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
@@ -1085,9 +1105,9 @@ func TestVerify(t *testing.T) {
 			identity.GetOrgId(), identity.GetAppId()).Return(retIdentity, otp,
 			nil).Times(1)
 		cacher := cache.NewMockCacher[int64](ctrl)
-		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(
-			identity.GetOrgId(), identity.GetAppId(), identity.GetId(),
-			"0000000"), int64(1)).Return(nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId(), "0000000"), int64(1)).
+			Return(nil).Times(1)
 		cacher.EXPECT().Get(gomock.Any(), ikey.TOTPOffset(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId())).Return(int64(0),
 			dao.ErrNotFound).Times(1)
@@ -1107,8 +1127,8 @@ func TestVerify(t *testing.T) {
 	t.Run("Verify by invalid MethodOneof", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		identity.MethodOneof = nil
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
@@ -1119,9 +1139,9 @@ func TestVerify(t *testing.T) {
 			identity.GetOrgId(), identity.GetAppId()).Return(retIdentity, nil,
 			nil).Times(1)
 		cacher := cache.NewMockCacher[int64](ctrl)
-		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(
-			identity.GetOrgId(), identity.GetAppId(), identity.GetId(),
-			"0000000"), int64(1)).Return(nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId(), "0000000"), int64(1)).
+			Return(nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
@@ -1142,8 +1162,8 @@ func TestVerify(t *testing.T) {
 			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6, Key: knownKey,
 		}
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
 
@@ -1153,9 +1173,9 @@ func TestVerify(t *testing.T) {
 			identity.GetOrgId(), identity.GetAppId()).Return(retIdentity, otp,
 			nil).Times(1)
 		cacher := cache.NewMockCacher[int64](ctrl)
-		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(
-			identity.GetOrgId(), identity.GetAppId(), identity.GetId(),
-			"0000000"), int64(1)).Return(nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId(), "0000000"), int64(1)).
+			Return(nil).Times(1)
 		cacher.EXPECT().Get(gomock.Any(), key.HOTPCounter(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId())).Return(int64(0), nil).
 			Times(1)
@@ -1181,7 +1201,7 @@ func TestVerify(t *testing.T) {
 		}
 
 		identity := random.SecurityQuestionsIdentity("api-identity",
-			uuid.NewString(), uuid.NewString())
+			uuid.NewV7().String(), uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
 
@@ -1209,8 +1229,8 @@ func TestVerify(t *testing.T) {
 			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6, Key: knownKey,
 		}
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
 
@@ -1220,9 +1240,9 @@ func TestVerify(t *testing.T) {
 			identity.GetOrgId(), identity.GetAppId()).Return(retIdentity, otp,
 			nil).Times(1)
 		cacher := cache.NewMockCacher[int64](ctrl)
-		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(
-			identity.GetOrgId(), identity.GetAppId(), identity.GetId(),
-			"861821"), int64(1)).Return(nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId(), "861821"), int64(1)).
+			Return(nil).Times(1)
 		cacher.EXPECT().Get(gomock.Any(), key.HOTPCounter(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId())).Return(int64(0),
 			cache.ErrNotFound).Times(1)
@@ -1251,8 +1271,8 @@ func TestVerify(t *testing.T) {
 		passcode, err := otp.TOTP(time.Now().Add(-30 * time.Second))
 		require.NoError(t, err)
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{}
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
@@ -1263,9 +1283,9 @@ func TestVerify(t *testing.T) {
 			identity.GetOrgId(), identity.GetAppId()).Return(retIdentity, otp,
 			nil).Times(1)
 		cacher := cache.NewMockCacher[int64](ctrl)
-		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(
-			identity.GetOrgId(), identity.GetAppId(), identity.GetId(),
-			passcode), int64(1)).Return(nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId(), passcode), int64(1)).
+			Return(nil).Times(1)
 		cacher.EXPECT().Get(gomock.Any(), ikey.TOTPOffset(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId())).Return(int64(0),
 			cache.ErrNotFound).Times(1)
@@ -1300,11 +1320,11 @@ func TestActivateIdentity(t *testing.T) {
 			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6, Key: knownKey,
 		}
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
-		traceID := uuid.New()
+		traceID := uuid.NewV7()
 		event := &api.Event{
 			OrgId: identity.GetOrgId(), AppId: identity.GetAppId(),
 			IdentityId: identity.GetId(),
@@ -1321,9 +1341,9 @@ func TestActivateIdentity(t *testing.T) {
 			identity.GetOrgId(), identity.GetAppId(),
 			api.IdentityStatus_ACTIVATED).Return(retIdentity, nil).Times(1)
 		cacher := cache.NewMockCacher[int64](ctrl)
-		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(
-			identity.GetOrgId(), identity.GetAppId(), identity.GetId(),
-			"861821"), int64(1)).Return(nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId(), "861821"), int64(1)).
+			Return(nil).Times(1)
 		cacher.EXPECT().Get(gomock.Any(), key.HOTPCounter(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId())).Return(int64(0),
 			cache.ErrNotFound).Times(1)
@@ -1338,7 +1358,8 @@ func TestActivateIdentity(t *testing.T) {
 			t.Context(), &session.Session{
 				OrgID: identity.GetOrgId(), Role: api.Role_ADMIN,
 				TraceID: traceID,
-			}), testTimeout)
+			},
+		), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, eventer, cacher, nil, nil, "")
@@ -1372,8 +1393,9 @@ func TestActivateIdentity(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(session.NewContext(
 			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
-			}), testTimeout)
+				OrgID: uuid.NewV7().String(), Role: api.Role_ROLE_UNSPECIFIED,
+			},
+		), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
@@ -1387,11 +1409,11 @@ func TestActivateIdentity(t *testing.T) {
 	t.Run("Activate identity that is already active", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_ACTIVATED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
-		traceID := uuid.New()
+		traceID := uuid.NewV7()
 		event := &api.Event{
 			OrgId: identity.GetOrgId(), AppId: identity.GetAppId(),
 			IdentityId: identity.GetId(), Status: api.EventStatus_ACTIVATE_FAIL,
@@ -1406,9 +1428,10 @@ func TestActivateIdentity(t *testing.T) {
 		eventer.EXPECT().Create(gomock.Any(), event).Return(dao.ErrNotFound).
 			Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID:   identity.GetOrgId(),
+				Role:    api.Role_ADMIN,
 				TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
@@ -1431,8 +1454,8 @@ func TestActivateIdentity(t *testing.T) {
 			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6, Key: knownKey,
 		}
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
 
@@ -1445,9 +1468,9 @@ func TestActivateIdentity(t *testing.T) {
 			identity.GetOrgId(), identity.GetAppId(),
 			api.IdentityStatus_ACTIVATED).Return(nil, dao.ErrNotFound).Times(1)
 		cacher := cache.NewMockCacher[int64](ctrl)
-		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(
-			identity.GetOrgId(), identity.GetAppId(), identity.GetId(),
-			"861821"), int64(1)).Return(nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId(), "861821"), int64(1)).
+			Return(nil).Times(1)
 		cacher.EXPECT().Get(gomock.Any(), key.HOTPCounter(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId())).Return(int64(0),
 			cache.ErrNotFound).Times(1)
@@ -1455,10 +1478,9 @@ func TestActivateIdentity(t *testing.T) {
 			identity.GetAppId(), identity.GetId()), int64(6)).Return(nil).
 			Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: identity.GetOrgId(), Role: api.Role_ADMIN}),
+			testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, cacher, nil, nil, "")
@@ -1480,9 +1502,9 @@ func TestChallengeIdentity(t *testing.T) {
 	t.Run("Challenge HOTP identity by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
-		traceID := uuid.New()
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
+		traceID := uuid.NewV7()
 		event := &api.Event{
 			OrgId: identity.GetOrgId(), AppId: identity.GetAppId(),
 			IdentityId: identity.GetId(), Status: api.EventStatus_CHALLENGE_NOOP,
@@ -1498,10 +1520,12 @@ func TestChallengeIdentity(t *testing.T) {
 		eventer.EXPECT().Create(gomock.Any(), event).Return(dao.ErrNotFound).
 			Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
-				Role: api.Role_ADMIN, TraceID: traceID,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID:   identity.GetOrgId(),
+				OrgPlan: api.Plan_PRO,
+				Role:    api.Role_ADMIN,
+				TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
 
@@ -1516,8 +1540,8 @@ func TestChallengeIdentity(t *testing.T) {
 	t.Run("Challenge SMS identity by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.SMSIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.SMSIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 
 		ctrl := gomock.NewController(t)
 		identityer := NewMockIdentityer(ctrl)
@@ -1525,19 +1549,20 @@ func TestChallengeIdentity(t *testing.T) {
 			identity.GetOrgId(), identity.GetAppId()).Return(identity, nil,
 			nil).Times(1)
 		cacher := cache.NewMockCacher[int64](ctrl)
-		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(), ikey.Challenge(
-			identity.GetOrgId(), identity.GetAppId(), identity.GetId()),
-			int64(1), notifyRate).Return(nil).Times(1)
+		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(),
+			ikey.Challenge(identity.GetOrgId(), identity.GetAppId(),
+				identity.GetId()), int64(1), notifyRate).Return(nil).Times(1)
 
 		aiQueue := queue.NewFake()
 		nInSub, err := aiQueue.Subscribe("")
 		require.NoError(t, err)
 		nInPubTopic := "topic-" + random.String(10)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
-				Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID:   identity.GetOrgId(),
+				OrgPlan: api.Plan_PRO,
+				Role:    api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -1588,9 +1613,10 @@ func TestChallengeIdentity(t *testing.T) {
 	t.Run("Challenge identity with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID: uuid.NewV7().String(),
+				Role:  api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
 
@@ -1607,15 +1633,16 @@ func TestChallengeIdentity(t *testing.T) {
 		identityer.EXPECT().Read(gomock.Any(), gomock.Any(), gomock.Any(),
 			gomock.Any()).Return(nil, nil, dao.ErrNotFound).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID: uuid.NewV7().String(),
+				Role:  api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, nil, nil, nil, "")
 		_, err := aiSvc.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{
-			Id: uuid.NewString(), AppId: uuid.NewString(),
+			Id: uuid.NewV7().String(), AppId: uuid.NewV7().String(),
 		})
 		t.Logf("err: %v", err)
 		require.Equal(t, status.Error(codes.NotFound, "dao: object not found"),
@@ -1625,17 +1652,18 @@ func TestChallengeIdentity(t *testing.T) {
 	t.Run("Challenge identity with insufficient plan", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.SMSIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.SMSIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 
 		identityer := NewMockIdentityer(gomock.NewController(t))
 		identityer.EXPECT().Read(gomock.Any(), identity.GetId(), identity.GetOrgId(),
 			identity.GetAppId()).Return(identity, nil, nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_STARTER,
-				Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID:   identity.GetOrgId(),
+				OrgPlan: api.Plan_STARTER,
+				Role:    api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -1650,8 +1678,8 @@ func TestChallengeIdentity(t *testing.T) {
 	t.Run("Challenge SMS identity by invalid rate cache", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.SMSIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.SMSIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 
 		ctrl := gomock.NewController(t)
 		identityer := NewMockIdentityer(ctrl)
@@ -1659,14 +1687,16 @@ func TestChallengeIdentity(t *testing.T) {
 			identity.GetOrgId(), identity.GetAppId()).Return(identity, nil,
 			nil).Times(1)
 		cacher := cache.NewMockCacher[int64](ctrl)
-		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(), ikey.Challenge(
-			identity.GetOrgId(), identity.GetAppId(), identity.GetId()),
-			int64(1), notifyRate).Return(dao.ErrNotFound).Times(1)
+		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(),
+			ikey.Challenge(identity.GetOrgId(), identity.GetAppId(),
+				identity.GetId()), int64(1), notifyRate).Return(dao.ErrNotFound).
+			Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
-				Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID:   identity.GetOrgId(),
+				OrgPlan: api.Plan_PRO,
+				Role:    api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -1682,9 +1712,9 @@ func TestChallengeIdentity(t *testing.T) {
 	t.Run("Challenge SMS identity by invalid rate", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.SMSIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
-		traceID := uuid.New()
+		identity := random.SMSIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
+		traceID := uuid.NewV7()
 		event := &api.Event{
 			OrgId: identity.GetOrgId(), AppId: identity.GetAppId(),
 			IdentityId: identity.GetId(),
@@ -1698,17 +1728,20 @@ func TestChallengeIdentity(t *testing.T) {
 			identity.GetOrgId(), identity.GetAppId()).Return(identity, nil,
 			nil).Times(1)
 		cacher := cache.NewMockCacher[int64](ctrl)
-		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(), ikey.Challenge(
-			identity.GetOrgId(), identity.GetAppId(), identity.GetId()),
-			int64(1), notifyRate).Return(cache.ErrAlreadyExists).Times(1)
+		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(),
+			ikey.Challenge(identity.GetOrgId(), identity.GetAppId(),
+				identity.GetId()), int64(1),
+			notifyRate).Return(cache.ErrAlreadyExists).Times(1)
 		eventer := NewMockEventer(ctrl)
 		eventer.EXPECT().Create(gomock.Any(), event).Return(dao.ErrNotFound).
 			Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
-				Role: api.Role_ADMIN, TraceID: traceID,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID:   identity.GetOrgId(),
+				OrgPlan: api.Plan_PRO,
+				Role:    api.Role_ADMIN,
+				TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
 
@@ -1724,8 +1757,8 @@ func TestChallengeIdentity(t *testing.T) {
 	t.Run("Challenge SMS identity by invalid queue", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.SMSIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.SMSIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		nInPubTopic := "topic-" + random.String(10)
 
 		ctrl := gomock.NewController(t)
@@ -1734,17 +1767,18 @@ func TestChallengeIdentity(t *testing.T) {
 			identity.GetOrgId(), identity.GetAppId()).Return(identity, nil,
 			nil).Times(1)
 		cacher := cache.NewMockCacher[int64](ctrl)
-		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(), ikey.Challenge(
-			identity.GetOrgId(), identity.GetAppId(), identity.GetId()),
-			int64(1), notifyRate).Return(nil).Times(1)
+		cacher.EXPECT().SetIfNotExistTTL(gomock.Any(),
+			ikey.Challenge(identity.GetOrgId(), identity.GetAppId(),
+				identity.GetId()), int64(1), notifyRate).Return(nil).Times(1)
 		queuer := queue.NewMockQueuer(ctrl)
 		queuer.EXPECT().Publish(nInPubTopic, gomock.Any()).
 			Return(dao.ErrNotFound).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), OrgPlan: api.Plan_PRO,
-				Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID:   identity.GetOrgId(),
+				OrgPlan: api.Plan_PRO,
+				Role:    api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -1772,11 +1806,11 @@ func TestVerifyIdentity(t *testing.T) {
 			Algorithm: oath.HOTP, Hash: crypto.SHA1, Digits: 6, Key: knownKey,
 		}
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_ACTIVATED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
-		traceID := uuid.New()
+		traceID := uuid.NewV7()
 		event := &api.Event{
 			OrgId: identity.GetOrgId(), AppId: identity.GetAppId(),
 			IdentityId: identity.GetId(),
@@ -1790,9 +1824,9 @@ func TestVerifyIdentity(t *testing.T) {
 			identity.GetOrgId(), identity.GetAppId()).Return(retIdentity, otp,
 			nil).Times(1)
 		cacher := cache.NewMockCacher[int64](ctrl)
-		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(
-			identity.GetOrgId(), identity.GetAppId(), identity.GetId(),
-			"861821"), int64(1)).Return(nil).Times(1)
+		cacher.EXPECT().SetIfNotExist(gomock.Any(), ikey.Reuse(identity.GetOrgId(),
+			identity.GetAppId(), identity.GetId(), "861821"), int64(1)).
+			Return(nil).Times(1)
 		cacher.EXPECT().Get(gomock.Any(), key.HOTPCounter(identity.GetOrgId(),
 			identity.GetAppId(), identity.GetId())).Return(int64(0), nil).
 			Times(1)
@@ -1803,9 +1837,10 @@ func TestVerifyIdentity(t *testing.T) {
 		eventer.EXPECT().Create(gomock.Any(), event).Return(dao.ErrNotFound).
 			Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID:   identity.GetOrgId(),
+				Role:    api.Role_ADMIN,
 				TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
@@ -1834,9 +1869,10 @@ func TestVerifyIdentity(t *testing.T) {
 	t.Run("Verify identity with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID: uuid.NewV7().String(),
+				Role:  api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
 
@@ -1849,11 +1885,11 @@ func TestVerifyIdentity(t *testing.T) {
 	t.Run("Verify identity that is not activated", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Status = api.IdentityStatus_UNVERIFIED
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
-		traceID := uuid.New()
+		traceID := uuid.NewV7()
 		event := &api.Event{
 			OrgId: identity.GetOrgId(), AppId: identity.GetAppId(),
 			IdentityId: identity.GetId(), Status: api.EventStatus_VERIFY_FAIL,
@@ -1869,9 +1905,10 @@ func TestVerifyIdentity(t *testing.T) {
 		eventer.EXPECT().Create(gomock.Any(), event).Return(dao.ErrNotFound).
 			Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID:   identity.GetOrgId(),
+				Role:    api.Role_ADMIN,
 				TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
@@ -1892,8 +1929,8 @@ func TestGetIdentity(t *testing.T) {
 	t.Run("Get identity by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		retIdentity, _ := proto.Clone(identity).(*api.Identity)
 
 		identityer := NewMockIdentityer(gomock.NewController(t))
@@ -1901,10 +1938,9 @@ func TestGetIdentity(t *testing.T) {
 			identity.GetOrgId(), identity.GetAppId()).Return(retIdentity, nil,
 			nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: identity.GetOrgId(), Role: api.Role_ADMIN}),
+			testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, nil, nil, nil, "")
@@ -1934,9 +1970,10 @@ func TestGetIdentity(t *testing.T) {
 	t.Run("Get identity with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID: uuid.NewV7().String(),
+				Role:  api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
 
@@ -1955,16 +1992,17 @@ func TestGetIdentity(t *testing.T) {
 		identityer.EXPECT().Read(gomock.Any(), gomock.Any(), gomock.Any(),
 			gomock.Any()).Return(nil, nil, dao.ErrNotFound).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID: uuid.NewV7().String(),
+				Role:  api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, nil, nil, nil, "")
 		getIdentity, err := aiSvc.GetIdentity(ctx,
 			&api.GetIdentityRequest{
-				Id: uuid.NewString(), AppId: uuid.NewString(),
+				Id: uuid.NewV7().String(), AppId: uuid.NewV7().String(),
 			})
 		t.Logf("getIdentity, err: %+v, %v", getIdentity, err)
 		require.Nil(t, getIdentity)
@@ -1979,9 +2017,9 @@ func TestDeleteIdentity(t *testing.T) {
 	t.Run("Delete identity by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
-		traceID := uuid.New()
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
+		traceID := uuid.NewV7()
 		event := &api.Event{
 			OrgId: identity.GetOrgId(), AppId: identity.GetAppId(),
 			IdentityId: identity.GetId(),
@@ -1997,9 +2035,10 @@ func TestDeleteIdentity(t *testing.T) {
 		eventer.EXPECT().Create(gomock.Any(), event).Return(dao.ErrNotFound).
 			Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: identity.GetOrgId(), Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID:   identity.GetOrgId(),
+				Role:    api.Role_ADMIN,
 				TraceID: traceID,
 			}), testTimeout)
 		defer cancel()
@@ -2027,9 +2066,10 @@ func TestDeleteIdentity(t *testing.T) {
 	t.Run("Delete identity with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_VIEWER,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID: uuid.NewV7().String(),
+				Role:  api.Role_VIEWER,
 			}), testTimeout)
 		defer cancel()
 
@@ -2046,15 +2086,16 @@ func TestDeleteIdentity(t *testing.T) {
 		identityer.EXPECT().Delete(gomock.Any(), gomock.Any(), gomock.Any(),
 			gomock.Any()).Return(dao.ErrNotFound).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID: uuid.NewV7().String(),
+				Role:  api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, identityer, nil, nil, nil, nil, "")
 		_, err := aiSvc.DeleteIdentity(ctx, &api.DeleteIdentityRequest{
-			Id: uuid.NewString(), AppId: uuid.NewString(),
+			Id: uuid.NewV7().String(), AppId: uuid.NewV7().String(),
 		})
 		t.Logf("err: %v", err)
 		require.Equal(t, status.Error(codes.NotFound, "dao: object not found"),
@@ -2068,24 +2109,25 @@ func TestListIdentities(t *testing.T) {
 	t.Run("List identities by valid org ID", func(t *testing.T) {
 		t.Parallel()
 
-		orgID := uuid.NewString()
+		orgID := uuid.NewV7().String()
 
 		identities := []*api.Identity{
-			random.HOTPIdentity("api-identity", uuid.NewString(),
-				uuid.NewString()),
-			random.HOTPIdentity("api-identity", uuid.NewString(),
-				uuid.NewString()),
-			random.HOTPIdentity("api-identity", uuid.NewString(),
-				uuid.NewString()),
+			random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+				uuid.NewV7().String()),
+			random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+				uuid.NewV7().String()),
+			random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+				uuid.NewV7().String()),
 		}
 
 		identityer := NewMockIdentityer(gomock.NewController(t))
 		identityer.EXPECT().List(gomock.Any(), orgID, time.Time{}, "",
 			int32(51), "").Return(identities, int32(3), nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: orgID, Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID: orgID,
+				Role:  api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -2103,15 +2145,15 @@ func TestListIdentities(t *testing.T) {
 	t.Run("List identities by valid org ID with next page", func(t *testing.T) {
 		t.Parallel()
 
-		orgID := uuid.NewString()
+		orgID := uuid.NewV7().String()
 
 		identities := []*api.Identity{
-			random.HOTPIdentity("api-identity", uuid.NewString(),
-				uuid.NewString()),
-			random.HOTPIdentity("api-identity", uuid.NewString(),
-				uuid.NewString()),
-			random.HOTPIdentity("api-identity", uuid.NewString(),
-				uuid.NewString()),
+			random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+				uuid.NewV7().String()),
+			random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+				uuid.NewV7().String()),
+			random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+				uuid.NewV7().String()),
 		}
 
 		next, err := session.GeneratePageToken(identities[1].GetCreatedAt().
@@ -2122,9 +2164,10 @@ func TestListIdentities(t *testing.T) {
 		identityer.EXPECT().List(gomock.Any(), orgID, time.Time{}, "", int32(3),
 			"").Return(identities, int32(3), nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: orgID, Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID: orgID,
+				Role:  api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -2156,9 +2199,10 @@ func TestListIdentities(t *testing.T) {
 	t.Run("List identities with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID: uuid.NewV7().String(),
+				Role:  api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
 
@@ -2173,9 +2217,10 @@ func TestListIdentities(t *testing.T) {
 	t.Run("List identities by invalid page token", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID: uuid.NewV7().String(),
+				Role:  api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -2198,9 +2243,10 @@ func TestListIdentities(t *testing.T) {
 			gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, int32(0),
 			dao.ErrInvalidFormat).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: invalid, Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID: invalid,
+				Role:  api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 
@@ -2216,15 +2262,15 @@ func TestListIdentities(t *testing.T) {
 	t.Run("List identities with generation failure", func(t *testing.T) {
 		t.Parallel()
 
-		orgID := uuid.NewString()
+		orgID := uuid.NewV7().String()
 
 		identities := []*api.Identity{
-			random.HOTPIdentity("api-identity", uuid.NewString(),
-				uuid.NewString()),
-			random.HOTPIdentity("api-identity", uuid.NewString(),
-				uuid.NewString()),
-			random.HOTPIdentity("api-identity", uuid.NewString(),
-				uuid.NewString()),
+			random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+				uuid.NewV7().String()),
+			random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+				uuid.NewV7().String()),
+			random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+				uuid.NewV7().String()),
 		}
 		identities[1].Id = badUUID
 
@@ -2232,9 +2278,10 @@ func TestListIdentities(t *testing.T) {
 		identityer.EXPECT().List(gomock.Any(), orgID, time.Time{}, "", int32(3),
 			"").Return(identities, int32(3), nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: orgID, Role: api.Role_ADMIN,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID: orgID,
+				Role:  api.Role_ADMIN,
 			}), testTimeout)
 		defer cancel()
 

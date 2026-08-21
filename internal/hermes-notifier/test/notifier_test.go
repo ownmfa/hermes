@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"testing"
 	"time"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/ownmfa/hermes/pkg/key"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/ownmfa/hermes/proto/go/message"
@@ -22,7 +22,7 @@ const testTimeout = 15 * time.Second
 func TestNotifyMessages(t *testing.T) {
 	t.Parallel()
 
-	traceID := uuid.New()
+	traceID := uuid.NewV7()
 
 	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
@@ -136,7 +136,7 @@ func TestNotifyMessages(t *testing.T) {
 func TestNotifyMessagesError(t *testing.T) {
 	t.Parallel()
 
-	traceID := uuid.New()
+	traceID := uuid.NewV7()
 
 	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 	defer cancel()
@@ -170,7 +170,8 @@ func TestNotifyMessagesError(t *testing.T) {
 
 	require.NoError(t, globalCache.SetIfNotExist(ctx, key.Expire(
 		createOrg.GetId(), createApp.GetId(), createExpIdentity.GetId(),
-		passcode), ""))
+		passcode,
+	), ""))
 
 	badTemplApp := random.App("not", createOrg.GetId())
 	badTemplApp.SubjectTemplate = `{{if`

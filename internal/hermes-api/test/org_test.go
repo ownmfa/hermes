@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/ownmfa/proto/go/api"
 	"github.com/stretchr/testify/require"
@@ -145,7 +145,7 @@ func TestGetOrg(t *testing.T) {
 
 		orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
 		getOrg, err := orgCli.GetOrg(ctx,
-			&api.GetOrgRequest{Id: uuid.NewString()})
+			&api.GetOrgRequest{Id: uuid.NewV7().String()})
 		t.Logf("getOrg, err: %+v, %v", getOrg, err)
 		require.Nil(t, getOrg)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
@@ -180,8 +180,8 @@ func TestUpdateOrg(t *testing.T) {
 		require.Equal(t, createOrg.GetName(), updateOrg.GetName())
 		require.Equal(t, createOrg.GetStatus(), updateOrg.GetStatus())
 		require.Equal(t, createOrg.GetPlan(), updateOrg.GetPlan())
-		require.True(t, updateOrg.GetUpdatedAt().AsTime().After(
-			updateOrg.GetCreatedAt().AsTime()))
+		require.True(t, updateOrg.GetUpdatedAt().AsTime().
+			After(updateOrg.GetCreatedAt().AsTime()))
 		require.WithinDuration(t, createOrg.GetCreatedAt().AsTime(),
 			updateOrg.GetUpdatedAt().AsTime(), 2*time.Second)
 
@@ -219,8 +219,8 @@ func TestUpdateOrg(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, part.GetName(), updateOrg.GetName())
 		require.Equal(t, part.GetStatus(), updateOrg.GetStatus())
-		require.True(t, updateOrg.GetUpdatedAt().AsTime().After(
-			updateOrg.GetCreatedAt().AsTime()))
+		require.True(t, updateOrg.GetUpdatedAt().AsTime().
+			After(updateOrg.GetCreatedAt().AsTime()))
 		require.WithinDuration(t, createOrg.GetCreatedAt().AsTime(),
 			updateOrg.GetUpdatedAt().AsTime(), 2*time.Second)
 
@@ -235,8 +235,8 @@ func TestUpdateOrg(t *testing.T) {
 	t.Run("Partial disable org by valid org", func(t *testing.T) {
 		t.Parallel()
 
-		disSysAdminOrgID, disSysAdminGRPCConn, err := authGRPCConn(
-			api.Role_SYS_ADMIN, api.Plan_PRO)
+		disSysAdminOrgID, disSysAdminGRPCConn, err := authGRPCConn(api.Role_SYS_ADMIN,
+			api.Plan_PRO)
 		require.NoError(t, err)
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
@@ -416,7 +416,7 @@ func TestDeleteOrg(t *testing.T) {
 
 		orgCli := api.NewOrgServiceClient(globalAdminGRPCConn)
 		_, err := orgCli.DeleteOrg(ctx,
-			&api.DeleteOrgRequest{Id: uuid.NewString()})
+			&api.DeleteOrgRequest{Id: uuid.NewV7().String()})
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = PermissionDenied "+
 			"desc = permission denied, SYS_ADMIN role required")
@@ -430,7 +430,7 @@ func TestDeleteOrg(t *testing.T) {
 
 		orgCli := api.NewOrgServiceClient(secondarySysAdminGRPCConn)
 		_, err := orgCli.DeleteOrg(ctx,
-			&api.DeleteOrgRequest{Id: uuid.NewString()})
+			&api.DeleteOrgRequest{Id: uuid.NewV7().String()})
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
 			"dao: object not found")

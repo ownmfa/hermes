@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/ownmfa/hermes/pkg/oath"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/ownmfa/proto/go/api"
@@ -150,8 +150,8 @@ func TestMethodToOTP(t *testing.T) {
 		t.Run(fmt.Sprintf("Can convert %+v", test), func(t *testing.T) {
 			t.Parallel()
 
-			identity := random.HOTPIdentity("dao-identity", uuid.NewString(),
-				uuid.NewString())
+			identity := random.HOTPIdentity("dao-identity", uuid.NewV7().String(),
+				uuid.NewV7().String())
 			identity.MethodOneof = test.inp.GetMethodOneof()
 
 			otp, meta, err := methodToOTP(identity)

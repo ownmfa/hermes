@@ -2,15 +2,15 @@ package random
 
 import (
 	"strconv"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/ownmfa/proto/go/api"
 )
 
 // Org generates a random org with prefixed identifiers.
 func Org(prefix string) *api.Org {
 	return &api.Org{
-		Id:   uuid.NewString(),
+		Id:   uuid.NewV7().String(),
 		Name: prefix + "-" + String(10),
 		Status: []api.Status{
 			api.Status_ACTIVE,
@@ -28,7 +28,7 @@ func Org(prefix string) *api.Org {
 // User generates a random user with prefixed identifiers.
 func User(prefix, orgID string) *api.User {
 	return &api.User{
-		Id:    uuid.NewString(),
+		Id:    uuid.NewV7().String(),
 		OrgId: orgID,
 		Name:  prefix + "-" + String(10),
 		Email: prefix + "-" + Email(),
@@ -48,7 +48,7 @@ func User(prefix, orgID string) *api.User {
 // Key generates a random API key with prefixed identifiers.
 func Key(prefix, orgID string) *api.Key {
 	return &api.Key{
-		Id:    uuid.NewString(),
+		Id:    uuid.NewV7().String(),
 		OrgId: orgID,
 		Name:  prefix + "-" + String(10),
 		Role: []api.Role{
@@ -63,7 +63,7 @@ func Key(prefix, orgID string) *api.Key {
 // App generates a random application with prefixed identifiers.
 func App(prefix, orgID string) *api.App {
 	return &api.App{
-		Id:              uuid.NewString(),
+		Id:              uuid.NewV7().String(),
 		OrgId:           orgID,
 		Name:            prefix + "-" + String(10),
 		DisplayName:     prefix + "-" + String(10),
@@ -80,7 +80,7 @@ func App(prefix, orgID string) *api.App {
 // HOTPIdentity generates a random HOTP identity with prefixed identifiers.
 func HOTPIdentity(prefix, orgID, appID string) *api.Identity {
 	return &api.Identity{
-		Id:      uuid.NewString(),
+		Id:      uuid.NewV7().String(),
 		OrgId:   orgID,
 		AppId:   appID,
 		Comment: prefix + "-" + String(10),
@@ -97,7 +97,7 @@ func HOTPIdentity(prefix, orgID, appID string) *api.Identity {
 // SMSIdentity generates a random SMS identity with prefixed identifiers.
 func SMSIdentity(prefix, orgID, appID string) *api.Identity {
 	return &api.Identity{
-		Id:      uuid.NewString(),
+		Id:      uuid.NewV7().String(),
 		OrgId:   orgID,
 		AppId:   appID,
 		Comment: prefix + "-" + String(10),
@@ -118,7 +118,7 @@ func SMSIdentity(prefix, orgID, appID string) *api.Identity {
 // identifiers.
 func PushoverIdentity(prefix, orgID, appID string) *api.Identity {
 	return &api.Identity{
-		Id:      uuid.NewString(),
+		Id:      uuid.NewV7().String(),
 		OrgId:   orgID,
 		AppId:   appID,
 		Comment: prefix + "-" + String(10),
@@ -135,7 +135,7 @@ func PushoverIdentity(prefix, orgID, appID string) *api.Identity {
 // EmailIdentity generates a random email identity with prefixed identifiers.
 func EmailIdentity(prefix, orgID, appID string) *api.Identity {
 	return &api.Identity{
-		Id:      uuid.NewString(),
+		Id:      uuid.NewV7().String(),
 		OrgId:   orgID,
 		AppId:   appID,
 		Comment: prefix + "-" + String(10),
@@ -153,7 +153,7 @@ func EmailIdentity(prefix, orgID, appID string) *api.Identity {
 // identifiers.
 func BackupCodesIdentity(prefix, orgID, appID string) *api.Identity {
 	return &api.Identity{
-		Id:      uuid.NewString(),
+		Id:      uuid.NewV7().String(),
 		OrgId:   orgID,
 		AppId:   appID,
 		Comment: prefix + "-" + String(10),
@@ -174,7 +174,7 @@ func BackupCodesIdentity(prefix, orgID, appID string) *api.Identity {
 // prefixed identifiers.
 func SecurityQuestionsIdentity(prefix, orgID, appID string) *api.Identity {
 	return &api.Identity{
-		Id:      uuid.NewString(),
+		Id:      uuid.NewV7().String(),
 		OrgId:   orgID,
 		AppId:   appID,
 		Comment: prefix + "-" + String(10),
@@ -194,8 +194,8 @@ func SecurityQuestionsIdentity(prefix, orgID, appID string) *api.Identity {
 func Event(prefix, orgID string) *api.Event {
 	return &api.Event{
 		OrgId:      orgID,
-		AppId:      uuid.NewString(),
-		IdentityId: uuid.NewString(),
+		AppId:      uuid.NewV7().String(),
+		IdentityId: uuid.NewV7().String(),
 		Status: []api.EventStatus{
 			api.EventStatus_IDENTITY_CREATED,
 			api.EventStatus_CHALLENGE_SENT,
@@ -208,6 +208,6 @@ func Event(prefix, orgID string) *api.Event {
 			api.EventStatus_IDENTITY_DELETED,
 		}[Intn(9)],
 		Error:   []string{"", prefix + "-" + String(10)}[Intn(2)],
-		TraceId: uuid.NewString(),
+		TraceId: uuid.NewV7().String(),
 	}
 }

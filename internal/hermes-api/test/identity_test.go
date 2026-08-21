@@ -11,8 +11,8 @@ import (
 	"slices"
 	"testing"
 	"time"
+	"uuid"
 
-	"github.com/google/uuid"
 	ikey "github.com/ownmfa/hermes/internal/hermes-api/key"
 	"github.com/ownmfa/hermes/pkg/key"
 	"github.com/ownmfa/hermes/pkg/oath"
@@ -32,7 +32,7 @@ func TestCreateIdentity(t *testing.T) {
 
 	aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 	createApp, err := aiCli.CreateApp(ctx, &api.CreateAppRequest{
-		App: random.App("api-app", uuid.NewString()),
+		App: random.App("api-app", uuid.NewV7().String()),
 	})
 	t.Logf("createApp, err: %+v, %v", createApp, err)
 	require.NoError(t, err)
@@ -40,7 +40,7 @@ func TestCreateIdentity(t *testing.T) {
 	t.Run("Create valid HOTP identity with event", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
 			createApp.GetId())
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
@@ -89,7 +89,7 @@ func TestCreateIdentity(t *testing.T) {
 	t.Run("Create valid SMS identity", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.SMSIdentity("api-identity", uuid.NewString(),
+		identity := random.SMSIdentity("api-identity", uuid.NewV7().String(),
 			createApp.GetId())
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
@@ -114,7 +114,7 @@ func TestCreateIdentity(t *testing.T) {
 	t.Run("Create valid Pushover identity", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.PushoverIdentity("api-identity", uuid.NewString(),
+		identity := random.PushoverIdentity("api-identity", uuid.NewV7().String(),
 			createApp.GetId())
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
@@ -139,7 +139,7 @@ func TestCreateIdentity(t *testing.T) {
 	t.Run("Create valid email identity", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.EmailIdentity("api-identity", uuid.NewString(),
+		identity := random.EmailIdentity("api-identity", uuid.NewV7().String(),
 			createApp.GetId())
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
@@ -164,8 +164,8 @@ func TestCreateIdentity(t *testing.T) {
 	t.Run("Create valid backup codes identity", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.BackupCodesIdentity("api-identity", uuid.NewString(),
-			createApp.GetId())
+		identity := random.BackupCodesIdentity("api-identity",
+			uuid.NewV7().String(), createApp.GetId())
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
@@ -191,7 +191,7 @@ func TestCreateIdentity(t *testing.T) {
 		t.Parallel()
 
 		identity := random.SecurityQuestionsIdentity("api-identity",
-			uuid.NewString(), createApp.GetId())
+			uuid.NewV7().String(), createApp.GetId())
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
@@ -223,8 +223,8 @@ func TestCreateIdentity(t *testing.T) {
 		aiCli := api.NewAppIdentityServiceClient(secondaryViewerGRPCConn)
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
-					uuid.NewString()),
+				Identity: random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+					uuid.NewV7().String()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.Nil(t, createIdentity)
@@ -235,8 +235,8 @@ func TestCreateIdentity(t *testing.T) {
 	t.Run("Create invalid identity", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.Comment = "api-identity-" + random.String(80)
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
@@ -261,16 +261,16 @@ func TestCreateIdentity(t *testing.T) {
 		require.NoError(t, err)
 
 		tests := []*api.Identity{
-			random.SMSIdentity("api-identity", uuid.NewString(),
-				uuid.NewString()),
-			random.PushoverIdentity("api-identity", uuid.NewString(),
-				uuid.NewString()),
-			random.EmailIdentity("api-identity", uuid.NewString(),
-				uuid.NewString()),
-			random.BackupCodesIdentity("api-identity", uuid.NewString(),
-				uuid.NewString()),
-			random.SecurityQuestionsIdentity("api-identity", uuid.NewString(),
-				uuid.NewString()),
+			random.SMSIdentity("api-identity", uuid.NewV7().String(),
+				uuid.NewV7().String()),
+			random.PushoverIdentity("api-identity", uuid.NewV7().String(),
+				uuid.NewV7().String()),
+			random.EmailIdentity("api-identity", uuid.NewV7().String(),
+				uuid.NewV7().String()),
+			random.BackupCodesIdentity("api-identity", uuid.NewV7().String(),
+				uuid.NewV7().String()),
+			random.SecurityQuestionsIdentity("api-identity",
+				uuid.NewV7().String(), uuid.NewV7().String()),
 		}
 
 		for _, test := range tests {
@@ -296,8 +296,8 @@ func TestCreateIdentity(t *testing.T) {
 	t.Run("Create identity with non-E.164 phone number", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.SMSIdentity("api-identity", uuid.NewString(),
-			uuid.NewString())
+		identity := random.SMSIdentity("api-identity", uuid.NewV7().String(),
+			uuid.NewV7().String())
 		identity.MethodOneof = &api.Identity_SmsMethod{
 			SmsMethod: &api.SMSMethod{Phone: random.String(10)},
 		}
@@ -322,7 +322,7 @@ func TestActivateIdentity(t *testing.T) {
 
 	aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 	createApp, err := aiCli.CreateApp(ctx, &api.CreateAppRequest{
-		App: random.App("api-app", uuid.NewString()),
+		App: random.App("api-app", uuid.NewV7().String()),
 	})
 	t.Logf("createApp, err: %+v, %v", createApp, err)
 	require.NoError(t, err)
@@ -335,7 +335,7 @@ func TestActivateIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
+				Identity: random.HOTPIdentity("api-identity", uuid.NewV7().String(),
 					createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
@@ -363,9 +363,9 @@ func TestActivateIdentity(t *testing.T) {
 		require.WithinDuration(t, time.Now(),
 			activateIdentity.GetUpdatedAt().AsTime(), 2*time.Second)
 
-		counter, err := globalCache.Get(ctx, key.HOTPCounter(
-			activateIdentity.GetOrgId(), activateIdentity.GetAppId(),
-			activateIdentity.GetId()))
+		counter, err := globalCache.Get(ctx,
+			key.HOTPCounter(activateIdentity.GetOrgId(),
+				activateIdentity.GetAppId(), activateIdentity.GetId()))
 		t.Logf("counter, err: %v, %v", counter, err)
 		require.NoError(t, err)
 		require.Equal(t, int64(6), counter)
@@ -398,7 +398,7 @@ func TestActivateIdentity(t *testing.T) {
 	t.Run("Activate soft TOTP identity by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
 			createApp.GetId())
 		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{}
 
@@ -431,9 +431,9 @@ func TestActivateIdentity(t *testing.T) {
 		require.WithinDuration(t, time.Now(),
 			activateIdentity.GetUpdatedAt().AsTime(), 2*time.Second)
 
-		counter, err := globalCache.Get(ctx, ikey.TOTPOffset(
-			activateIdentity.GetOrgId(), activateIdentity.GetAppId(),
-			activateIdentity.GetId()))
+		counter, err := globalCache.Get(ctx,
+			ikey.TOTPOffset(activateIdentity.GetOrgId(),
+				activateIdentity.GetAppId(), activateIdentity.GetId()))
 		t.Logf("counter, err: %v, %v", counter, err)
 		require.NoError(t, err)
 		require.Equal(t, int64(-1), counter)
@@ -446,7 +446,7 @@ func TestActivateIdentity(t *testing.T) {
 		_, err = rand.Read(randKey)
 		require.NoError(t, err)
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
 			createApp.GetId())
 		identity.MethodOneof = &api.Identity_HardwareTotpMethod{
 			HardwareTotpMethod: &api.HardwareTOTPMethod{
@@ -479,9 +479,9 @@ func TestActivateIdentity(t *testing.T) {
 		require.WithinDuration(t, time.Now(),
 			activateIdentity.GetUpdatedAt().AsTime(), 2*time.Second)
 
-		counter, err := globalCache.Get(ctx, ikey.TOTPOffset(
-			activateIdentity.GetOrgId(), activateIdentity.GetAppId(),
-			activateIdentity.GetId()))
+		counter, err := globalCache.Get(ctx,
+			ikey.TOTPOffset(activateIdentity.GetOrgId(),
+				activateIdentity.GetAppId(), activateIdentity.GetId()))
 		t.Logf("counter, err: %v, %v", counter, err)
 		require.NoError(t, err)
 		require.Equal(t, int64(-3), counter)
@@ -495,7 +495,7 @@ func TestActivateIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.SMSIdentity("api-identity", uuid.NewString(),
+				Identity: random.SMSIdentity("api-identity", uuid.NewV7().String(),
 					createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
@@ -508,10 +508,10 @@ func TestActivateIdentity(t *testing.T) {
 		passcode, err := otp.HOTP(5)
 		require.NoError(t, err)
 
-		require.NoError(t, globalCache.SetIfNotExist(ctx, key.Expire(
-			createIdentity.GetIdentity().GetOrgId(),
-			createIdentity.GetIdentity().GetAppId(),
-			createIdentity.GetIdentity().GetId(), passcode), 1))
+		require.NoError(t, globalCache.SetIfNotExist(ctx,
+			key.Expire(createIdentity.GetIdentity().GetOrgId(),
+				createIdentity.GetIdentity().GetAppId(),
+				createIdentity.GetIdentity().GetId(), passcode), 1))
 
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
@@ -524,9 +524,9 @@ func TestActivateIdentity(t *testing.T) {
 		require.WithinDuration(t, time.Now(),
 			activateIdentity.GetUpdatedAt().AsTime(), 2*time.Second)
 
-		counter, err := globalCache.Get(ctx, key.HOTPCounter(
-			activateIdentity.GetOrgId(), activateIdentity.GetAppId(),
-			activateIdentity.GetId()))
+		counter, err := globalCache.Get(ctx,
+			key.HOTPCounter(activateIdentity.GetOrgId(),
+				activateIdentity.GetAppId(), activateIdentity.GetId()))
 		t.Logf("counter, err: %v, %v", counter, err)
 		require.NoError(t, err)
 		require.Equal(t, int64(6), counter)
@@ -541,7 +541,7 @@ func TestActivateIdentity(t *testing.T) {
 		aiCli := api.NewAppIdentityServiceClient(secondaryViewerGRPCConn)
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
-				Id: uuid.NewString(), AppId: uuid.NewString(),
+				Id: uuid.NewV7().String(), AppId: uuid.NewV7().String(),
 				Passcode: "000000",
 			})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
@@ -559,7 +559,7 @@ func TestActivateIdentity(t *testing.T) {
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
-				Id: uuid.NewString(), AppId: uuid.NewString(),
+				Id: uuid.NewV7().String(), AppId: uuid.NewV7().String(),
 				Passcode: "000000",
 			})
 		t.Logf("activateIdentity, err: %+v, %v", activateIdentity, err)
@@ -576,8 +576,8 @@ func TestActivateIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
-					createApp.GetId()),
+				Identity: random.HOTPIdentity("api-identity",
+					uuid.NewV7().String(), createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -603,7 +603,7 @@ func TestActivateIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.BackupCodesIdentity("api-identity",
-					uuid.NewString(), createApp.GetId()),
+					uuid.NewV7().String(), createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -652,8 +652,8 @@ func TestActivateIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.SMSIdentity("api-identity", uuid.NewString(),
-					createApp.GetId()),
+				Identity: random.SMSIdentity("api-identity",
+					uuid.NewV7().String(), createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -677,8 +677,8 @@ func TestActivateIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
-					createApp.GetId()),
+				Identity: random.HOTPIdentity("api-identity",
+					uuid.NewV7().String(), createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -703,7 +703,7 @@ func TestChallengeIdentity(t *testing.T) {
 
 	aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 	createApp, err := aiCli.CreateApp(ctx, &api.CreateAppRequest{
-		App: random.App("api-app", uuid.NewString()),
+		App: random.App("api-app", uuid.NewV7().String()),
 	})
 	t.Logf("createApp, err: %+v, %v", createApp, err)
 	require.NoError(t, err)
@@ -716,8 +716,8 @@ func TestChallengeIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
-					createApp.GetId()),
+				Identity: random.HOTPIdentity("api-identity",
+					uuid.NewV7().String(), createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -759,8 +759,8 @@ func TestChallengeIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.SMSIdentity("api-identity", uuid.NewString(),
-					createApp.GetId()),
+				Identity: random.SMSIdentity("api-identity",
+					uuid.NewV7().String(), createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -803,7 +803,7 @@ func TestChallengeIdentity(t *testing.T) {
 
 		aiCli := api.NewAppIdentityServiceClient(secondaryViewerGRPCConn)
 		_, err := aiCli.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{
-			Id: uuid.NewString(), AppId: uuid.NewString(),
+			Id: uuid.NewV7().String(), AppId: uuid.NewV7().String(),
 		})
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = PermissionDenied desc = "+
@@ -818,7 +818,7 @@ func TestChallengeIdentity(t *testing.T) {
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		_, err := aiCli.ChallengeIdentity(ctx, &api.ChallengeIdentityRequest{
-			Id: uuid.NewString(), AppId: uuid.NewString(),
+			Id: uuid.NewV7().String(), AppId: uuid.NewV7().String(),
 		})
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
@@ -833,8 +833,8 @@ func TestChallengeIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
-					createApp.GetId()),
+				Identity: random.HOTPIdentity("api-identity",
+					uuid.NewV7().String(), createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -852,7 +852,8 @@ func TestChallengeIdentity(t *testing.T) {
 		t.Parallel()
 
 		adminStarterOrgID, adminStarterGRPCConn, err := authGRPCConn(
-			api.Role_SYS_ADMIN, api.Plan_PRO)
+			api.Role_SYS_ADMIN, api.Plan_PRO,
+		)
 		require.NoError(t, err)
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
@@ -860,15 +861,15 @@ func TestChallengeIdentity(t *testing.T) {
 
 		aiCli := api.NewAppIdentityServiceClient(adminStarterGRPCConn)
 		createApp, err := aiCli.CreateApp(ctx, &api.CreateAppRequest{
-			App: random.App("api-app", uuid.NewString()),
+			App: random.App("api-app", uuid.NewV7().String()),
 		})
 		t.Logf("createApp, err: %+v, %v", createApp, err)
 		require.NoError(t, err)
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.SMSIdentity("api-identity", uuid.NewString(),
-					createApp.GetId()),
+				Identity: random.SMSIdentity("api-identity",
+					uuid.NewV7().String(), createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -900,8 +901,8 @@ func TestChallengeIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.SMSIdentity("api-identity", uuid.NewString(),
-					createApp.GetId()),
+				Identity: random.SMSIdentity("api-identity",
+					uuid.NewV7().String(), createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -977,7 +978,7 @@ func TestVerifyIdentity(t *testing.T) {
 
 	aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 	createApp, err := aiCli.CreateApp(ctx, &api.CreateAppRequest{
-		App: random.App("api-app", uuid.NewString()),
+		App: random.App("api-app", uuid.NewV7().String()),
 	})
 	t.Logf("createApp, err: %+v, %v", createApp, err)
 	require.NoError(t, err)
@@ -990,8 +991,8 @@ func TestVerifyIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
-					createApp.GetId()),
+				Identity: random.HOTPIdentity("api-identity",
+					uuid.NewV7().String(), createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -1055,7 +1056,7 @@ func TestVerifyIdentity(t *testing.T) {
 	t.Run("Verify soft TOTP identity by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
 			createApp.GetId())
 		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{}
 
@@ -1106,7 +1107,7 @@ func TestVerifyIdentity(t *testing.T) {
 		_, err = rand.Read(randKey)
 		require.NoError(t, err)
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
 			createApp.GetId())
 		identity.MethodOneof = &api.Identity_HardwareTotpMethod{
 			HardwareTotpMethod: &api.HardwareTOTPMethod{
@@ -1158,8 +1159,8 @@ func TestVerifyIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.SMSIdentity("api-identity", uuid.NewString(),
-					createApp.GetId()),
+				Identity: random.SMSIdentity("api-identity",
+					uuid.NewV7().String(), createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -1171,10 +1172,10 @@ func TestVerifyIdentity(t *testing.T) {
 		passcode, err := otp.HOTP(5)
 		require.NoError(t, err)
 
-		require.NoError(t, globalCache.SetIfNotExist(ctx, key.Expire(
-			createIdentity.GetIdentity().GetOrgId(),
-			createIdentity.GetIdentity().GetAppId(),
-			createIdentity.GetIdentity().GetId(), passcode), 1))
+		require.NoError(t, globalCache.SetIfNotExist(ctx,
+			key.Expire(createIdentity.GetIdentity().GetOrgId(),
+				createIdentity.GetIdentity().GetAppId(),
+				createIdentity.GetIdentity().GetId(), passcode), 1))
 
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
@@ -1190,10 +1191,10 @@ func TestVerifyIdentity(t *testing.T) {
 		passcode, err = otp.HOTP(6)
 		require.NoError(t, err)
 
-		require.NoError(t, globalCache.SetIfNotExist(ctx, key.Expire(
-			createIdentity.GetIdentity().GetOrgId(),
-			createIdentity.GetIdentity().GetAppId(),
-			createIdentity.GetIdentity().GetId(), passcode), 1))
+		require.NoError(t, globalCache.SetIfNotExist(ctx,
+			key.Expire(createIdentity.GetIdentity().GetOrgId(),
+				createIdentity.GetIdentity().GetAppId(),
+				createIdentity.GetIdentity().GetId(), passcode), 1))
 
 		_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
 			Id: createIdentity.GetIdentity().GetId(), AppId: createApp.GetId(),
@@ -1212,14 +1213,13 @@ func TestVerifyIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.BackupCodesIdentity("api-identity",
-					uuid.NewString(), createApp.GetId()),
+					uuid.NewV7().String(), createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		// Verify out of order.
-		for _, passcode := range slices.Backward(
-			createIdentity.GetPasscodes()) {
+		for _, passcode := range slices.Backward(createIdentity.GetPasscodes()) {
 			_, err = aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
 				Id:    createIdentity.GetIdentity().GetId(),
 				AppId: createApp.GetId(), Passcode: passcode,
@@ -1233,7 +1233,7 @@ func TestVerifyIdentity(t *testing.T) {
 		t.Parallel()
 
 		identity := random.SecurityQuestionsIdentity("api-identity",
-			uuid.NewString(), createApp.GetId())
+			uuid.NewV7().String(), createApp.GetId())
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
@@ -1259,7 +1259,7 @@ func TestVerifyIdentity(t *testing.T) {
 
 		aiCli := api.NewAppIdentityServiceClient(secondaryViewerGRPCConn)
 		_, err := aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
-			Id: uuid.NewString(), AppId: uuid.NewString(),
+			Id: uuid.NewV7().String(), AppId: uuid.NewV7().String(),
 			Passcode: "000000",
 		})
 		t.Logf("err: %v", err)
@@ -1275,7 +1275,7 @@ func TestVerifyIdentity(t *testing.T) {
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		_, err := aiCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
-			Id: uuid.NewString(), AppId: uuid.NewString(),
+			Id: uuid.NewV7().String(), AppId: uuid.NewV7().String(),
 			Passcode: "000000",
 		})
 		t.Logf("err: %v", err)
@@ -1291,15 +1291,15 @@ func TestVerifyIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
-					createApp.GetId()),
+				Identity: random.HOTPIdentity("api-identity",
+					uuid.NewV7().String(), createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
 
 		secCli := api.NewAppIdentityServiceClient(secondaryAdminGRPCConn)
 		_, err = secCli.VerifyIdentity(ctx, &api.VerifyIdentityRequest{
-			Id: uuid.NewString(), AppId: uuid.NewString(),
+			Id: uuid.NewV7().String(), AppId: uuid.NewV7().String(),
 			Passcode: "000000",
 		})
 		t.Logf("err: %v", err)
@@ -1315,8 +1315,8 @@ func TestVerifyIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
-					createApp.GetId()),
+				Identity: random.HOTPIdentity("api-identity",
+					uuid.NewV7().String(), createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -1373,8 +1373,8 @@ func TestVerifyIdentity(t *testing.T) {
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.SMSIdentity("api-identity", uuid.NewString(),
-					createApp.GetId()),
+				Identity: random.SMSIdentity("api-identity",
+					uuid.NewV7().String(), createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -1386,10 +1386,10 @@ func TestVerifyIdentity(t *testing.T) {
 		passcode, err := otp.HOTP(5)
 		require.NoError(t, err)
 
-		require.NoError(t, globalCache.SetIfNotExist(ctx, key.Expire(
-			createIdentity.GetIdentity().GetOrgId(),
-			createIdentity.GetIdentity().GetAppId(),
-			createIdentity.GetIdentity().GetId(), passcode), 1))
+		require.NoError(t, globalCache.SetIfNotExist(ctx,
+			key.Expire(createIdentity.GetIdentity().GetOrgId(),
+				createIdentity.GetIdentity().GetAppId(),
+				createIdentity.GetIdentity().GetId(), passcode), 1))
 
 		activateIdentity, err := aiCli.ActivateIdentity(ctx,
 			&api.ActivateIdentityRequest{
@@ -1423,7 +1423,7 @@ func TestVerifyIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.BackupCodesIdentity("api-identity",
-					uuid.NewString(), createApp.GetId()),
+					uuid.NewV7().String(), createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -1447,7 +1447,7 @@ func TestVerifyIdentity(t *testing.T) {
 	t.Run("Verify identity by invalid passcode", func(t *testing.T) {
 		t.Parallel()
 
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
 			createApp.GetId())
 		identity.MethodOneof = &api.Identity_SoftwareTotpMethod{}
 
@@ -1498,7 +1498,7 @@ func TestVerifyIdentity(t *testing.T) {
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
 				Identity: random.SecurityQuestionsIdentity("api-identity",
-					uuid.NewString(), createApp.GetId()),
+					uuid.NewV7().String(), createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -1521,13 +1521,13 @@ func TestGetIdentity(t *testing.T) {
 
 	aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 	createApp, err := aiCli.CreateApp(ctx, &api.CreateAppRequest{
-		App: random.App("api-app", uuid.NewString()),
+		App: random.App("api-app", uuid.NewV7().String()),
 	})
 	t.Logf("createApp, err: %+v, %v", createApp, err)
 	require.NoError(t, err)
 
 	createIdentity, err := aiCli.CreateIdentity(ctx, &api.CreateIdentityRequest{
-		Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
+		Identity: random.HOTPIdentity("api-identity", uuid.NewV7().String(),
 			createApp.GetId()),
 	})
 	t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
@@ -1558,7 +1558,7 @@ func TestGetIdentity(t *testing.T) {
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		getIdentity, err := aiCli.GetIdentity(ctx,
 			&api.GetIdentityRequest{
-				Id:    uuid.NewString(),
+				Id:    uuid.NewV7().String(),
 				AppId: createApp.GetId(),
 			})
 		t.Logf("getIdentity, err: %+v, %v", getIdentity, err)
@@ -1595,15 +1595,15 @@ func TestDeleteIdentity(t *testing.T) {
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		createApp, err := aiCli.CreateApp(ctx, &api.CreateAppRequest{
-			App: random.App("api-app", uuid.NewString()),
+			App: random.App("api-app", uuid.NewV7().String()),
 		})
 		t.Logf("createApp, err: %+v, %v", createApp, err)
 		require.NoError(t, err)
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
-					createApp.GetId()),
+				Identity: random.HOTPIdentity("api-identity",
+					uuid.NewV7().String(), createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -1647,7 +1647,8 @@ func TestDeleteIdentity(t *testing.T) {
 
 			aiCli := api.NewAppIdentityServiceClient(globalAdminKeyGRPCConn)
 			getIdentity, err := aiCli.GetIdentity(ctx, &api.GetIdentityRequest{
-				Id: createIdentity.GetIdentity().GetId(), AppId: uuid.NewString(),
+				Id:    createIdentity.GetIdentity().GetId(),
+				AppId: uuid.NewV7().String(),
 			})
 			t.Logf("getIdentity, err: %+v, %v", getIdentity, err)
 			require.Nil(t, getIdentity)
@@ -1664,7 +1665,7 @@ func TestDeleteIdentity(t *testing.T) {
 
 		aiCli := api.NewAppIdentityServiceClient(secondaryViewerGRPCConn)
 		_, err := aiCli.DeleteIdentity(ctx, &api.DeleteIdentityRequest{
-			Id: uuid.NewString(), AppId: uuid.NewString(),
+			Id: uuid.NewV7().String(), AppId: uuid.NewV7().String(),
 		})
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = PermissionDenied "+
@@ -1679,7 +1680,7 @@ func TestDeleteIdentity(t *testing.T) {
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		_, err := aiCli.DeleteIdentity(ctx, &api.DeleteIdentityRequest{
-			Id: uuid.NewString(), AppId: uuid.NewString(),
+			Id: uuid.NewV7().String(), AppId: uuid.NewV7().String(),
 		})
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
@@ -1694,15 +1695,15 @@ func TestDeleteIdentity(t *testing.T) {
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		createApp, err := aiCli.CreateApp(ctx, &api.CreateAppRequest{
-			App: random.App("api-app", uuid.NewString()),
+			App: random.App("api-app", uuid.NewV7().String()),
 		})
 		t.Logf("createApp, err: %+v, %v", createApp, err)
 		require.NoError(t, err)
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.HOTPIdentity("api-identity", uuid.NewString(),
-					createApp.GetId()),
+				Identity: random.HOTPIdentity("api-identity",
+					uuid.NewV7().String(), createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.NoError(t, err)
@@ -1725,7 +1726,7 @@ func TestListIdentities(t *testing.T) {
 
 	aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 	createApp, err := aiCli.CreateApp(ctx, &api.CreateAppRequest{
-		App: random.App("api-app", uuid.NewString()),
+		App: random.App("api-app", uuid.NewV7().String()),
 	})
 	t.Logf("createApp, err: %+v, %v", createApp, err)
 	require.NoError(t, err)
@@ -1733,7 +1734,7 @@ func TestListIdentities(t *testing.T) {
 	identityIDs := make([]string, 0, 3)
 	identityComments := make([]string, 0, 3)
 	for range 3 {
-		identity := random.HOTPIdentity("api-identity", uuid.NewString(),
+		identity := random.HOTPIdentity("api-identity", uuid.NewV7().String(),
 			createApp.GetId())
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)

@@ -7,8 +7,8 @@ import (
 	"sort"
 	"testing"
 	"time"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/ownmfa/proto/go/api"
 	"github.com/stretchr/testify/require"
@@ -26,14 +26,14 @@ func TestListEvents(t *testing.T) {
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		createApp, err := aiCli.CreateApp(ctx, &api.CreateAppRequest{
-			App: random.App("api-event", uuid.NewString()),
+			App: random.App("api-event", uuid.NewV7().String()),
 		})
 		t.Logf("createApp, err: %+v, %v", createApp, err)
 		require.NoError(t, err)
 
 		createIdentity, err := aiCli.CreateIdentity(ctx,
 			&api.CreateIdentityRequest{
-				Identity: random.HOTPIdentity("api-event", uuid.NewString(),
+				Identity: random.HOTPIdentity("api-event", uuid.NewV7().String(),
 					createApp.GetId()),
 			})
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
@@ -57,8 +57,8 @@ func TestListEvents(t *testing.T) {
 		}
 
 		sort.Slice(events, func(i, j int) bool {
-			return events[i].GetCreatedAt().AsTime().After(
-				events[j].GetCreatedAt().AsTime())
+			return events[i].GetCreatedAt().AsTime().
+				After(events[j].GetCreatedAt().AsTime())
 		})
 
 		ctx, cancel = context.WithTimeout(t.Context(), testTimeout)
@@ -124,7 +124,7 @@ func TestListEvents(t *testing.T) {
 
 		evCli := api.NewEventServiceClient(globalAdminGRPCConn)
 		listEvents, err := evCli.ListEvents(ctx, &api.ListEventsRequest{
-			IdentityId: uuid.NewString(), EndTime: timestamppb.Now(),
+			IdentityId: uuid.NewV7().String(), EndTime: timestamppb.Now(),
 			StartTime: timestamppb.New(time.Now().Add(-91 * 24 * time.Hour)),
 		})
 		t.Logf("listEvents, err: %+v, %v", listEvents, err)
@@ -173,8 +173,8 @@ func TestLatestEvents(t *testing.T) {
 		}
 
 		sort.Slice(events, func(i, j int) bool {
-			return events[i].GetCreatedAt().AsTime().After(
-				events[j].GetCreatedAt().AsTime())
+			return events[i].GetCreatedAt().AsTime().
+				After(events[j].GetCreatedAt().AsTime())
 		})
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)

@@ -5,8 +5,8 @@ package key
 import (
 	"fmt"
 	"testing"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/stretchr/testify/require"
 )
@@ -18,9 +18,9 @@ func TestHOTPCounter(t *testing.T) {
 		t.Run(fmt.Sprintf("Can key %v", i), func(t *testing.T) {
 			t.Parallel()
 
-			orgID := uuid.NewString()
-			appID := uuid.NewString()
-			identityID := uuid.NewString()
+			orgID := uuid.NewV7().String()
+			appID := uuid.NewV7().String()
+			identityID := uuid.NewV7().String()
 
 			key := HOTPCounter(orgID, appID, identityID)
 			t.Logf("key: %v", key)
@@ -39,9 +39,9 @@ func TestExpire(t *testing.T) {
 		t.Run(fmt.Sprintf("Can key %v", i), func(t *testing.T) {
 			t.Parallel()
 
-			orgID := uuid.NewString()
-			appID := uuid.NewString()
-			identityID := uuid.NewString()
+			orgID := uuid.NewV7().String()
+			appID := uuid.NewV7().String()
+			identityID := uuid.NewV7().String()
 			passcode := random.String(10)
 
 			key := Expire(orgID, appID, identityID, passcode)

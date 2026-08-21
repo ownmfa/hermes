@@ -1,10 +1,9 @@
 module github.com/ownmfa/hermes
 
-go 1.26.6
+go 1.27.0
 
 require (
 	github.com/NYTimes/gziphandler v1.1.1
-	github.com/google/uuid v1.6.0
 	github.com/gregdel/pushover v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.30.0
 	github.com/jackc/pgx/v5 v5.10.0
@@ -12,7 +11,7 @@ require (
 	github.com/maypok86/otter/v2 v2.3.0
 	github.com/mennanov/fmutils v0.4.0
 	github.com/nsqio/go-nsq v1.1.0
-	github.com/ownmfa/proto/go v1.1.19
+	github.com/ownmfa/proto/go v1.1.20
 	github.com/redis/go-redis/v9 v9.22.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/smira/go-statsd v1.3.4

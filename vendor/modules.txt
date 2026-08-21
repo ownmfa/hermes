@@ -10,9 +10,6 @@ github.com/envoyproxy/protoc-gen-validate/validate
 # github.com/golang/snappy v1.0.0
 ## explicit
 github.com/golang/snappy
-# github.com/google/uuid v1.6.0
-## explicit
-github.com/google/uuid
 # github.com/gregdel/pushover v1.4.0
 ## explicit; go 1.14
 github.com/gregdel/pushover
@@ -69,8 +66,8 @@ github.com/mennanov/fmutils
 # github.com/nsqio/go-nsq v1.1.0
 ## explicit; go 1.11
 github.com/nsqio/go-nsq
-# github.com/ownmfa/proto/go v1.1.19
-## explicit; go 1.26.6
+# github.com/ownmfa/proto/go v1.1.20
+## explicit; go 1.27.0
 github.com/ownmfa/proto/go/api
 # github.com/redis/go-redis/v9 v9.22.0
 ## explicit; go 1.24
