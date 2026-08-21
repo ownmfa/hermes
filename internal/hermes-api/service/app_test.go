@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 	"time"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/test/matcher"
@@ -27,16 +27,15 @@ func TestCreateApp(t *testing.T) {
 	t.Run("Create valid app", func(t *testing.T) {
 		t.Parallel()
 
-		app := random.App("api-app", uuid.NewString())
+		app := random.App("api-app", uuid.NewV7().String())
 		retApp, _ := proto.Clone(app).(*api.App)
 
 		apper := NewMockApper(gomock.NewController(t))
 		apper.EXPECT().Create(gomock.Any(), app).Return(retApp, nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: app.GetOrgId(), Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: app.GetOrgId(), Role: api.Role_ADMIN}),
+			testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(apper, nil, nil, nil, nil, nil, "")
@@ -62,10 +61,9 @@ func TestCreateApp(t *testing.T) {
 	t.Run("Create app with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_VIEWER,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: uuid.NewV7().String(), Role: api.Role_VIEWER}),
+			testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
@@ -78,17 +76,16 @@ func TestCreateApp(t *testing.T) {
 	t.Run("Create invalid app", func(t *testing.T) {
 		t.Parallel()
 
-		app := random.App("api-app", uuid.NewString())
+		app := random.App("api-app", uuid.NewV7().String())
 		app.Name = random.String(41)
 
 		apper := NewMockApper(gomock.NewController(t))
 		apper.EXPECT().Create(gomock.Any(), app).Return(nil,
 			dao.ErrInvalidFormat).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: app.GetOrgId(), Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: app.GetOrgId(), Role: api.Role_ADMIN}),
+			testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(apper, nil, nil, nil, nil, nil, "")
@@ -106,17 +103,16 @@ func TestGetApp(t *testing.T) {
 	t.Run("Get app by valid ID", func(t *testing.T) {
 		t.Parallel()
 
-		app := random.App("api-app", uuid.NewString())
+		app := random.App("api-app", uuid.NewV7().String())
 		retApp, _ := proto.Clone(app).(*api.App)
 
 		apper := NewMockApper(gomock.NewController(t))
-		apper.EXPECT().Read(gomock.Any(), app.GetId(), app.GetOrgId()).Return(retApp,
-			nil).Times(1)
+		apper.EXPECT().Read(gomock.Any(), app.GetId(), app.GetOrgId()).
+			Return(retApp, nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: app.GetOrgId(), Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: app.GetOrgId(), Role: api.Role_ADMIN}),
+			testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(apper, nil, nil, nil, nil, nil, "")
@@ -142,9 +138,10 @@ func TestGetApp(t *testing.T) {
 	t.Run("Get app with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID: uuid.NewV7().String(),
+				Role:  api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
 
@@ -162,15 +159,14 @@ func TestGetApp(t *testing.T) {
 		apper.EXPECT().Read(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(nil, dao.ErrNotFound).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: uuid.NewV7().String(), Role: api.Role_ADMIN}),
+			testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(apper, nil, nil, nil, nil, nil, "")
 		getApp, err := aiSvc.GetApp(ctx,
-			&api.GetAppRequest{Id: uuid.NewString()})
+			&api.GetAppRequest{Id: uuid.NewV7().String()})
 		t.Logf("getApp, err: %+v, %v", getApp, err)
 		require.Nil(t, getApp)
 		require.Equal(t, status.Error(codes.NotFound, "dao: object not found"),
@@ -184,16 +180,15 @@ func TestUpdateApp(t *testing.T) {
 	t.Run("Update app by valid app", func(t *testing.T) {
 		t.Parallel()
 
-		app := random.App("api-app", uuid.NewString())
+		app := random.App("api-app", uuid.NewV7().String())
 		retApp, _ := proto.Clone(app).(*api.App)
 
 		apper := NewMockApper(gomock.NewController(t))
 		apper.EXPECT().Update(gomock.Any(), app).Return(retApp, nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: app.GetOrgId(), Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: app.GetOrgId(), Role: api.Role_ADMIN}),
+			testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(apper, nil, nil, nil, nil, nil, "")
@@ -208,7 +203,7 @@ func TestUpdateApp(t *testing.T) {
 	t.Run("Partial update app by valid app", func(t *testing.T) {
 		t.Parallel()
 
-		app := random.App("api-app", uuid.NewString())
+		app := random.App("api-app", uuid.NewV7().String())
 		retApp, _ := proto.Clone(app).(*api.App)
 		part := &api.App{
 			Id: app.GetId(), Name: random.String(10), DisplayName: random.String(10),
@@ -229,10 +224,9 @@ func TestUpdateApp(t *testing.T) {
 		apper.EXPECT().Update(gomock.Any(), matcher.NewProtoMatcher(merged)).
 			Return(retMerged, nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: app.GetOrgId(), Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: app.GetOrgId(), Role: api.Role_ADMIN}),
+			testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(apper, nil, nil, nil, nil, nil, "")
@@ -262,10 +256,9 @@ func TestUpdateApp(t *testing.T) {
 	t.Run("Update app with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_VIEWER,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: uuid.NewV7().String(), Role: api.Role_VIEWER}),
+			testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
@@ -278,10 +271,9 @@ func TestUpdateApp(t *testing.T) {
 	t.Run("Update nil app", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: uuid.NewV7().String(), Role: api.Role_ADMIN}),
+			testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
@@ -295,12 +287,11 @@ func TestUpdateApp(t *testing.T) {
 	t.Run("Partial update invalid field mask", func(t *testing.T) {
 		t.Parallel()
 
-		app := random.App("api-app", uuid.NewString())
+		app := random.App("api-app", uuid.NewV7().String())
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: uuid.NewV7().String(), Role: api.Role_ADMIN}),
+			testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
@@ -318,17 +309,15 @@ func TestUpdateApp(t *testing.T) {
 	t.Run("Partial update app by unknown app", func(t *testing.T) {
 		t.Parallel()
 
-		orgID := uuid.NewString()
-		part := &api.App{Id: uuid.NewString(), Name: random.String(10)}
+		orgID := uuid.NewV7().String()
+		part := &api.App{Id: uuid.NewV7().String(), Name: random.String(10)}
 
 		apper := NewMockApper(gomock.NewController(t))
 		apper.EXPECT().Read(gomock.Any(), part.GetId(), orgID).
 			Return(nil, dao.ErrNotFound).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: orgID, Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: orgID, Role: api.Role_ADMIN}), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(apper, nil, nil, nil, nil, nil, "")
@@ -346,13 +335,12 @@ func TestUpdateApp(t *testing.T) {
 	t.Run("Update app validation failure", func(t *testing.T) {
 		t.Parallel()
 
-		app := random.App("api-app", uuid.NewString())
+		app := random.App("api-app", uuid.NewV7().String())
 		app.Name = random.String(41)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: app.GetOrgId(), Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: app.GetOrgId(), Role: api.Role_ADMIN}),
+			testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
@@ -370,16 +358,15 @@ func TestUpdateApp(t *testing.T) {
 	t.Run("Update app by invalid app", func(t *testing.T) {
 		t.Parallel()
 
-		app := random.App("api-app", uuid.NewString())
+		app := random.App("api-app", uuid.NewV7().String())
 
 		apper := NewMockApper(gomock.NewController(t))
 		apper.EXPECT().Update(gomock.Any(), app).Return(nil,
 			dao.ErrInvalidFormat).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: app.GetOrgId(), Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: app.GetOrgId(), Role: api.Role_ADMIN}),
+			testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(apper, nil, nil, nil, nil, nil, "")
@@ -403,15 +390,14 @@ func TestDeleteApp(t *testing.T) {
 		apper.EXPECT().Delete(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: uuid.NewV7().String(), Role: api.Role_ADMIN}),
+			testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(apper, nil, nil, nil, nil, nil, "")
 		_, err := aiSvc.DeleteApp(ctx,
-			&api.DeleteAppRequest{Id: uuid.NewString()})
+			&api.DeleteAppRequest{Id: uuid.NewV7().String()})
 		t.Logf("err: %v", err)
 		require.NoError(t, err)
 	})
@@ -431,10 +417,9 @@ func TestDeleteApp(t *testing.T) {
 	t.Run("Delete app with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_VIEWER,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: uuid.NewV7().String(), Role: api.Role_VIEWER}),
+			testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
@@ -450,15 +435,14 @@ func TestDeleteApp(t *testing.T) {
 		apper.EXPECT().Delete(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(dao.ErrNotFound).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: uuid.NewV7().String(), Role: api.Role_ADMIN}),
+			testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(apper, nil, nil, nil, nil, nil, "")
 		_, err := aiSvc.DeleteApp(ctx,
-			&api.DeleteAppRequest{Id: uuid.NewString()})
+			&api.DeleteAppRequest{Id: uuid.NewV7().String()})
 		t.Logf("err: %v", err)
 		require.Equal(t, status.Error(codes.NotFound, "dao: object not found"),
 			err)
@@ -471,22 +455,20 @@ func TestListApps(t *testing.T) {
 	t.Run("List apps by valid org ID", func(t *testing.T) {
 		t.Parallel()
 
-		orgID := uuid.NewString()
+		orgID := uuid.NewV7().String()
 
 		apps := []*api.App{
-			random.App("api-app", uuid.NewString()),
-			random.App("api-app", uuid.NewString()),
-			random.App("api-app", uuid.NewString()),
+			random.App("api-app", uuid.NewV7().String()),
+			random.App("api-app", uuid.NewV7().String()),
+			random.App("api-app", uuid.NewV7().String()),
 		}
 
 		apper := NewMockApper(gomock.NewController(t))
 		apper.EXPECT().List(gomock.Any(), orgID, time.Time{}, "", int32(51)).
 			Return(apps, int32(3), nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: orgID, Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: orgID, Role: api.Role_ADMIN}), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(apper, nil, nil, nil, nil, nil, "")
@@ -501,12 +483,12 @@ func TestListApps(t *testing.T) {
 	t.Run("List apps by valid org ID with next page", func(t *testing.T) {
 		t.Parallel()
 
-		orgID := uuid.NewString()
+		orgID := uuid.NewV7().String()
 
 		apps := []*api.App{
-			random.App("api-app", uuid.NewString()),
-			random.App("api-app", uuid.NewString()),
-			random.App("api-app", uuid.NewString()),
+			random.App("api-app", uuid.NewV7().String()),
+			random.App("api-app", uuid.NewV7().String()),
+			random.App("api-app", uuid.NewV7().String()),
 		}
 
 		next, err := session.GeneratePageToken(apps[1].GetCreatedAt().AsTime(),
@@ -517,10 +499,8 @@ func TestListApps(t *testing.T) {
 		apper.EXPECT().List(gomock.Any(), orgID, time.Time{}, "", int32(3)).
 			Return(apps, int32(3), nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: orgID, Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: orgID, Role: api.Role_ADMIN}), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(apper, nil, nil, nil, nil, nil, "")
@@ -549,9 +529,10 @@ func TestListApps(t *testing.T) {
 	t.Run("List apps with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID: uuid.NewV7().String(),
+				Role:  api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
 
@@ -565,10 +546,9 @@ func TestListApps(t *testing.T) {
 	t.Run("List apps by invalid page token", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: uuid.NewV7().String(), Role: api.Role_ADMIN}),
+			testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(nil, nil, nil, nil, nil, nil, "")
@@ -589,10 +569,9 @@ func TestListApps(t *testing.T) {
 		apper.EXPECT().List(gomock.Any(), invalid, gomock.Any(), gomock.Any(),
 			gomock.Any()).Return(nil, int32(0), dao.ErrInvalidFormat).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: invalid, Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: invalid, Role: api.Role_ADMIN}),
+			testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(apper, nil, nil, nil, nil, nil, "")
@@ -606,12 +585,12 @@ func TestListApps(t *testing.T) {
 	t.Run("List apps with generation failure", func(t *testing.T) {
 		t.Parallel()
 
-		orgID := uuid.NewString()
+		orgID := uuid.NewV7().String()
 
 		apps := []*api.App{
-			random.App("api-app", uuid.NewString()),
-			random.App("api-app", uuid.NewString()),
-			random.App("api-app", uuid.NewString()),
+			random.App("api-app", uuid.NewV7().String()),
+			random.App("api-app", uuid.NewV7().String()),
+			random.App("api-app", uuid.NewV7().String()),
 		}
 		apps[1].Id = badUUID
 
@@ -619,10 +598,8 @@ func TestListApps(t *testing.T) {
 		apper.EXPECT().List(gomock.Any(), orgID, time.Time{}, "", int32(3)).
 			Return(apps, int32(3), nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: orgID, Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: orgID, Role: api.Role_ADMIN}), testTimeout)
 		defer cancel()
 
 		aiSvc := NewAppIdentity(apper, nil, nil, nil, nil, nil, "")

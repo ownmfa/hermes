@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 	"time"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/test/random"
@@ -26,7 +26,7 @@ func TestListEvents(t *testing.T) {
 	t.Run("List events by valid identity ID with ts", func(t *testing.T) {
 		t.Parallel()
 
-		event := random.Event("dao-event", uuid.NewString())
+		event := random.Event("dao-event", uuid.NewV7().String())
 		retEvent, _ := proto.Clone(event).(*api.Event)
 		end := time.Now().UTC()
 		start := time.Now().UTC().Add(-15 * time.Minute)
@@ -35,10 +35,9 @@ func TestListEvents(t *testing.T) {
 		eventer.EXPECT().List(gomock.Any(), event.GetOrgId(), event.GetIdentityId(),
 			end, start).Return([]*api.Event{retEvent}, nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: event.GetOrgId(), Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: event.GetOrgId(), Role: api.Role_ADMIN}),
+			testTimeout)
 		defer cancel()
 
 		evSvc := NewEvent(eventer)
@@ -68,9 +67,10 @@ func TestListEvents(t *testing.T) {
 	t.Run("List events with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID: uuid.NewV7().String(),
+				Role:  api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
 
@@ -84,15 +84,14 @@ func TestListEvents(t *testing.T) {
 	t.Run("List events by invalid time range", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: uuid.NewV7().String(), Role: api.Role_ADMIN}),
+			testTimeout)
 		defer cancel()
 
 		evSvc := NewEvent(nil)
 		listEvents, err := evSvc.ListEvents(ctx, &api.ListEventsRequest{
-			IdentityId: uuid.NewString(), EndTime: timestamppb.Now(),
+			IdentityId: uuid.NewV7().String(), EndTime: timestamppb.Now(),
 			StartTime: timestamppb.New(time.Now().Add(-91 * 24 * time.Hour)),
 		})
 		t.Logf("listEvents, err: %+v, %v", listEvents, err)
@@ -110,10 +109,9 @@ func TestListEvents(t *testing.T) {
 		eventer.EXPECT().List(gomock.Any(), invalid, gomock.Any(), gomock.Any(),
 			gomock.Any()).Return(nil, dao.ErrInvalidFormat).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: invalid, Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: invalid, Role: api.Role_ADMIN}),
+			testTimeout)
 		defer cancel()
 
 		evSvc := NewEvent(eventer)
@@ -131,18 +129,16 @@ func TestLatestEvents(t *testing.T) {
 	t.Run("Latest events by valid app ID and identity ID", func(t *testing.T) {
 		t.Parallel()
 
-		event := random.Event("dao-event", uuid.NewString())
+		event := random.Event("dao-event", uuid.NewV7().String())
 		retEvent, _ := proto.Clone(event).(*api.Event)
-		orgID := uuid.NewString()
+		orgID := uuid.NewV7().String()
 
 		eventer := NewMockEventer(gomock.NewController(t))
 		eventer.EXPECT().Latest(gomock.Any(), orgID, event.GetAppId(),
 			event.GetIdentityId()).Return([]*api.Event{retEvent}, nil).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: orgID, Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: orgID, Role: api.Role_ADMIN}), testTimeout)
 		defer cancel()
 
 		evSvc := NewEvent(eventer)
@@ -171,9 +167,10 @@ func TestLatestEvents(t *testing.T) {
 	t.Run("Latest events with insufficient role", func(t *testing.T) {
 		t.Parallel()
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: uuid.NewString(), Role: api.Role_ROLE_UNSPECIFIED,
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{
+				OrgID: uuid.NewV7().String(),
+				Role:  api.Role_ROLE_UNSPECIFIED,
 			}), testTimeout)
 		defer cancel()
 
@@ -193,10 +190,9 @@ func TestLatestEvents(t *testing.T) {
 		eventer.EXPECT().Latest(gomock.Any(), invalid, gomock.Any(),
 			gomock.Any()).Return(nil, dao.ErrInvalidFormat).Times(1)
 
-		ctx, cancel := context.WithTimeout(session.NewContext(
-			t.Context(), &session.Session{
-				OrgID: invalid, Role: api.Role_ADMIN,
-			}), testTimeout)
+		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
+			&session.Session{OrgID: invalid, Role: api.Role_ADMIN}),
+			testTimeout)
 		defer cancel()
 
 		evSvc := NewEvent(eventer)

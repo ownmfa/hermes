@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 	"time"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/ownmfa/proto/go/api"
@@ -97,8 +97,8 @@ func TestRead(t *testing.T) {
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
-		readUser, err := globalUserDAO.Read(ctx, uuid.NewString(),
-			uuid.NewString())
+		readUser, err := globalUserDAO.Read(ctx, uuid.NewV7().String(),
+			uuid.NewV7().String())
 		t.Logf("readUser, err: %+v, %v", readUser, err)
 		require.Nil(t, readUser)
 		require.Equal(t, dao.ErrNotFound, err)
@@ -111,7 +111,7 @@ func TestRead(t *testing.T) {
 		defer cancel()
 
 		readUser, err := globalUserDAO.Read(ctx, createUser.GetId(),
-			uuid.NewString())
+			uuid.NewV7().String())
 		t.Logf("readUser, err: %+v, %v", readUser, err)
 		require.Nil(t, readUser)
 		require.Equal(t, dao.ErrNotFound, err)
@@ -169,8 +169,8 @@ func TestReadByEmail(t *testing.T) {
 		require.Equal(t, hash, readHash)
 
 		// Normalize timestamp.
-		require.True(t, readUser.GetUpdatedAt().AsTime().After(
-			createUser.GetCreatedAt().AsTime()))
+		require.True(t, readUser.GetUpdatedAt().AsTime().
+			After(createUser.GetCreatedAt().AsTime()))
 		require.WithinDuration(t, readUser.GetUpdatedAt().AsTime(),
 			createUser.GetUpdatedAt().AsTime(), 2*time.Second)
 		createUser.UpdatedAt = readUser.GetUpdatedAt()
@@ -289,8 +289,8 @@ func TestUpdate(t *testing.T) {
 		require.Equal(t, createUser.GetEmail(), updateUser.GetEmail())
 		require.Equal(t, createUser.GetRole(), updateUser.GetRole())
 		require.Equal(t, createUser.GetStatus(), updateUser.GetStatus())
-		require.True(t, updateUser.GetUpdatedAt().AsTime().After(
-			updateUser.GetCreatedAt().AsTime()))
+		require.True(t, updateUser.GetUpdatedAt().AsTime().
+			After(updateUser.GetCreatedAt().AsTime()))
 		require.WithinDuration(t, createUser.GetCreatedAt().AsTime(),
 			updateUser.GetUpdatedAt().AsTime(), 2*time.Second)
 
@@ -326,7 +326,7 @@ func TestUpdate(t *testing.T) {
 		require.NoError(t, err)
 
 		// Update user fields.
-		createUser.OrgId = uuid.NewString()
+		createUser.OrgId = uuid.NewV7().String()
 		createUser.Email = "dao-user-" + random.Email()
 		updateUser, _ := proto.Clone(createUser).(*api.User)
 
@@ -396,7 +396,7 @@ func TestUpdatePassword(t *testing.T) {
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
-		err := globalUserDAO.UpdatePassword(ctx, uuid.NewString(),
+		err := globalUserDAO.UpdatePassword(ctx, uuid.NewV7().String(),
 			createOrg.GetId(), hash)
 		t.Logf("err: %v", err)
 		require.Equal(t, dao.ErrNotFound, err)
@@ -414,7 +414,7 @@ func TestUpdatePassword(t *testing.T) {
 		require.NoError(t, err)
 
 		err = globalUserDAO.UpdatePassword(ctx, createUser.GetId(),
-			uuid.NewString(), hash)
+			uuid.NewV7().String(), hash)
 		t.Logf("err: %v", err)
 		require.Equal(t, dao.ErrNotFound, err)
 	})
@@ -466,7 +466,7 @@ func TestDelete(t *testing.T) {
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
-		err := globalUserDAO.Delete(ctx, uuid.NewString(), createOrg.GetId())
+		err := globalUserDAO.Delete(ctx, uuid.NewV7().String(), createOrg.GetId())
 		t.Logf("err: %v", err)
 		require.Equal(t, dao.ErrNotFound, err)
 	})
@@ -482,7 +482,7 @@ func TestDelete(t *testing.T) {
 		t.Logf("createUser, err: %+v, %v", createUser, err)
 		require.NoError(t, err)
 
-		err = globalUserDAO.Delete(ctx, createUser.GetId(), uuid.NewString())
+		err = globalUserDAO.Delete(ctx, createUser.GetId(), uuid.NewV7().String())
 		t.Logf("err: %v", err)
 		require.Equal(t, dao.ErrNotFound, err)
 	})
@@ -586,7 +586,7 @@ func TestList(t *testing.T) {
 		defer cancel()
 
 		listUsers, listCount, err := globalUserDAO.List(ctx,
-			uuid.NewString(), time.Time{}, "", 0)
+			uuid.NewV7().String(), time.Time{}, "", 0)
 		t.Logf("listUsers, listCount, err: %+v, %v, %v", listUsers, listCount,
 			err)
 		require.NoError(t, err)

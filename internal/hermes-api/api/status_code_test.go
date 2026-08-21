@@ -24,10 +24,12 @@ func TestStatusCode(t *testing.T) {
 	t.Run("Modify status code", func(t *testing.T) {
 		t.Parallel()
 
-		mdHeader := metadata.MD{"hermes-status-code": []string{strconv.Itoa(
-			http.StatusCreated)}}
-		wHeader := http.Header{grpcStatusCodeKey: []string{strconv.Itoa(
-			http.StatusCreated)}}
+		mdHeader := metadata.MD{
+			"hermes-status-code": []string{strconv.Itoa(http.StatusCreated)},
+		}
+		wHeader := http.Header{
+			grpcStatusCodeKey: []string{strconv.Itoa(http.StatusCreated)},
+		}
 		t.Logf("mdHeader, wHeader: %+v, %+v", mdHeader, wHeader)
 
 		respWriter := NewMockResponseWriter(gomock.NewController(t))
@@ -35,8 +37,8 @@ func TestStatusCode(t *testing.T) {
 		respWriter.EXPECT().WriteHeader(http.StatusCreated).Times(1)
 
 		ctx, cancel := context.WithTimeout(runtime.NewServerMetadataContext(
-			t.Context(), runtime.ServerMetadata{HeaderMD: mdHeader}),
-			testTimeout)
+			t.Context(), runtime.ServerMetadata{HeaderMD: mdHeader},
+		), testTimeout)
 		defer cancel()
 
 		err := statusCode(ctx, respWriter, nil)
@@ -58,8 +60,8 @@ func TestStatusCode(t *testing.T) {
 		respWriter := NewMockResponseWriter(gomock.NewController(t))
 
 		ctx, cancel := context.WithTimeout(runtime.NewServerMetadataContext(
-			t.Context(), runtime.ServerMetadata{HeaderMD: mdHeader}),
-			testTimeout)
+			t.Context(), runtime.ServerMetadata{HeaderMD: mdHeader},
+		), testTimeout)
 		defer cancel()
 
 		err := statusCode(ctx, respWriter, nil)
@@ -95,18 +97,19 @@ func TestStatusCode(t *testing.T) {
 	t.Run("Don't modify status code with invalid metadata", func(t *testing.T) {
 		t.Parallel()
 
-		invalid := random.String(10)
+		invalid := "a" + random.String(10)
 
 		mdHeader := metadata.MD{"hermes-status-code": []string{invalid}}
-		wHeader := http.Header{grpcStatusCodeKey: []string{strconv.Itoa(
-			http.StatusCreated)}}
+		wHeader := http.Header{
+			grpcStatusCodeKey: []string{strconv.Itoa(http.StatusCreated)},
+		}
 		t.Logf("mdHeader, wHeader: %+v, %+v", mdHeader, wHeader)
 
 		respWriter := NewMockResponseWriter(gomock.NewController(t))
 
 		ctx, cancel := context.WithTimeout(runtime.NewServerMetadataContext(
-			t.Context(), runtime.ServerMetadata{HeaderMD: mdHeader}),
-			testTimeout)
+			t.Context(), runtime.ServerMetadata{HeaderMD: mdHeader},
+		), testTimeout)
 		defer cancel()
 
 		err := statusCode(ctx, respWriter, nil)
@@ -116,7 +119,8 @@ func TestStatusCode(t *testing.T) {
 		t.Logf("mdHeader, wHeader: %+v, %+v", mdHeader, wHeader)
 		require.Equal(t, metadata.MD{"hermes-status-code": []string{invalid}},
 			mdHeader)
-		require.Equal(t, http.Header{grpcStatusCodeKey: []string{strconv.Itoa(
-			http.StatusCreated)}}, wHeader)
+		require.Equal(t, http.Header{
+			grpcStatusCodeKey: []string{strconv.Itoa(http.StatusCreated)},
+		}, wHeader)
 	})
 }

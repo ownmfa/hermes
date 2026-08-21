@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 	"time"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/ownmfa/proto/go/api"
@@ -83,7 +83,8 @@ func TestRead(t *testing.T) {
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
-		readApp, err := globalAppDAO.Read(ctx, createApp.GetId(), createApp.GetOrgId())
+		readApp, err := globalAppDAO.Read(ctx, createApp.GetId(),
+			createApp.GetOrgId())
 		t.Logf("readApp, err: %+v, %v", readApp, err)
 		require.NoError(t, err)
 		require.Equal(t, createApp, readApp)
@@ -95,8 +96,8 @@ func TestRead(t *testing.T) {
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
-		readApp, err := globalAppDAO.Read(ctx, uuid.NewString(),
-			uuid.NewString())
+		readApp, err := globalAppDAO.Read(ctx, uuid.NewV7().String(),
+			uuid.NewV7().String())
 		t.Logf("readApp, err: %+v, %v", readApp, err)
 		require.Nil(t, readApp)
 		require.Equal(t, dao.ErrNotFound, err)
@@ -109,7 +110,7 @@ func TestRead(t *testing.T) {
 		defer cancel()
 
 		readApp, err := globalAppDAO.Read(ctx, createApp.GetId(),
-			uuid.NewString())
+			uuid.NewV7().String())
 		t.Logf("readApp, err: %+v, %v", readApp, err)
 		require.Nil(t, readApp)
 		require.Equal(t, dao.ErrNotFound, err)
@@ -165,8 +166,8 @@ func TestUpdate(t *testing.T) {
 		require.Equal(t, createApp.GetDisplayName(), updateApp.GetDisplayName())
 		require.Equal(t, createApp.GetEmail(), updateApp.GetEmail())
 		require.Equal(t, createApp.GetPushoverKey(), updateApp.GetPushoverKey())
-		require.True(t, updateApp.GetUpdatedAt().AsTime().After(
-			updateApp.GetCreatedAt().AsTime()))
+		require.True(t, updateApp.GetUpdatedAt().AsTime().
+			After(updateApp.GetCreatedAt().AsTime()))
 		require.WithinDuration(t, createApp.GetCreatedAt().AsTime(),
 			updateApp.GetUpdatedAt().AsTime(), 2*time.Second)
 
@@ -201,7 +202,7 @@ func TestUpdate(t *testing.T) {
 		require.NoError(t, err)
 
 		// Update app fields.
-		createApp.OrgId = uuid.NewString()
+		createApp.OrgId = uuid.NewV7().String()
 		createApp.Name = "dao-app-" + random.String(10)
 
 		updateApp, err := globalAppDAO.Update(ctx, createApp)
@@ -279,7 +280,7 @@ func TestDelete(t *testing.T) {
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
-		err := globalAppDAO.Delete(ctx, uuid.NewString(), createOrg.GetId())
+		err := globalAppDAO.Delete(ctx, uuid.NewV7().String(), createOrg.GetId())
 		t.Logf("err: %v", err)
 		require.Equal(t, dao.ErrNotFound, err)
 	})
@@ -295,7 +296,7 @@ func TestDelete(t *testing.T) {
 		t.Logf("createApp, err: %+v, %v", createApp, err)
 		require.NoError(t, err)
 
-		err = globalAppDAO.Delete(ctx, createApp.GetId(), uuid.NewString())
+		err = globalAppDAO.Delete(ctx, createApp.GetId(), uuid.NewV7().String())
 		t.Logf("err: %v", err)
 		require.Equal(t, dao.ErrNotFound, err)
 	})
@@ -402,7 +403,7 @@ func TestList(t *testing.T) {
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
-		listApps, listCount, err := globalAppDAO.List(ctx, uuid.NewString(),
+		listApps, listCount, err := globalAppDAO.List(ctx, uuid.NewV7().String(),
 			time.Time{}, "", 0)
 		t.Logf("listApps, listCount, err: %+v, %v, %v", listApps, listCount,
 			err)

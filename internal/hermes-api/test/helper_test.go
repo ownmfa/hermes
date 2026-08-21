@@ -5,8 +5,8 @@ package test
 import (
 	"context"
 	"time"
+	"uuid"
 
-	"github.com/google/uuid"
 	iapi "github.com/ownmfa/hermes/internal/hermes-api/api"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/ownmfa/proto/go/api"
@@ -87,7 +87,7 @@ func authGRPCConn(role api.Role, plan api.Plan) (
 func keyGRPCConn(conn *grpc.ClientConn, role api.Role) (
 	*grpc.ClientConn, error,
 ) {
-	key := random.Key("api-key", uuid.NewString())
+	key := random.Key("api-key", uuid.NewV7().String())
 	key.Role = role
 
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)

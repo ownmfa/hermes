@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/ownmfa/hermes/pkg/dao"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/ownmfa/proto/go/api"
@@ -103,7 +103,7 @@ func TestRead(t *testing.T) {
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
-		readOrg, err := globalOrgDAO.Read(ctx, uuid.NewString())
+		readOrg, err := globalOrgDAO.Read(ctx, uuid.NewV7().String())
 		t.Logf("readOrg, err: %+v, %v", readOrg, err)
 		require.Nil(t, readOrg)
 		require.Equal(t, dao.ErrNotFound, err)
@@ -169,8 +169,8 @@ func TestReadUpdateDeleteCache(t *testing.T) {
 		require.Equal(t, createOrg.GetName(), updateOrg.GetName())
 		require.Equal(t, createOrg.GetStatus(), updateOrg.GetStatus())
 		require.Equal(t, createOrg.GetPlan(), updateOrg.GetPlan())
-		require.True(t, updateOrg.GetUpdatedAt().AsTime().After(
-			updateOrg.GetCreatedAt().AsTime()))
+		require.True(t, updateOrg.GetUpdatedAt().AsTime().
+			After(updateOrg.GetCreatedAt().AsTime()))
 		require.WithinDuration(t, createOrg.GetCreatedAt().AsTime(),
 			updateOrg.GetUpdatedAt().AsTime(), 2*time.Second)
 
@@ -211,7 +211,7 @@ func TestReadUpdateDeleteCache(t *testing.T) {
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
-		readOrg, err := globalOrgDAOCache.Read(ctx, uuid.NewString())
+		readOrg, err := globalOrgDAOCache.Read(ctx, uuid.NewV7().String())
 		t.Logf("readOrg, err: %+v, %v", readOrg, err)
 		require.Nil(t, readOrg)
 		require.Equal(t, dao.ErrNotFound, err)
@@ -256,8 +256,8 @@ func TestUpdate(t *testing.T) {
 		require.Equal(t, createOrg.GetName(), updateOrg.GetName())
 		require.Equal(t, createOrg.GetStatus(), updateOrg.GetStatus())
 		require.Equal(t, createOrg.GetPlan(), updateOrg.GetPlan())
-		require.True(t, updateOrg.GetUpdatedAt().AsTime().After(
-			updateOrg.GetCreatedAt().AsTime()))
+		require.True(t, updateOrg.GetUpdatedAt().AsTime().
+			After(updateOrg.GetCreatedAt().AsTime()))
 		require.WithinDuration(t, createOrg.GetCreatedAt().AsTime(),
 			updateOrg.GetUpdatedAt().AsTime(), 2*time.Second)
 
@@ -338,7 +338,7 @@ func TestDelete(t *testing.T) {
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
 
-		err := globalOrgDAO.Delete(ctx, uuid.NewString())
+		err := globalOrgDAO.Delete(ctx, uuid.NewV7().String())
 		t.Logf("err: %v", err)
 		require.Equal(t, dao.ErrNotFound, err)
 	})

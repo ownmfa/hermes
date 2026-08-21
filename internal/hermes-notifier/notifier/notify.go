@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"context"
 	"time"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/ownmfa/hermes/internal/hermes-notifier/template"
 	"github.com/ownmfa/hermes/pkg/hlog"
 	"github.com/ownmfa/hermes/pkg/key"

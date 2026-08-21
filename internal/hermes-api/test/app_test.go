@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 	"time"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/ownmfa/hermes/pkg/test/random"
 	"github.com/ownmfa/proto/go/api"
 	"github.com/stretchr/testify/require"
@@ -20,7 +20,7 @@ func TestCreateApp(t *testing.T) {
 	t.Run("Create valid app", func(t *testing.T) {
 		t.Parallel()
 
-		app := random.App("api-app", uuid.NewString())
+		app := random.App("api-app", uuid.NewV7().String())
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
@@ -45,7 +45,7 @@ func TestCreateApp(t *testing.T) {
 
 		aiCli := api.NewAppIdentityServiceClient(secondaryViewerGRPCConn)
 		createApp, err := aiCli.CreateApp(ctx, &api.CreateAppRequest{
-			App: random.App("api-app", uuid.NewString()),
+			App: random.App("api-app", uuid.NewV7().String()),
 		})
 		t.Logf("createApp, err: %+v, %v", createApp, err)
 		require.Nil(t, createApp)
@@ -56,7 +56,7 @@ func TestCreateApp(t *testing.T) {
 	t.Run("Create invalid app", func(t *testing.T) {
 		t.Parallel()
 
-		app := random.App("api-app", uuid.NewString())
+		app := random.App("api-app", uuid.NewV7().String())
 		app.Name = "api-app-" + random.String(40)
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
@@ -82,7 +82,7 @@ func TestGetApp(t *testing.T) {
 
 	aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 	createApp, err := aiCli.CreateApp(ctx, &api.CreateAppRequest{
-		App: random.App("api-app", uuid.NewString()),
+		App: random.App("api-app", uuid.NewV7().String()),
 	})
 	t.Logf("createApp, err: %+v, %v", createApp, err)
 	require.NoError(t, err)
@@ -109,7 +109,7 @@ func TestGetApp(t *testing.T) {
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		getApp, err := aiCli.GetApp(ctx,
-			&api.GetAppRequest{Id: uuid.NewString()})
+			&api.GetAppRequest{Id: uuid.NewV7().String()})
 		t.Logf("getApp, err: %+v, %v", getApp, err)
 		require.Nil(t, getApp)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
@@ -138,7 +138,7 @@ func TestUpdateApp(t *testing.T) {
 	t.Run("Update app by valid app", func(t *testing.T) {
 		t.Parallel()
 
-		app := random.App("api-app", uuid.NewString())
+		app := random.App("api-app", uuid.NewV7().String())
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
@@ -163,8 +163,8 @@ func TestUpdateApp(t *testing.T) {
 		require.Equal(t, createApp.GetDisplayName(), updateApp.GetDisplayName())
 		require.Equal(t, createApp.GetEmail(), updateApp.GetEmail())
 		require.Equal(t, createApp.GetPushoverKey(), updateApp.GetPushoverKey())
-		require.True(t, updateApp.GetUpdatedAt().AsTime().After(
-			updateApp.GetCreatedAt().AsTime()))
+		require.True(t, updateApp.GetUpdatedAt().AsTime().
+			After(updateApp.GetCreatedAt().AsTime()))
 		require.WithinDuration(t, createApp.GetCreatedAt().AsTime(),
 			updateApp.GetUpdatedAt().AsTime(), 2*time.Second)
 
@@ -178,7 +178,7 @@ func TestUpdateApp(t *testing.T) {
 	t.Run("Partial update app by valid app", func(t *testing.T) {
 		t.Parallel()
 
-		app := random.App("api-app", uuid.NewString())
+		app := random.App("api-app", uuid.NewV7().String())
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
@@ -207,8 +207,8 @@ func TestUpdateApp(t *testing.T) {
 		require.Equal(t, part.GetDisplayName(), updateApp.GetDisplayName())
 		require.Equal(t, part.GetEmail(), updateApp.GetEmail())
 		require.Equal(t, part.GetPushoverKey(), updateApp.GetPushoverKey())
-		require.True(t, updateApp.GetUpdatedAt().AsTime().After(
-			updateApp.GetCreatedAt().AsTime()))
+		require.True(t, updateApp.GetUpdatedAt().AsTime().
+			After(updateApp.GetCreatedAt().AsTime()))
 		require.WithinDuration(t, createApp.GetCreatedAt().AsTime(),
 			updateApp.GetUpdatedAt().AsTime(), 2*time.Second)
 
@@ -242,7 +242,7 @@ func TestUpdateApp(t *testing.T) {
 
 		aiCli := api.NewAppIdentityServiceClient(secondaryViewerGRPCConn)
 		updateApp, err := aiCli.UpdateApp(ctx, &api.UpdateAppRequest{
-			App: random.App("api-app", uuid.NewString()),
+			App: random.App("api-app", uuid.NewV7().String()),
 		})
 		t.Logf("updateApp, err: %+v, %v", updateApp, err)
 		require.Nil(t, updateApp)
@@ -258,7 +258,7 @@ func TestUpdateApp(t *testing.T) {
 
 		aiCli := api.NewAppIdentityServiceClient(secondaryViewerKeyGRPCConn)
 		updateApp, err := aiCli.UpdateApp(ctx, &api.UpdateAppRequest{
-			App: random.App("api-app", uuid.NewString()),
+			App: random.App("api-app", uuid.NewV7().String()),
 		})
 		t.Logf("updateApp, err: %+v, %v", updateApp, err)
 		require.Nil(t, updateApp)
@@ -269,7 +269,7 @@ func TestUpdateApp(t *testing.T) {
 	t.Run("Partial update invalid field mask", func(t *testing.T) {
 		t.Parallel()
 
-		app := random.App("api-app", uuid.NewString())
+		app := random.App("api-app", uuid.NewV7().String())
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
@@ -289,7 +289,7 @@ func TestUpdateApp(t *testing.T) {
 	t.Run("Partial update app by unknown app", func(t *testing.T) {
 		t.Parallel()
 
-		app := random.App("api-app", uuid.NewString())
+		app := random.App("api-app", uuid.NewV7().String())
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
@@ -309,7 +309,7 @@ func TestUpdateApp(t *testing.T) {
 	t.Run("Update app by unknown app", func(t *testing.T) {
 		t.Parallel()
 
-		app := random.App("api-app", uuid.NewString())
+		app := random.App("api-app", uuid.NewV7().String())
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
@@ -326,7 +326,7 @@ func TestUpdateApp(t *testing.T) {
 	t.Run("Updates are isolated by org ID", func(t *testing.T) {
 		t.Parallel()
 
-		app := random.App("api-app", uuid.NewString())
+		app := random.App("api-app", uuid.NewV7().String())
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
@@ -338,7 +338,7 @@ func TestUpdateApp(t *testing.T) {
 		require.NoError(t, err)
 
 		// Update app fields.
-		createApp.OrgId = uuid.NewString()
+		createApp.OrgId = uuid.NewV7().String()
 		createApp.Name = "api-app-" + random.String(10)
 
 		secCli := api.NewAppIdentityServiceClient(secondaryAdminGRPCConn)
@@ -353,7 +353,7 @@ func TestUpdateApp(t *testing.T) {
 	t.Run("Update app validation failure", func(t *testing.T) {
 		t.Parallel()
 
-		app := random.App("api-app", uuid.NewString())
+		app := random.App("api-app", uuid.NewV7().String())
 
 		ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
 		defer cancel()
@@ -389,7 +389,7 @@ func TestDeleteApp(t *testing.T) {
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		createApp, err := aiCli.CreateApp(ctx, &api.CreateAppRequest{
-			App: random.App("api-app", uuid.NewString()),
+			App: random.App("api-app", uuid.NewV7().String()),
 		})
 		t.Logf("createApp, err: %+v, %v", createApp, err)
 		require.NoError(t, err)
@@ -424,7 +424,7 @@ func TestDeleteApp(t *testing.T) {
 
 		aiCli := api.NewAppIdentityServiceClient(secondaryViewerGRPCConn)
 		_, err := aiCli.DeleteApp(ctx,
-			&api.DeleteAppRequest{Id: uuid.NewString()})
+			&api.DeleteAppRequest{Id: uuid.NewV7().String()})
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = PermissionDenied "+
 			"desc = permission denied, ADMIN role required")
@@ -438,7 +438,7 @@ func TestDeleteApp(t *testing.T) {
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		_, err := aiCli.DeleteApp(ctx,
-			&api.DeleteAppRequest{Id: uuid.NewString()})
+			&api.DeleteAppRequest{Id: uuid.NewV7().String()})
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
 			"dao: object not found")
@@ -452,7 +452,7 @@ func TestDeleteApp(t *testing.T) {
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		createApp, err := aiCli.CreateApp(ctx, &api.CreateAppRequest{
-			App: random.App("api-app", uuid.NewString()),
+			App: random.App("api-app", uuid.NewV7().String()),
 		})
 		t.Logf("createApp, err: %+v, %v", createApp, err)
 		require.NoError(t, err)
@@ -475,7 +475,7 @@ func TestListApps(t *testing.T) {
 	appIDs := make([]string, 0, 3)
 	appNames := make([]string, 0, 3)
 	for range 3 {
-		app := random.App("api-app", uuid.NewString())
+		app := random.App("api-app", uuid.NewV7().String())
 
 		aiCli := api.NewAppIdentityServiceClient(globalAdminGRPCConn)
 		createApp, err := aiCli.CreateApp(ctx,
