@@ -281,7 +281,7 @@ func TestUpdateApp(t *testing.T) {
 		t.Logf("updateApp, err: %+v, %v", updateApp, err)
 		require.Nil(t, updateApp)
 		require.Equal(t, status.Error(codes.InvalidArgument,
-			"invalid UpdateAppRequest.App: value is required"), err)
+			"validation error: app: value is required"), err)
 	})
 
 	t.Run("Partial update invalid field mask", func(t *testing.T) {
@@ -350,9 +350,7 @@ func TestUpdateApp(t *testing.T) {
 		t.Logf("app, updateApp, err: %+v, %+v, %v", app, updateApp, err)
 		require.Nil(t, updateApp)
 		require.Equal(t, status.Error(codes.InvalidArgument,
-			"invalid UpdateAppRequest.App: embedded message failed "+
-				"validation | caused by: invalid App.Name: value length "+
-				"must be between 5 and 40 runes, inclusive"), err)
+			"validation error: app.name: must be at most 40 characters"), err)
 	})
 
 	t.Run("Update app by invalid app", func(t *testing.T) {

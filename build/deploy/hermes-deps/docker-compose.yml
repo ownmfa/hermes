@@ -79,5 +79,3 @@ services:
 networks:
   default:
     name: hermes-deps
-    # driver_opts:
-    #   com.docker.network.bridge.host_binding_ipv4: "10.0.0.26"

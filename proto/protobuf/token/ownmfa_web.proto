@@ -1,4 +1,5 @@
 syntax = "proto3";
+
 package ownmfa.int.token;
 
 import "api/ownmfa_role.proto";

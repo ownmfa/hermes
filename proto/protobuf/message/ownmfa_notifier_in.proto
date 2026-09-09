@@ -1,4 +1,5 @@
 syntax = "proto3";
+
 package ownmfa.int.message;
 
 option go_package = "github.com/ownmfa/hermes/proto/go/message";
