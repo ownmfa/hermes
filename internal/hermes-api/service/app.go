@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"buf.build/go/protovalidate"
 	"github.com/mennanov/fmutils"
 	"github.com/ownmfa/hermes/internal/hermes-api/session"
 	"github.com/ownmfa/hermes/pkg/cache"
@@ -121,7 +122,7 @@ func (ai *AppIdentity) UpdateApp(
 
 	if req.GetApp() == nil {
 		return nil, status.Error(codes.InvalidArgument,
-			req.Validate().Error())
+			protovalidate.Validate(req).Error())
 	}
 	req.App.OrgId = sess.OrgID
 
@@ -145,7 +146,7 @@ func (ai *AppIdentity) UpdateApp(
 	}
 
 	// Validate after merge to support partial updates.
-	if err := req.Validate(); err != nil {
+	if err := protovalidate.Validate(req); err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
@@ -212,7 +213,8 @@ func (ai *AppIdentity) ListApps(ctx context.Context, req *api.ListAppsRequest) (
 
 		if resp.NextPageToken, err = session.GeneratePageToken(
 			apps[len(apps)-2].GetCreatedAt().AsTime(),
-			apps[len(apps)-2].GetId()); err != nil {
+			apps[len(apps)-2].GetId(),
+		); err != nil {
 			// GeneratePageToken should not error based on a DB-derived UUID.
 			// Log the error and include the usable empty token.
 			logger := hlog.FromContext(ctx)

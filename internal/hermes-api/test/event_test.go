@@ -146,8 +146,7 @@ func TestListEvents(t *testing.T) {
 		t.Logf("listEvents, err: %+v, %v", listEvents, err)
 		require.Nil(t, listEvents)
 		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+
-			"invalid ListEventsRequest.IdentityId: value must be a valid UUID "+
-			"| caused by: invalid uuid format")
+			"validation error: identity_id: must be a valid UUID")
 	})
 }
 
@@ -267,7 +266,6 @@ func TestLatestEvents(t *testing.T) {
 		t.Logf("latEvents, err: %+v, %v", latEvents, err)
 		require.Nil(t, latEvents)
 		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+
-			"invalid LatestEventsRequest.IdentityId: value must be a valid "+
-			"UUID | caused by: invalid uuid format")
+			"validation error: identity_id: must be a valid UUID")
 	})
 }

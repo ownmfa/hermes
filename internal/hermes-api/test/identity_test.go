@@ -248,9 +248,7 @@ func TestCreateIdentity(t *testing.T) {
 		t.Logf("createIdentity, err: %+v, %v", createIdentity, err)
 		require.Nil(t, createIdentity)
 		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+
-			"invalid CreateIdentityRequest.Identity: embedded message failed "+
-			"validation | caused by: invalid Identity.Comment: value length "+
-			"must be between 5 and 80 runes, inclusive")
+			"validation error: identity.comment: must be at most 80 characters")
 	})
 
 	t.Run("Create valid identity with insufficient plan", func(t *testing.T) {

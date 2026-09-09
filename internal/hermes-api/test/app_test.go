@@ -68,9 +68,7 @@ func TestCreateApp(t *testing.T) {
 		t.Logf("createApp, err: %+v, %v", createApp, err)
 		require.Nil(t, createApp)
 		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+
-			"invalid CreateAppRequest.App: embedded message failed validation "+
-			"| caused by: invalid App.Name: value length must be between 5 "+
-			"and 40 runes, inclusive")
+			"validation error: app.name: must be at most 40 characters")
 	})
 }
 
@@ -231,7 +229,7 @@ func TestUpdateApp(t *testing.T) {
 		t.Logf("updateApp, err: %+v, %v", updateApp, err)
 		require.Nil(t, updateApp)
 		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+
-			"invalid UpdateAppRequest.App: value is required")
+			"validation error: app: value is required")
 	})
 
 	t.Run("Update app with insufficient role", func(t *testing.T) {
@@ -372,9 +370,7 @@ func TestUpdateApp(t *testing.T) {
 		t.Logf("updateApp, err: %+v, %v", updateApp, err)
 		require.Nil(t, updateApp)
 		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+
-			"invalid UpdateAppRequest.App: embedded message failed validation "+
-			"| caused by: invalid App.Name: value length must be between 5 "+
-			"and 40 runes, inclusive")
+			"validation error: app.name: must be at most 40 characters")
 	})
 }
 
