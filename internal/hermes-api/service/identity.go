@@ -78,7 +78,8 @@ func (ai *AppIdentity) validatePlan(
 		}
 
 		if err := ai.notify.ValidatePushover(
-			m.PushoverMethod.GetPushoverKey()); err != nil {
+			m.PushoverMethod.GetPushoverKey(),
+		); err != nil {
 			return errToStatus(err)
 		}
 	case *api.Identity_EmailMethod:
@@ -407,12 +408,11 @@ func (ai *AppIdentity) ChallengeIdentity(
 		logger.Logger = logger.WithField("appID", identity.GetAppId())
 		logger.Logger = logger.WithField("identityID", identity.GetId())
 
-		nIn := &message.NotifierIn{
-			OrgId:      identity.GetOrgId(),
-			AppId:      identity.GetAppId(),
-			IdentityId: identity.GetId(),
-			TraceId:    sess.TraceID[:],
-		}
+		nIn := &message.NotifierIn{}
+		nIn.SetOrgId(identity.GetOrgId())
+		nIn.SetAppId(identity.GetAppId())
+		nIn.SetIdentityId(identity.GetId())
+		nIn.SetTraceId(sess.TraceID[:])
 
 		// Build and publish NotifierIn message.
 		bNIn, err := proto.Marshal(nIn)
@@ -582,7 +582,8 @@ func (ai *AppIdentity) ListIdentities(
 
 		if resp.NextPageToken, err = session.GeneratePageToken(
 			identities[len(identities)-2].GetCreatedAt().AsTime(),
-			identities[len(identities)-2].GetId()); err != nil {
+			identities[len(identities)-2].GetId(),
+		); err != nil {
 			// GeneratePageToken should not error based on a DB-derived UUID.
 			// Log the error and include the usable empty token.
 			logger := hlog.FromContext(ctx)

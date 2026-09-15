@@ -780,12 +780,11 @@ func TestChallengeIdentity(t *testing.T) {
 			t.Logf("res: %+v", res)
 
 			// Normalize generated trace ID.
-			nIn := &message.NotifierIn{
-				OrgId:      createIdentity.GetIdentity().GetOrgId(),
-				AppId:      createIdentity.GetIdentity().GetAppId(),
-				IdentityId: createIdentity.GetIdentity().GetId(),
-				TraceId:    res.GetTraceId(),
-			}
+			nIn := &message.NotifierIn{}
+			nIn.SetOrgId(createIdentity.GetIdentity().GetOrgId())
+			nIn.SetAppId(createIdentity.GetIdentity().GetAppId())
+			nIn.SetIdentityId(createIdentity.GetIdentity().GetId())
+			nIn.SetTraceId(res.GetTraceId())
 
 			require.EqualExportedValues(t, nIn, res)
 		case <-time.After(testTimeout):
@@ -922,12 +921,11 @@ func TestChallengeIdentity(t *testing.T) {
 			t.Logf("res: %+v", res)
 
 			// Normalize generated trace ID.
-			nIn := &message.NotifierIn{
-				OrgId:      createIdentity.GetIdentity().GetOrgId(),
-				AppId:      createIdentity.GetIdentity().GetAppId(),
-				IdentityId: createIdentity.GetIdentity().GetId(),
-				TraceId:    res.GetTraceId(),
-			}
+			nIn := &message.NotifierIn{}
+			nIn.SetOrgId(createIdentity.GetIdentity().GetOrgId())
+			nIn.SetAppId(createIdentity.GetIdentity().GetAppId())
+			nIn.SetIdentityId(createIdentity.GetIdentity().GetId())
+			nIn.SetTraceId(res.GetTraceId())
 
 			require.EqualExportedValues(t, nIn, res)
 		case <-time.After(testTimeout):

@@ -35,7 +35,7 @@ func TestNotifyMessages(t *testing.T) {
 	smsIdentity := random.SMSIdentity("not", app.GetOrgId(), app.GetId())
 	pushoverIdentity := random.PushoverIdentity("not", app.GetOrgId(), app.GetId())
 	emailIdentity := random.EmailIdentity("not", app.GetOrgId(), app.GetId())
-	traceID := uuid.New()
+	traceID := uuid.NewV7()
 
 	appByKey := random.App("not", uuid.NewV7().String())
 	appByKey.PushoverKey = random.String(30)
@@ -56,28 +56,28 @@ func TestNotifyMessages(t *testing.T) {
 		inpEmailTimes         int
 	}{
 		{
-			&message.NotifierIn{
-				OrgId: app.GetOrgId(), AppId: app.GetId(), IdentityId: smsIdentity.GetId(),
+			message.NotifierIn_builder{
+				OrgId: &app.OrgId, AppId: &app.Id, IdentityId: &smsIdentity.Id,
 				TraceId: traceID[:],
-			}, app, smsIdentity, smsPushoverExpire, 1, 0, 0, 0,
+			}.Build(), app, smsIdentity, smsPushoverExpire, 1, 0, 0, 0,
 		},
 		{
-			&message.NotifierIn{
-				OrgId: app.GetOrgId(), AppId: app.GetId(),
-				IdentityId: pushoverIdentity.GetId(), TraceId: traceID[:],
-			}, app, pushoverIdentity, smsPushoverExpire, 0, 1, 0, 0,
+			message.NotifierIn_builder{
+				OrgId: &app.OrgId, AppId: &app.Id,
+				IdentityId: &pushoverIdentity.Id, TraceId: traceID[:],
+			}.Build(), app, pushoverIdentity, smsPushoverExpire, 0, 1, 0, 0,
 		},
 		{
-			&message.NotifierIn{
-				OrgId: appByKey.GetOrgId(), AppId: appByKey.GetId(),
-				IdentityId: identityByKey.GetId(), TraceId: traceID[:],
-			}, appByKey, identityByKey, smsPushoverExpire, 0, 0, 1, 0,
+			message.NotifierIn_builder{
+				OrgId: &appByKey.OrgId, AppId: &appByKey.Id,
+				IdentityId: &identityByKey.Id, TraceId: traceID[:],
+			}.Build(), appByKey, identityByKey, smsPushoverExpire, 0, 0, 1, 0,
 		},
 		{
-			&message.NotifierIn{
-				OrgId: app.GetOrgId(), AppId: app.GetId(), IdentityId: emailIdentity.GetId(),
+			message.NotifierIn_builder{
+				OrgId: &app.OrgId, AppId: &app.Id, IdentityId: &emailIdentity.Id,
 				TraceId: traceID[:],
-			}, app, emailIdentity, emailExpire, 0, 0, 0, 1,
+			}.Build(), app, emailIdentity, emailExpire, 0, 0, 0, 1,
 		},
 	}
 
@@ -218,48 +218,53 @@ func TestNotifyMessagesError(t *testing.T) {
 		},
 		// Identityer error.
 		{
-			&message.NotifierIn{}, smsIdentity, errTestProc, 1, nil, 0, nil,
-			nil, nil, 0, -1, nil, 0, nil, 0, nil, 0, nil, 0, 0,
+			message.NotifierIn_builder{}.Build(), smsIdentity, errTestProc, 1,
+			nil, 0, nil, nil, nil, 0, -1, nil, 0, nil, 0, nil, 0, nil, 0, 0,
 		},
 		// Cacher Incr error.
 		{
-			&message.NotifierIn{}, smsIdentity, nil, 1, errTestProc, 1, nil,
-			nil, nil, 0, -1, nil, 0, nil, 0, nil, 0, nil, 0, 0,
+			message.NotifierIn_builder{}.Build(), smsIdentity, nil, 1,
+			errTestProc, 1, nil, nil, nil, 0, -1, nil, 0, nil, 0, nil, 0, nil,
+			0, 0,
 		},
 		// OTP error.
 		{
-			&message.NotifierIn{}, smsIdentity, nil, 1, nil, 1, &oath.OTP{},
-			nil, nil, 0, -1, nil, 0, nil, 0, nil, 0, nil, 0, 0,
+			message.NotifierIn_builder{}.Build(), smsIdentity, nil, 1, nil, 1,
+			&oath.OTP{}, nil, nil, 0, -1, nil, 0, nil, 0, nil, 0, nil, 0, 0,
 		},
 		// Apper error.
 		{
-			&message.NotifierIn{}, smsIdentity, nil, 1, nil, 1, otp, nil,
-			errTestProc, 1, -1, nil, 0, nil, 0, nil, 0, nil, 0, 0,
+			message.NotifierIn_builder{}.Build(), smsIdentity, nil, 1, nil, 1,
+			otp, nil, errTestProc, 1, -1, nil, 0, nil, 0, nil, 0, nil, 0, 0,
 		},
 		// Templates error.
 		{
-			&message.NotifierIn{}, pushoverIdentity, nil, 1, nil, 1, otp,
-			badTemplApp, nil, 1, -1, nil, 0, nil, 0, nil, 0, nil, 0, 0,
+			message.NotifierIn_builder{}.Build(), pushoverIdentity, nil, 1, nil,
+			1, otp, badTemplApp, nil, 1, -1, nil, 0, nil, 0, nil, 0, nil, 0, 0,
 		},
 		// Cacher SetIfNotExistTTL error.
 		{
-			&message.NotifierIn{}, smsIdentity, nil, 1, nil, 1, otp, app, nil,
-			1, smsPushoverExpire, errTestProc, 1, nil, 0, nil, 0, nil, 0, 0,
+			message.NotifierIn_builder{}.Build(), smsIdentity, nil, 1, nil, 1,
+			otp, app, nil, 1, smsPushoverExpire, errTestProc, 1, nil, 0, nil, 0,
+			nil, 0, 0,
 		},
 		// Notifier SMS error.
 		{
-			&message.NotifierIn{}, smsIdentity, nil, 1, nil, 1, otp, app, nil,
-			1, smsPushoverExpire, nil, 1, errTestProc, 1, nil, 0, nil, 0, 1,
+			message.NotifierIn_builder{}.Build(), smsIdentity, nil, 1, nil, 1,
+			otp, app, nil, 1, smsPushoverExpire, nil, 1, errTestProc, 1, nil, 0,
+			nil, 0, 1,
 		},
 		// Notifier Pushover error.
 		{
-			&message.NotifierIn{}, pushoverIdentity, nil, 1, nil, 1, otp, app,
-			nil, 1, smsPushoverExpire, nil, 1, nil, 0, errTestProc, 1, nil, 0, 1,
+			message.NotifierIn_builder{}.Build(), pushoverIdentity, nil, 1, nil,
+			1, otp, app, nil, 1, smsPushoverExpire, nil, 1, nil, 0, errTestProc,
+			1, nil, 0, 1,
 		},
 		// Notifier email error.
 		{
-			&message.NotifierIn{}, emailIdentity, nil, 1, nil, 1, otp, app, nil,
-			1, emailExpire, nil, 1, nil, 0, nil, 0, errTestProc, 1, 1,
+			message.NotifierIn_builder{}.Build(), emailIdentity, nil, 1, nil, 1,
+			otp, app, nil, 1, emailExpire, nil, 1, nil, 0, nil, 0, errTestProc,
+			1, 1,
 		},
 	}
 
