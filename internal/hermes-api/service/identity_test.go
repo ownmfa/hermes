@@ -1585,12 +1585,11 @@ func TestChallengeIdentity(t *testing.T) {
 			t.Logf("res: %+v", res)
 
 			// Normalize generated trace ID.
-			nIn := &message.NotifierIn{
-				OrgId:      identity.GetOrgId(),
-				AppId:      identity.GetAppId(),
-				IdentityId: identity.GetId(),
-				TraceId:    res.GetTraceId(),
-			}
+			nIn := &message.NotifierIn{}
+			nIn.SetOrgId(identity.GetOrgId())
+			nIn.SetAppId(identity.GetAppId())
+			nIn.SetIdentityId(identity.GetId())
+			nIn.SetTraceId(res.GetTraceId())
 
 			require.EqualExportedValues(t, nIn, res)
 		case <-time.After(testTimeout):

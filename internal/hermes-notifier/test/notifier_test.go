@@ -67,28 +67,28 @@ func TestNotifyMessages(t *testing.T) {
 		inp *message.NotifierIn
 	}{
 		{
-			&message.NotifierIn{
-				OrgId: createOrg.GetId(), AppId: createApp.GetId(),
-				IdentityId: createSMSIdentity.GetId(), TraceId: traceID[:],
-			},
+			message.NotifierIn_builder{
+				OrgId: &createOrg.Id, AppId: &createApp.Id,
+				IdentityId: &createSMSIdentity.Id, TraceId: traceID[:],
+			}.Build(),
 		},
 		{
-			&message.NotifierIn{
-				OrgId: createOrg.GetId(), AppId: createApp.GetId(),
-				IdentityId: createPushoverIdentity.GetId(), TraceId: traceID[:],
-			},
+			message.NotifierIn_builder{
+				OrgId: &createOrg.Id, AppId: &createApp.Id,
+				IdentityId: &createPushoverIdentity.Id, TraceId: traceID[:],
+			}.Build(),
 		},
 		{
-			&message.NotifierIn{
-				OrgId: createOrg.GetId(), AppId: createAppByKey.GetId(),
-				IdentityId: createIdentityByKey.GetId(), TraceId: traceID[:],
-			},
+			message.NotifierIn_builder{
+				OrgId: &createOrg.Id, AppId: &createAppByKey.Id,
+				IdentityId: &createIdentityByKey.Id, TraceId: traceID[:],
+			}.Build(),
 		},
 		{
-			&message.NotifierIn{
-				OrgId: createOrg.GetId(), AppId: createApp.GetId(),
-				IdentityId: createEmailIdentity.GetId(), TraceId: traceID[:],
-			},
+			message.NotifierIn_builder{
+				OrgId: &createOrg.Id, AppId: &createApp.Id,
+				IdentityId: &createEmailIdentity.Id, TraceId: traceID[:],
+			}.Build(),
 		},
 	}
 
@@ -194,24 +194,24 @@ func TestNotifyMessagesError(t *testing.T) {
 		{nil, false, ""},
 		// OTP error.
 		{
-			&message.NotifierIn{
-				OrgId: createOrg.GetId(), AppId: createApp.GetId(),
-				IdentityId: createBadOTPIdentity.GetId(), TraceId: traceID[:],
-			}, false, "",
+			message.NotifierIn_builder{
+				OrgId: &createOrg.Id, AppId: &createApp.Id,
+				IdentityId: &createBadOTPIdentity.Id, TraceId: traceID[:],
+			}.Build(), false, "",
 		},
 		// Expiration collision.
 		{
-			&message.NotifierIn{
-				OrgId: createOrg.GetId(), AppId: createApp.GetId(),
-				IdentityId: createExpIdentity.GetId(), TraceId: traceID[:],
-			}, false, "",
+			message.NotifierIn_builder{
+				OrgId: &createOrg.Id, AppId: &createApp.Id,
+				IdentityId: &createExpIdentity.Id, TraceId: traceID[:],
+			}.Build(), false, "",
 		},
 		// Templates error.
 		{
-			&message.NotifierIn{
-				OrgId: createOrg.GetId(), AppId: createBadTemplApp.GetId(),
-				IdentityId: createBadTemplIdentity.GetId(), TraceId: traceID[:],
-			}, true, "template: template:1: unclosed action",
+			message.NotifierIn_builder{
+				OrgId: &createOrg.Id, AppId: &createBadTemplApp.Id,
+				IdentityId: &createBadTemplIdentity.Id, TraceId: traceID[:],
+			}.Build(), true, "template: template:1: unclosed action",
 		},
 	}
 
