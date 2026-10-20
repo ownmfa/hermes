@@ -2,8 +2,8 @@
 # docker login -u ownmfa -p XXX ghcr.io
 # TAG=$(git rev-parse --short=7 HEAD)
 # docker buildx create --use
-## docker buildx build --progress plain -f build/Dockerfile -t ghcr.io/ownmfa/hermes:${TAG} --platform linux/amd64,linux/arm64 --push .
-# docker buildx build --progress plain -f build/Dockerfile -t ghcr.io/ownmfa/hermes:${TAG} --push .
+## docker buildx build --no-cache --progress plain -f build/Dockerfile -t ghcr.io/ownmfa/hermes:${TAG} --platform linux/amd64,linux/arm64 --push .
+# docker buildx build --no-cache --progress plain -f build/Dockerfile -t ghcr.io/ownmfa/hermes:${TAG} --push .
 # docker buildx rm
 # docker logout ghcr.io
 FROM golang:1-alpine AS build
