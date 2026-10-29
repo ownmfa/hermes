@@ -83,10 +83,10 @@ func TestLogin(t *testing.T) {
 		defer cancel()
 
 		sessCli := api.NewSessionServiceClient(globalNoAuthGRPCConn)
-		login, err := sessCli.Login(ctx, &api.LoginRequest{
+		login, err := sessCli.Login(ctx, api.LoginRequest_builder{
 			Email: createUser.GetEmail(), OrgName: createOrg.GetName(),
 			Password: globalPass,
-		})
+		}.Build())
 		t.Logf("loginResp, err: %+v, %v", login, err)
 		require.NoError(t, err)
 		require.Greater(t, len(login.GetToken()), 90)
@@ -101,10 +101,10 @@ func TestLogin(t *testing.T) {
 		defer cancel()
 
 		sessCli := api.NewSessionServiceClient(globalNoAuthGRPCConn)
-		login, err := sessCli.Login(ctx, &api.LoginRequest{
+		login, err := sessCli.Login(ctx, api.LoginRequest_builder{
 			Email: createDisOrgUser.GetEmail(), OrgName: createDisOrg.GetName(),
 			Password: random.String(10),
-		})
+		}.Build())
 		t.Logf("loginResp, err: %+v, %v", login, err)
 		require.Nil(t, login)
 		require.EqualError(t, err, "rpc error: code = Unauthenticated desc = "+
@@ -118,10 +118,10 @@ func TestLogin(t *testing.T) {
 		defer cancel()
 
 		sessCli := api.NewSessionServiceClient(globalNoAuthGRPCConn)
-		login, err := sessCli.Login(ctx, &api.LoginRequest{
+		login, err := sessCli.Login(ctx, api.LoginRequest_builder{
 			Email: random.Email(), OrgName: random.String(10),
 			Password: random.String(10),
-		})
+		}.Build())
 		t.Logf("loginResp, err: %+v, %v", login, err)
 		require.Nil(t, login)
 		require.EqualError(t, err, "rpc error: code = Unauthenticated desc = "+
@@ -135,10 +135,10 @@ func TestLogin(t *testing.T) {
 		defer cancel()
 
 		sessCli := api.NewSessionServiceClient(globalNoAuthGRPCConn)
-		login, err := sessCli.Login(ctx, &api.LoginRequest{
+		login, err := sessCli.Login(ctx, api.LoginRequest_builder{
 			Email: createUser.GetEmail(), OrgName: createOrg.GetName(),
 			Password: random.String(10),
-		})
+		}.Build())
 		t.Logf("loginResp, err: %+v, %v", login, err)
 		require.Nil(t, login)
 		require.EqualError(t, err, "rpc error: code = Unauthenticated desc = "+
@@ -152,10 +152,10 @@ func TestLogin(t *testing.T) {
 		defer cancel()
 
 		sessCli := api.NewSessionServiceClient(globalNoAuthGRPCConn)
-		login, err := sessCli.Login(ctx, &api.LoginRequest{
+		login, err := sessCli.Login(ctx, api.LoginRequest_builder{
 			Email: createDisUser.GetEmail(), OrgName: createOrg.GetName(),
 			Password: globalPass,
-		})
+		}.Build())
 		t.Logf("loginResp, err: %+v, %v", login, err)
 		require.Nil(t, login)
 		require.EqualError(t, err, "rpc error: code = Unauthenticated desc = "+
@@ -169,10 +169,10 @@ func TestLogin(t *testing.T) {
 		defer cancel()
 
 		sessCli := api.NewSessionServiceClient(globalNoAuthGRPCConn)
-		login, err := sessCli.Login(ctx, &api.LoginRequest{
+		login, err := sessCli.Login(ctx, api.LoginRequest_builder{
 			Email: createUnspecUser.GetEmail(), OrgName: createOrg.GetName(),
 			Password: globalPass,
-		})
+		}.Build())
 		t.Logf("loginResp, err: %+v, %v", login, err)
 		require.Nil(t, login)
 		require.EqualError(t, err, "rpc error: code = Unauthenticated desc = "+
@@ -194,7 +194,7 @@ func TestCreateKey(t *testing.T) {
 
 		sessCli := api.NewSessionServiceClient(globalAdminGRPCConn)
 		createKey, err := sessCli.CreateKey(ctx,
-			&api.CreateKeyRequest{Key: key})
+			api.CreateKeyRequest_builder{Key: key}.Build())
 		t.Logf("createKey, err: %+v, %v", createKey, err)
 		require.NoError(t, err)
 		require.NotEqual(t, key.GetId(), createKey.GetKey().GetId())
@@ -211,8 +211,8 @@ func TestCreateKey(t *testing.T) {
 
 		sessCli := api.NewSessionServiceClient(secondaryViewerGRPCConn)
 		createKey, err := sessCli.CreateKey(ctx,
-			&api.CreateKeyRequest{Key: random.Key("api-key",
-				uuid.NewV7().String())})
+			api.CreateKeyRequest_builder{Key: random.Key("api-key",
+				uuid.NewV7().String())}.Build())
 		t.Logf("createKey, err: %+v, %v", createKey, err)
 		require.Nil(t, createKey)
 		require.EqualError(t, err, "rpc error: code = PermissionDenied desc = "+
@@ -230,7 +230,7 @@ func TestCreateKey(t *testing.T) {
 
 		sessCli := api.NewSessionServiceClient(globalAdminGRPCConn)
 		createKey, err := sessCli.CreateKey(ctx,
-			&api.CreateKeyRequest{Key: key})
+			api.CreateKeyRequest_builder{Key: key}.Build())
 		t.Logf("createKey, err: %+v, %v", createKey, err)
 		require.Nil(t, createKey)
 		require.EqualError(t, err, "rpc error: code = PermissionDenied desc = "+
@@ -248,7 +248,7 @@ func TestCreateKey(t *testing.T) {
 
 		sessCli := api.NewSessionServiceClient(globalAdminGRPCConn)
 		createKey, err := sessCli.CreateKey(ctx,
-			&api.CreateKeyRequest{Key: key})
+			api.CreateKeyRequest_builder{Key: key}.Build())
 		t.Logf("createKey, err: %+v, %v", createKey, err)
 		require.Nil(t, createKey)
 		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+
@@ -270,12 +270,12 @@ func TestDeleteKey(t *testing.T) {
 
 		sessCli := api.NewSessionServiceClient(globalAdminGRPCConn)
 		createKey, err := sessCli.CreateKey(ctx,
-			&api.CreateKeyRequest{Key: key})
+			api.CreateKeyRequest_builder{Key: key}.Build())
 		t.Logf("createKey, err: %+v, %v", createKey, err)
 		require.NoError(t, err)
 
 		_, err = sessCli.DeleteKey(ctx,
-			&api.DeleteKeyRequest{Id: createKey.GetKey().GetId()})
+			api.DeleteKeyRequest_builder{Id: createKey.GetKey().GetId()}.Build())
 		t.Logf("err: %v", err)
 		require.NoError(t, err)
 
@@ -288,7 +288,8 @@ func TestDeleteKey(t *testing.T) {
 
 			sessCli := api.NewSessionServiceClient(globalAdminKeyGRPCConn)
 			_, err := sessCli.DeleteKey(ctx,
-				&api.DeleteKeyRequest{Id: createKey.GetKey().GetId()})
+				api.DeleteKeyRequest_builder{Id: createKey.GetKey().GetId()}.
+					Build())
 			t.Logf("err: %v", err)
 			require.EqualError(t, err, "rpc error: code = NotFound desc = "+
 				"dao: object not found")
@@ -307,7 +308,7 @@ func TestDeleteKey(t *testing.T) {
 
 		sessCli := api.NewSessionServiceClient(globalAdminGRPCConn)
 		createKey, err := sessCli.CreateKey(ctx,
-			&api.CreateKeyRequest{Key: key})
+			api.CreateKeyRequest_builder{Key: key}.Build())
 		t.Logf("createKey, err: %+v, %v", createKey, err)
 		require.NoError(t, err)
 
@@ -320,12 +321,12 @@ func TestDeleteKey(t *testing.T) {
 
 		sessCli = api.NewSessionServiceClient(keyConn)
 		_, err = sessCli.DeleteKey(ctx,
-			&api.DeleteKeyRequest{Id: createKey.GetKey().GetId()})
+			api.DeleteKeyRequest_builder{Id: createKey.GetKey().GetId()}.Build())
 		t.Logf("err: %v", err)
 		require.NoError(t, err)
 
 		_, err = sessCli.DeleteKey(ctx,
-			&api.DeleteKeyRequest{Id: createKey.GetKey().GetId()})
+			api.DeleteKeyRequest_builder{Id: createKey.GetKey().GetId()}.Build())
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = Unauthenticated desc = "+
 			"unauthorized")
@@ -339,7 +340,7 @@ func TestDeleteKey(t *testing.T) {
 
 		sessCli := api.NewSessionServiceClient(secondaryViewerGRPCConn)
 		_, err := sessCli.DeleteKey(ctx,
-			&api.DeleteKeyRequest{Id: uuid.NewV7().String()})
+			api.DeleteKeyRequest_builder{Id: uuid.NewV7().String()}.Build())
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = PermissionDenied "+
 			"desc = permission denied, ADMIN role required")
@@ -353,7 +354,7 @@ func TestDeleteKey(t *testing.T) {
 
 		sessCli := api.NewSessionServiceClient(globalAdminGRPCConn)
 		_, err := sessCli.DeleteKey(ctx,
-			&api.DeleteKeyRequest{Id: uuid.NewV7().String()})
+			api.DeleteKeyRequest_builder{Id: uuid.NewV7().String()}.Build())
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
 			"dao: object not found")
@@ -370,13 +371,13 @@ func TestDeleteKey(t *testing.T) {
 
 		sessCli := api.NewSessionServiceClient(globalAdminGRPCConn)
 		createKey, err := sessCli.CreateKey(ctx,
-			&api.CreateKeyRequest{Key: key})
+			api.CreateKeyRequest_builder{Key: key}.Build())
 		t.Logf("createKey, err: %+v, %v", createKey, err)
 		require.NoError(t, err)
 
 		secCli := api.NewSessionServiceClient(secondaryAdminGRPCConn)
 		_, err = secCli.DeleteKey(ctx,
-			&api.DeleteKeyRequest{Id: createKey.GetKey().GetId()})
+			api.DeleteKeyRequest_builder{Id: createKey.GetKey().GetId()}.Build())
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
 			"dao: object not found")
@@ -398,7 +399,7 @@ func TestListKeys(t *testing.T) {
 
 		sessCli := api.NewSessionServiceClient(globalAdminGRPCConn)
 		createKey, err := sessCli.CreateKey(ctx,
-			&api.CreateKeyRequest{Key: key})
+			api.CreateKeyRequest_builder{Key: key}.Build())
 		t.Logf("createKey, err: %+v, %v", createKey, err)
 		require.NoError(t, err)
 
@@ -439,16 +440,16 @@ func TestListKeys(t *testing.T) {
 
 		sessCli := api.NewSessionServiceClient(globalAdminKeyGRPCConn)
 		listKeys, err := sessCli.ListKeys(ctx,
-			&api.ListKeysRequest{PageSize: 2})
+			api.ListKeysRequest_builder{PageSize: 2}.Build())
 		t.Logf("listKeys, err: %+v, %v", listKeys, err)
 		require.NoError(t, err)
 		require.Len(t, listKeys.GetKeys(), 2)
 		require.NotEmpty(t, listKeys.GetNextPageToken())
 		require.GreaterOrEqual(t, listKeys.GetTotalSize(), int32(3))
 
-		nextKeys, err := sessCli.ListKeys(ctx, &api.ListKeysRequest{
+		nextKeys, err := sessCli.ListKeys(ctx, api.ListKeysRequest_builder{
 			PageSize: 2, PageToken: listKeys.GetNextPageToken(),
-		})
+		}.Build())
 		t.Logf("nextKeys, err: %+v, %v", nextKeys, err)
 		require.NoError(t, err)
 		require.NotEmpty(t, nextKeys.GetKeys())
@@ -491,7 +492,7 @@ func TestListKeys(t *testing.T) {
 
 		sessCli := api.NewSessionServiceClient(globalAdminGRPCConn)
 		listKeys, err := sessCli.ListKeys(ctx,
-			&api.ListKeysRequest{PageToken: badUUID})
+			api.ListKeysRequest_builder{PageToken: badUUID}.Build())
 		t.Logf("listKeys, err: %+v, %v", listKeys, err)
 		require.Nil(t, listKeys)
 		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+

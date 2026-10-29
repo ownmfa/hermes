@@ -42,7 +42,7 @@ func TestCreateUser(t *testing.T) {
 
 		userSvc := NewUser(userer)
 		createUser, err := userSvc.CreateUser(ctx,
-			&api.CreateUserRequest{User: user})
+			api.CreateUserRequest_builder{User: user}.Build())
 		t.Logf("user, createUser, err: %+v, %+v, %v", user, createUser, err)
 		require.NoError(t, err)
 		require.EqualExportedValues(t, user, createUser)
@@ -91,7 +91,7 @@ func TestCreateUser(t *testing.T) {
 
 		userSvc := NewUser(nil)
 		createUser, err := userSvc.CreateUser(ctx,
-			&api.CreateUserRequest{User: user})
+			api.CreateUserRequest_builder{User: user}.Build())
 		t.Logf("user, createUser, err: %+v, %+v, %v", user, createUser, err)
 		require.Nil(t, createUser)
 		require.Equal(t, status.Error(codes.PermissionDenied, "permission "+
@@ -115,7 +115,7 @@ func TestCreateUser(t *testing.T) {
 
 		userSvc := NewUser(userer)
 		createUser, err := userSvc.CreateUser(ctx,
-			&api.CreateUserRequest{User: user})
+			api.CreateUserRequest_builder{User: user}.Build())
 		t.Logf("user, createUser, err: %+v, %+v, %v", user, createUser, err)
 		require.Nil(t, createUser)
 		require.Equal(t, status.Error(codes.InvalidArgument,
@@ -142,7 +142,8 @@ func TestGetUser(t *testing.T) {
 		defer cancel()
 
 		userSvc := NewUser(userer)
-		getUser, err := userSvc.GetUser(ctx, &api.GetUserRequest{Id: user.GetId()})
+		getUser, err := userSvc.GetUser(ctx,
+			api.GetUserRequest_builder{Id: user.GetId()}.Build())
 		t.Logf("user, getUser, err: %+v, %+v, %v", user, getUser, err)
 		require.NoError(t, err)
 		require.EqualExportedValues(t, user, getUser)
@@ -193,7 +194,7 @@ func TestGetUser(t *testing.T) {
 
 		userSvc := NewUser(userer)
 		getUser, err := userSvc.GetUser(ctx,
-			&api.GetUserRequest{Id: uuid.NewV7().String()})
+			api.GetUserRequest_builder{Id: uuid.NewV7().String()}.Build())
 		t.Logf("getUser, err: %+v, %v", getUser, err)
 		require.Nil(t, getUser)
 		require.Equal(t, status.Error(codes.NotFound,
@@ -221,7 +222,7 @@ func TestUpdateUser(t *testing.T) {
 
 		userSvc := NewUser(userer)
 		updateUser, err := userSvc.UpdateUser(ctx,
-			&api.UpdateUserRequest{User: user})
+			api.UpdateUserRequest_builder{User: user}.Build())
 		t.Logf("user, updateUser, err: %+v, %+v, %v", user, updateUser, err)
 		require.NoError(t, err)
 		require.EqualExportedValues(t, user, updateUser)
@@ -233,12 +234,13 @@ func TestUpdateUser(t *testing.T) {
 		user := random.User("api-user", uuid.NewV7().String())
 		user.Role = api.Role_ADMIN
 		retUser, _ := proto.Clone(user).(*api.User)
-		part := &api.User{Id: user.GetId(), Status: api.Status_ACTIVE}
-		merged := &api.User{
+		part := api.User_builder{Id: user.GetId(), Status: api.Status_ACTIVE}.
+			Build()
+		merged := api.User_builder{
 			Id: user.GetId(), OrgId: user.GetOrgId(), Name: user.GetName(),
 			Email: user.GetEmail(), Role: user.GetRole(),
 			Status: part.GetStatus(),
-		}
+		}.Build()
 		retMerged, _ := proto.Clone(merged).(*api.User)
 
 		userer := NewMockUserer(gomock.NewController(t))
@@ -253,11 +255,11 @@ func TestUpdateUser(t *testing.T) {
 		defer cancel()
 
 		userSvc := NewUser(userer)
-		updateUser, err := userSvc.UpdateUser(ctx, &api.UpdateUserRequest{
+		updateUser, err := userSvc.UpdateUser(ctx, api.UpdateUserRequest_builder{
 			User: part, UpdateMask: &fieldmaskpb.FieldMask{
 				Paths: []string{"status"},
 			},
-		})
+		}.Build())
 		t.Logf("merged, updateUser, err: %+v, %+v, %v", merged, updateUser, err)
 		require.NoError(t, err)
 		require.EqualExportedValues(t, merged, updateUser)
@@ -286,7 +288,7 @@ func TestUpdateUser(t *testing.T) {
 
 		userSvc := NewUser(nil)
 		updateUser, err := userSvc.UpdateUser(ctx,
-			&api.UpdateUserRequest{User: nil})
+			api.UpdateUserRequest_builder{User: nil}.Build())
 		t.Logf("updateUser, err: %+v, %v", updateUser, err)
 		require.Nil(t, updateUser)
 		require.Equal(t, status.Error(codes.InvalidArgument,
@@ -305,9 +307,9 @@ func TestUpdateUser(t *testing.T) {
 		defer cancel()
 
 		userSvc := NewUser(nil)
-		updateUser, err := userSvc.UpdateUser(ctx, &api.UpdateUserRequest{
+		updateUser, err := userSvc.UpdateUser(ctx, api.UpdateUserRequest_builder{
 			User: random.User("api-user", uuid.NewV7().String()),
-		})
+		}.Build())
 		t.Logf("updateUser, err: %+v, %v", updateUser, err)
 		require.Nil(t, updateUser)
 		require.Equal(t, errPerm(api.Role_ADMIN), err)
@@ -329,7 +331,7 @@ func TestUpdateUser(t *testing.T) {
 
 		userSvc := NewUser(nil)
 		updateUser, err := userSvc.UpdateUser(ctx,
-			&api.UpdateUserRequest{User: user})
+			api.UpdateUserRequest_builder{User: user}.Build())
 		t.Logf("user, updateUser, err: %+v, %+v, %v", user, updateUser, err)
 		require.Nil(t, updateUser)
 		require.Equal(t, status.Error(codes.PermissionDenied, "permission "+
@@ -352,7 +354,7 @@ func TestUpdateUser(t *testing.T) {
 
 		userSvc := NewUser(nil)
 		updateUser, err := userSvc.UpdateUser(ctx,
-			&api.UpdateUserRequest{User: user})
+			api.UpdateUserRequest_builder{User: user}.Build())
 		t.Logf("user, updateUser, err: %+v, %+v, %v", user, updateUser, err)
 		require.Nil(t, updateUser)
 		require.Equal(t, status.Error(codes.PermissionDenied, "permission "+
@@ -373,11 +375,11 @@ func TestUpdateUser(t *testing.T) {
 		defer cancel()
 
 		userSvc := NewUser(nil)
-		updateUser, err := userSvc.UpdateUser(ctx, &api.UpdateUserRequest{
+		updateUser, err := userSvc.UpdateUser(ctx, api.UpdateUserRequest_builder{
 			User: user, UpdateMask: &fieldmaskpb.FieldMask{
 				Paths: []string{random.String(10)},
 			},
-		})
+		}.Build())
 		t.Logf("user, updateUser, err: %+v, %+v, %v", user, updateUser, err)
 		require.Nil(t, updateUser)
 		require.Equal(t, status.Error(codes.InvalidArgument,
@@ -402,11 +404,11 @@ func TestUpdateUser(t *testing.T) {
 		defer cancel()
 
 		userSvc := NewUser(userer)
-		updateUser, err := userSvc.UpdateUser(ctx, &api.UpdateUserRequest{
+		updateUser, err := userSvc.UpdateUser(ctx, api.UpdateUserRequest_builder{
 			User: part, UpdateMask: &fieldmaskpb.FieldMask{
 				Paths: []string{"status"},
 			},
-		})
+		}.Build())
 		t.Logf("part, updateUser, err: %+v, %+v, %v", part, updateUser, err)
 		require.Nil(t, updateUser)
 		require.Equal(t, status.Error(codes.NotFound, "dao: object not found"),
@@ -429,7 +431,7 @@ func TestUpdateUser(t *testing.T) {
 
 		userSvc := NewUser(nil)
 		updateUser, err := userSvc.UpdateUser(ctx,
-			&api.UpdateUserRequest{User: user})
+			api.UpdateUserRequest_builder{User: user}.Build())
 		t.Logf("user, updateUser, err: %+v, %+v, %v", user, updateUser, err)
 		require.Nil(t, updateUser)
 		require.Equal(t, status.Error(codes.InvalidArgument, "validation "+
@@ -456,7 +458,7 @@ func TestUpdateUser(t *testing.T) {
 
 		userSvc := NewUser(userer)
 		updateUser, err := userSvc.UpdateUser(ctx,
-			&api.UpdateUserRequest{User: user})
+			api.UpdateUserRequest_builder{User: user}.Build())
 		t.Logf("user, updateUser, err: %+v, %+v, %v", user, updateUser, err)
 		require.Nil(t, updateUser)
 		require.Equal(t, status.Error(codes.InvalidArgument,
@@ -483,9 +485,9 @@ func TestUpdateUserPassword(t *testing.T) {
 
 		userSvc := NewUser(userer)
 		_, err := userSvc.UpdateUserPassword(ctx,
-			&api.UpdateUserPasswordRequest{
+			api.UpdateUserPasswordRequest_builder{
 				Id: uuid.NewV7().String(), Password: random.String(20),
-			})
+			}.Build())
 		t.Logf("err: %v", err)
 		require.NoError(t, err)
 	})
@@ -533,9 +535,9 @@ func TestUpdateUserPassword(t *testing.T) {
 
 		userSvc := NewUser(nil)
 		_, err := userSvc.UpdateUserPassword(ctx,
-			&api.UpdateUserPasswordRequest{
+			api.UpdateUserPasswordRequest_builder{
 				Id: uuid.NewV7().String(), Password: "1234567890",
-			})
+			}.Build())
 		t.Logf("err: %v", err)
 		require.Equal(t, status.Error(codes.InvalidArgument,
 			auth.ErrWeakPass.Error()), err)
@@ -553,9 +555,9 @@ func TestUpdateUserPassword(t *testing.T) {
 
 		userSvc := NewUser(nil)
 		_, err := userSvc.UpdateUserPassword(ctx,
-			&api.UpdateUserPasswordRequest{
+			api.UpdateUserPasswordRequest_builder{
 				Id: uuid.NewV7().String(), Password: random.String(100),
-			})
+			}.Build())
 		t.Logf("err: %v", err)
 		require.Equal(t, status.Error(codes.InvalidArgument,
 			auth.ErrWeakPass.Error()), err)
@@ -577,9 +579,9 @@ func TestUpdateUserPassword(t *testing.T) {
 
 		userSvc := NewUser(userer)
 		_, err := userSvc.UpdateUserPassword(ctx,
-			&api.UpdateUserPasswordRequest{
+			api.UpdateUserPasswordRequest_builder{
 				Id: uuid.NewV7().String(), Password: random.String(20),
-			})
+			}.Build())
 		t.Logf("err: %v", err)
 		require.Equal(t, status.Error(codes.NotFound, "dao: object not found"),
 			err)
@@ -605,7 +607,7 @@ func TestDeleteUser(t *testing.T) {
 
 		userSvc := NewUser(userer)
 		_, err := userSvc.DeleteUser(ctx,
-			&api.DeleteUserRequest{Id: uuid.NewV7().String()})
+			api.DeleteUserRequest_builder{Id: uuid.NewV7().String()}.Build())
 		t.Logf("err: %v", err)
 		require.NoError(t, err)
 	})
@@ -654,7 +656,7 @@ func TestDeleteUser(t *testing.T) {
 
 		userSvc := NewUser(userer)
 		_, err := userSvc.DeleteUser(ctx,
-			&api.DeleteUserRequest{Id: uuid.NewV7().String()})
+			api.DeleteUserRequest_builder{Id: uuid.NewV7().String()}.Build())
 		t.Logf("err: %v", err)
 		require.Equal(t, status.Error(codes.NotFound, "dao: object not found"),
 			err)
@@ -692,7 +694,8 @@ func TestListUsers(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, int32(3), listUsers.GetTotalSize())
 		require.EqualExportedValues(t,
-			&api.ListUsersResponse{Users: users, TotalSize: 3}, listUsers)
+			api.ListUsersResponse_builder{Users: users, TotalSize: 3}.Build(),
+			listUsers)
 	})
 
 	t.Run("List users by valid org ID with next page", func(t *testing.T) {
@@ -723,13 +726,13 @@ func TestListUsers(t *testing.T) {
 
 		userSvc := NewUser(userer)
 		listUsers, err := userSvc.ListUsers(ctx,
-			&api.ListUsersRequest{PageSize: 2})
+			api.ListUsersRequest_builder{PageSize: 2}.Build())
 		t.Logf("listUsers, err: %+v, %v", listUsers, err)
 		require.NoError(t, err)
 		require.Equal(t, int32(3), listUsers.GetTotalSize())
-		require.EqualExportedValues(t, &api.ListUsersResponse{
+		require.EqualExportedValues(t, api.ListUsersResponse_builder{
 			Users: users[:2], NextPageToken: next, TotalSize: 3,
-		}, listUsers)
+		}.Build(), listUsers)
 	})
 
 	t.Run("List users with invalid session", func(t *testing.T) {
@@ -765,8 +768,8 @@ func TestListUsers(t *testing.T) {
 		user := random.User("api-user", uuid.NewV7().String())
 
 		userer := NewMockUserer(gomock.NewController(t))
-		userer.EXPECT().Read(gomock.Any(), user.GetId(), user.GetOrgId()).Return(user,
-			nil).Times(1)
+		userer.EXPECT().Read(gomock.Any(), user.GetId(), user.GetOrgId()).
+			Return(user, nil).Times(1)
 
 		ctx, cancel := context.WithTimeout(session.NewContext(t.Context(),
 			&session.Session{
@@ -780,9 +783,9 @@ func TestListUsers(t *testing.T) {
 		listUsers, err := userSvc.ListUsers(ctx, &api.ListUsersRequest{})
 		t.Logf("listUsers, err: %+v, %v", listUsers, err)
 		require.NoError(t, err)
-		require.EqualExportedValues(t, &api.ListUsersResponse{
+		require.EqualExportedValues(t, api.ListUsersResponse_builder{
 			Users: []*api.User{user}, TotalSize: 1,
-		}, listUsers)
+		}.Build(), listUsers)
 	})
 
 	t.Run("List users by unknown ID", func(t *testing.T) {
@@ -822,7 +825,7 @@ func TestListUsers(t *testing.T) {
 
 		userSvc := NewUser(nil)
 		listUsers, err := userSvc.ListUsers(ctx,
-			&api.ListUsersRequest{PageToken: badUUID})
+			api.ListUsersRequest_builder{PageToken: badUUID}.Build())
 		t.Logf("listUsers, err: %+v, %v", listUsers, err)
 		require.Nil(t, listUsers)
 		require.Equal(t, status.Error(codes.InvalidArgument,
@@ -875,11 +878,12 @@ func TestListUsers(t *testing.T) {
 
 		userSvc := NewUser(userer)
 		listUsers, err := userSvc.ListUsers(ctx,
-			&api.ListUsersRequest{PageSize: 2})
+			api.ListUsersRequest_builder{PageSize: 2}.Build())
 		t.Logf("listUsers, err: %+v, %v", listUsers, err)
 		require.NoError(t, err)
 		require.Equal(t, int32(3), listUsers.GetTotalSize())
 		require.EqualExportedValues(t,
-			&api.ListUsersResponse{Users: users[:2], TotalSize: 3}, listUsers)
+			api.ListUsersResponse_builder{Users: users[:2], TotalSize: 3}.Build(),
+			listUsers)
 	})
 }

@@ -29,7 +29,7 @@ func TestCreateUser(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		createUser, err := userCli.CreateUser(ctx,
-			&api.CreateUserRequest{User: user})
+			api.CreateUserRequest_builder{User: user}.Build())
 		t.Logf("createUser, err: %+v, %v", createUser, err)
 		require.NoError(t, err)
 		require.NotEqual(t, user.GetId(), createUser.GetId())
@@ -46,9 +46,9 @@ func TestCreateUser(t *testing.T) {
 		defer cancel()
 
 		userCli := api.NewUserServiceClient(secondaryViewerGRPCConn)
-		createUser, err := userCli.CreateUser(ctx, &api.CreateUserRequest{
+		createUser, err := userCli.CreateUser(ctx, api.CreateUserRequest_builder{
 			User: random.User("api-user", uuid.NewV7().String()),
-		})
+		}.Build())
 		t.Logf("createUser, err: %+v, %v", createUser, err)
 		require.Nil(t, createUser)
 		require.EqualError(t, err, "rpc error: code = PermissionDenied desc = "+
@@ -66,7 +66,7 @@ func TestCreateUser(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		createUser, err := userCli.CreateUser(ctx,
-			&api.CreateUserRequest{User: user})
+			api.CreateUserRequest_builder{User: user}.Build())
 		t.Logf("createUser, err: %+v, %v", createUser, err)
 		require.Nil(t, createUser)
 		require.EqualError(t, err, "rpc error: code = PermissionDenied desc = "+
@@ -84,7 +84,7 @@ func TestCreateUser(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		createUser, err := userCli.CreateUser(ctx,
-			&api.CreateUserRequest{User: user})
+			api.CreateUserRequest_builder{User: user}.Build())
 		t.Logf("createUser, err: %+v, %v", createUser, err)
 		require.Nil(t, createUser)
 		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+
@@ -103,7 +103,7 @@ func TestGetUser(t *testing.T) {
 
 	userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 	createUser, err := userCli.CreateUser(ctx,
-		&api.CreateUserRequest{User: user})
+		api.CreateUserRequest_builder{User: user}.Build())
 	t.Logf("createUser, err: %+v, %v", createUser, err)
 	require.NoError(t, err)
 
@@ -115,7 +115,7 @@ func TestGetUser(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		getUser, err := userCli.GetUser(ctx,
-			&api.GetUserRequest{Id: createUser.GetId()})
+			api.GetUserRequest_builder{Id: createUser.GetId()}.Build())
 		t.Logf("getUser, err: %+v, %v", getUser, err)
 		require.NoError(t, err)
 		require.EqualExportedValues(t, createUser, getUser)
@@ -129,7 +129,7 @@ func TestGetUser(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(secondaryViewerGRPCConn)
 		getUser, err := userCli.GetUser(ctx,
-			&api.GetUserRequest{Id: createUser.GetId()})
+			api.GetUserRequest_builder{Id: createUser.GetId()}.Build())
 		t.Logf("getUser, err: %+v, %v", getUser, err)
 		require.Nil(t, getUser)
 		require.EqualError(t, err, "rpc error: code = PermissionDenied desc = "+
@@ -144,7 +144,7 @@ func TestGetUser(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(secondaryViewerKeyGRPCConn)
 		getUser, err := userCli.GetUser(ctx,
-			&api.GetUserRequest{Id: createUser.GetId()})
+			api.GetUserRequest_builder{Id: createUser.GetId()}.Build())
 		t.Logf("getUser, err: %+v, %v", getUser, err)
 		require.Nil(t, getUser)
 		require.EqualError(t, err, "rpc error: code = PermissionDenied desc = "+
@@ -159,7 +159,7 @@ func TestGetUser(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		getUser, err := userCli.GetUser(ctx,
-			&api.GetUserRequest{Id: uuid.NewV7().String()})
+			api.GetUserRequest_builder{Id: uuid.NewV7().String()}.Build())
 		t.Logf("getUser, err: %+v, %v", getUser, err)
 		require.Nil(t, getUser)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
@@ -174,7 +174,7 @@ func TestGetUser(t *testing.T) {
 
 		secCli := api.NewUserServiceClient(secondaryAdminGRPCConn)
 		getUser, err := secCli.GetUser(ctx,
-			&api.GetUserRequest{Id: createUser.GetId()})
+			api.GetUserRequest_builder{Id: createUser.GetId()}.Build())
 		t.Logf("getUser, err: %+v, %v", getUser, err)
 		require.Nil(t, getUser)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
@@ -196,7 +196,7 @@ func TestUpdateUser(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		createUser, err := userCli.CreateUser(ctx,
-			&api.CreateUserRequest{User: user})
+			api.CreateUserRequest_builder{User: user}.Build())
 		t.Logf("createUser, err: %+v, %v", createUser, err)
 		require.NoError(t, err)
 
@@ -207,7 +207,7 @@ func TestUpdateUser(t *testing.T) {
 		createUser.Status = api.Status_DISABLED
 
 		updateUser, err := userCli.UpdateUser(ctx,
-			&api.UpdateUserRequest{User: createUser})
+			api.UpdateUserRequest_builder{User: createUser}.Build())
 		t.Logf("updateUser, err: %+v, %v", updateUser, err)
 		require.NoError(t, err)
 		require.Equal(t, createUser.GetName(), updateUser.GetName())
@@ -220,7 +220,7 @@ func TestUpdateUser(t *testing.T) {
 			updateUser.GetUpdatedAt().AsTime(), 2*time.Second)
 
 		getUser, err := userCli.GetUser(ctx,
-			&api.GetUserRequest{Id: createUser.GetId()})
+			api.GetUserRequest_builder{Id: createUser.GetId()}.Build())
 		t.Logf("getUser, err: %+v, %v", getUser, err)
 		require.NoError(t, err)
 		require.EqualExportedValues(t, updateUser, getUser)
@@ -237,22 +237,22 @@ func TestUpdateUser(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminKeyGRPCConn)
 		createUser, err := userCli.CreateUser(ctx,
-			&api.CreateUserRequest{User: user})
+			api.CreateUserRequest_builder{User: user}.Build())
 		t.Logf("createUser, err: %+v, %v", createUser, err)
 		require.NoError(t, err)
 
 		// Update user fields.
-		part := &api.User{
+		part := api.User_builder{
 			Id: createUser.GetId(), Name: "api-user-" + random.String(10),
 			Email: "api-user-" + random.Email(), Role: api.Role_ADMIN,
 			Status: api.Status_DISABLED,
-		}
+		}.Build()
 
-		updateUser, err := userCli.UpdateUser(ctx, &api.UpdateUserRequest{
+		updateUser, err := userCli.UpdateUser(ctx, api.UpdateUserRequest_builder{
 			User: part, UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{
 				"name", "email", "role", "status",
 			}},
-		})
+		}.Build())
 		t.Logf("updateUser, err: %+v, %v", updateUser, err)
 		require.NoError(t, err)
 		require.Equal(t, part.GetName(), updateUser.GetName())
@@ -265,7 +265,7 @@ func TestUpdateUser(t *testing.T) {
 			updateUser.GetUpdatedAt().AsTime(), 2*time.Second)
 
 		getUser, err := userCli.GetUser(ctx,
-			&api.GetUserRequest{Id: createUser.GetId()})
+			api.GetUserRequest_builder{Id: createUser.GetId()}.Build())
 		t.Logf("getUser, err: %+v, %v", getUser, err)
 		require.NoError(t, err)
 		require.EqualExportedValues(t, updateUser, getUser)
@@ -279,7 +279,7 @@ func TestUpdateUser(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		updateUser, err := userCli.UpdateUser(ctx,
-			&api.UpdateUserRequest{User: nil})
+			api.UpdateUserRequest_builder{User: nil}.Build())
 		t.Logf("updateUser, err: %+v, %v", updateUser, err)
 		require.Nil(t, updateUser)
 		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+
@@ -293,9 +293,9 @@ func TestUpdateUser(t *testing.T) {
 		defer cancel()
 
 		userCli := api.NewUserServiceClient(secondaryViewerGRPCConn)
-		updateUser, err := userCli.UpdateUser(ctx, &api.UpdateUserRequest{
+		updateUser, err := userCli.UpdateUser(ctx, api.UpdateUserRequest_builder{
 			User: random.User("api-user", uuid.NewV7().String()),
-		})
+		}.Build())
 		t.Logf("updateUser, err: %+v, %v", updateUser, err)
 		require.Nil(t, updateUser)
 		require.EqualError(t, err, "rpc error: code = PermissionDenied desc = "+
@@ -309,9 +309,9 @@ func TestUpdateUser(t *testing.T) {
 		defer cancel()
 
 		userCli := api.NewUserServiceClient(secondaryViewerKeyGRPCConn)
-		updateUser, err := userCli.UpdateUser(ctx, &api.UpdateUserRequest{
+		updateUser, err := userCli.UpdateUser(ctx, api.UpdateUserRequest_builder{
 			User: random.User("api-user", uuid.NewV7().String()),
-		})
+		}.Build())
 		t.Logf("updateUser, err: %+v, %v", updateUser, err)
 		require.Nil(t, updateUser)
 		require.EqualError(t, err, "rpc error: code = PermissionDenied desc = "+
@@ -329,7 +329,7 @@ func TestUpdateUser(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		createUser, err := userCli.CreateUser(ctx,
-			&api.CreateUserRequest{User: user})
+			api.CreateUserRequest_builder{User: user}.Build())
 		t.Logf("createUser, err: %+v, %v", createUser, err)
 		require.NoError(t, err)
 
@@ -337,7 +337,7 @@ func TestUpdateUser(t *testing.T) {
 		createUser.Role = api.Role_SYS_ADMIN
 
 		updateUser, err := userCli.UpdateUser(ctx,
-			&api.UpdateUserRequest{User: createUser})
+			api.UpdateUserRequest_builder{User: createUser}.Build())
 		t.Logf("updateUser, err: %+v, %v", updateUser, err)
 		require.Nil(t, updateUser)
 		require.EqualError(t, err, "rpc error: code = PermissionDenied desc = "+
@@ -354,11 +354,11 @@ func TestUpdateUser(t *testing.T) {
 		defer cancel()
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
-		updateUser, err := userCli.UpdateUser(ctx, &api.UpdateUserRequest{
+		updateUser, err := userCli.UpdateUser(ctx, api.UpdateUserRequest_builder{
 			User: user, UpdateMask: &fieldmaskpb.FieldMask{
 				Paths: []string{random.String(10)},
 			},
-		})
+		}.Build())
 		t.Logf("updateUser, err: %+v, %v", updateUser, err)
 		require.Nil(t, updateUser)
 		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+
@@ -375,11 +375,11 @@ func TestUpdateUser(t *testing.T) {
 		defer cancel()
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
-		updateUser, err := userCli.UpdateUser(ctx, &api.UpdateUserRequest{
+		updateUser, err := userCli.UpdateUser(ctx, api.UpdateUserRequest_builder{
 			User: user, UpdateMask: &fieldmaskpb.FieldMask{
 				Paths: []string{"email"},
 			},
-		})
+		}.Build())
 		t.Logf("updateUser, err: %+v, %v", updateUser, err)
 		require.Nil(t, updateUser)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
@@ -397,7 +397,7 @@ func TestUpdateUser(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		updateUser, err := userCli.UpdateUser(ctx,
-			&api.UpdateUserRequest{User: user})
+			api.UpdateUserRequest_builder{User: user}.Build())
 		t.Logf("updateUser, err: %+v, %v", updateUser, err)
 		require.Nil(t, updateUser)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
@@ -415,7 +415,7 @@ func TestUpdateUser(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		createUser, err := userCli.CreateUser(ctx,
-			&api.CreateUserRequest{User: user})
+			api.CreateUserRequest_builder{User: user}.Build())
 		t.Logf("createUser, err: %+v, %v", createUser, err)
 		require.NoError(t, err)
 
@@ -425,7 +425,7 @@ func TestUpdateUser(t *testing.T) {
 
 		secCli := api.NewUserServiceClient(secondaryAdminGRPCConn)
 		updateUser, err := secCli.UpdateUser(ctx,
-			&api.UpdateUserRequest{User: createUser})
+			api.UpdateUserRequest_builder{User: createUser}.Build())
 		t.Logf("updateUser, err: %+v, %v", updateUser, err)
 		require.Nil(t, updateUser)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
@@ -443,7 +443,7 @@ func TestUpdateUser(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		createUser, err := userCli.CreateUser(ctx,
-			&api.CreateUserRequest{User: user})
+			api.CreateUserRequest_builder{User: user}.Build())
 		t.Logf("createUser, err: %+v, %v", createUser, err)
 		require.NoError(t, err)
 
@@ -451,7 +451,7 @@ func TestUpdateUser(t *testing.T) {
 		createUser.Email = "api-user-" + random.String(10)
 
 		updateUser, err := userCli.UpdateUser(ctx,
-			&api.UpdateUserRequest{User: createUser})
+			api.UpdateUserRequest_builder{User: createUser}.Build())
 		t.Logf("updateUser, err: %+v, %v", updateUser, err)
 		require.Nil(t, updateUser)
 		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+
@@ -469,7 +469,7 @@ func TestUpdateUser(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		createUser, err := userCli.CreateUser(ctx,
-			&api.CreateUserRequest{User: user})
+			api.CreateUserRequest_builder{User: user}.Build())
 		t.Logf("createUser, err: %+v, %v", createUser, err)
 		require.NoError(t, err)
 
@@ -478,7 +478,7 @@ func TestUpdateUser(t *testing.T) {
 			random.String(15))
 
 		updateUser, err := userCli.UpdateUser(ctx,
-			&api.UpdateUserRequest{User: createUser})
+			api.UpdateUserRequest_builder{User: createUser}.Build())
 		t.Logf("updateUser, err: %+v, %v", updateUser, err)
 		require.Nil(t, updateUser)
 		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+
@@ -500,13 +500,14 @@ func TestUpdateUserPassword(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		createUser, err := userCli.CreateUser(ctx,
-			&api.CreateUserRequest{User: user})
+			api.CreateUserRequest_builder{User: user}.Build())
 		t.Logf("createUser, err: %+v, %v", createUser, err)
 		require.NoError(t, err)
 
-		_, err = userCli.UpdateUserPassword(ctx, &api.UpdateUserPasswordRequest{
-			Id: createUser.GetId(), Password: random.String(20),
-		})
+		_, err = userCli.UpdateUserPassword(ctx,
+			api.UpdateUserPasswordRequest_builder{
+				Id: createUser.GetId(), Password: random.String(20),
+			}.Build())
 		t.Logf("err: %v", err)
 		require.NoError(t, err)
 	})
@@ -519,9 +520,9 @@ func TestUpdateUserPassword(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(secondaryViewerGRPCConn)
 		_, err := userCli.UpdateUserPassword(ctx,
-			&api.UpdateUserPasswordRequest{
+			api.UpdateUserPasswordRequest_builder{
 				Id: uuid.NewV7().String(), Password: random.String(20),
-			})
+			}.Build())
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = PermissionDenied desc = "+
 			"permission denied, ADMIN role required")
@@ -535,9 +536,9 @@ func TestUpdateUserPassword(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(secondaryViewerKeyGRPCConn)
 		_, err := userCli.UpdateUserPassword(ctx,
-			&api.UpdateUserPasswordRequest{
+			api.UpdateUserPasswordRequest_builder{
 				Id: uuid.NewV7().String(), Password: random.String(20),
-			})
+			}.Build())
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = PermissionDenied desc = "+
 			"permission denied, ADMIN role required")
@@ -554,13 +555,14 @@ func TestUpdateUserPassword(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		createUser, err := userCli.CreateUser(ctx,
-			&api.CreateUserRequest{User: user})
+			api.CreateUserRequest_builder{User: user}.Build())
 		t.Logf("createUser, err: %+v, %v", createUser, err)
 		require.NoError(t, err)
 
-		_, err = userCli.UpdateUserPassword(ctx, &api.UpdateUserPasswordRequest{
-			Id: createUser.GetId(), Password: "1234567890",
-		})
+		_, err = userCli.UpdateUserPassword(ctx,
+			api.UpdateUserPasswordRequest_builder{
+				Id: createUser.GetId(), Password: "1234567890",
+			}.Build())
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+
 			"weak password, see NIST password guidelines")
@@ -577,13 +579,14 @@ func TestUpdateUserPassword(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		createUser, err := userCli.CreateUser(ctx,
-			&api.CreateUserRequest{User: user})
+			api.CreateUserRequest_builder{User: user}.Build())
 		t.Logf("createUser, err: %+v, %v", createUser, err)
 		require.NoError(t, err)
 
-		_, err = userCli.UpdateUserPassword(ctx, &api.UpdateUserPasswordRequest{
-			Id: createUser.GetId(), Password: random.String(100),
-		})
+		_, err = userCli.UpdateUserPassword(ctx,
+			api.UpdateUserPasswordRequest_builder{
+				Id: createUser.GetId(), Password: random.String(100),
+			}.Build())
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+
 			"validation error: password: must be at most 72 characters")
@@ -597,9 +600,9 @@ func TestUpdateUserPassword(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		_, err := userCli.UpdateUserPassword(ctx,
-			&api.UpdateUserPasswordRequest{
+			api.UpdateUserPasswordRequest_builder{
 				Id: uuid.NewV7().String(), Password: random.String(20),
-			})
+			}.Build())
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
 			"dao: object not found")
@@ -616,14 +619,15 @@ func TestUpdateUserPassword(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		createUser, err := userCli.CreateUser(ctx,
-			&api.CreateUserRequest{User: user})
+			api.CreateUserRequest_builder{User: user}.Build())
 		t.Logf("createUser, err: %+v, %v", createUser, err)
 		require.NoError(t, err)
 
 		secCli := api.NewUserServiceClient(secondaryAdminGRPCConn)
-		_, err = secCli.UpdateUserPassword(ctx, &api.UpdateUserPasswordRequest{
-			Id: createUser.GetId(), Password: random.String(20),
-		})
+		_, err = secCli.UpdateUserPassword(ctx,
+			api.UpdateUserPasswordRequest_builder{
+				Id: createUser.GetId(), Password: random.String(20),
+			}.Build())
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
 			"dao: object not found")
@@ -644,12 +648,12 @@ func TestDeleteUser(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		createUser, err := userCli.CreateUser(ctx,
-			&api.CreateUserRequest{User: user})
+			api.CreateUserRequest_builder{User: user}.Build())
 		t.Logf("createUser, err: %+v, %v", createUser, err)
 		require.NoError(t, err)
 
 		_, err = userCli.DeleteUser(ctx,
-			&api.DeleteUserRequest{Id: createUser.GetId()})
+			api.DeleteUserRequest_builder{Id: createUser.GetId()}.Build())
 		t.Logf("err: %v", err)
 		require.NoError(t, err)
 
@@ -662,7 +666,7 @@ func TestDeleteUser(t *testing.T) {
 
 			userCli := api.NewUserServiceClient(globalAdminKeyGRPCConn)
 			getUser, err := userCli.GetUser(ctx,
-				&api.GetUserRequest{Id: createUser.GetId()})
+				api.GetUserRequest_builder{Id: createUser.GetId()}.Build())
 			t.Logf("getUser, err: %+v, %v", getUser, err)
 			require.Nil(t, getUser)
 			require.EqualError(t, err, "rpc error: code = NotFound desc = "+
@@ -678,7 +682,7 @@ func TestDeleteUser(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(secondaryViewerGRPCConn)
 		_, err := userCli.DeleteUser(ctx,
-			&api.DeleteUserRequest{Id: uuid.NewV7().String()})
+			api.DeleteUserRequest_builder{Id: uuid.NewV7().String()}.Build())
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = PermissionDenied "+
 			"desc = permission denied, ADMIN role required")
@@ -692,7 +696,7 @@ func TestDeleteUser(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		_, err := userCli.DeleteUser(ctx,
-			&api.DeleteUserRequest{Id: uuid.NewV7().String()})
+			api.DeleteUserRequest_builder{Id: uuid.NewV7().String()}.Build())
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
 			"dao: object not found")
@@ -709,13 +713,13 @@ func TestDeleteUser(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		createUser, err := userCli.CreateUser(ctx,
-			&api.CreateUserRequest{User: user})
+			api.CreateUserRequest_builder{User: user}.Build())
 		t.Logf("createUser, err: %+v, %v", createUser, err)
 		require.NoError(t, err)
 
 		secCli := api.NewUserServiceClient(secondaryAdminGRPCConn)
 		_, err = secCli.DeleteUser(ctx,
-			&api.DeleteUserRequest{Id: createUser.GetId()})
+			api.DeleteUserRequest_builder{Id: createUser.GetId()}.Build())
 		t.Logf("err: %v", err)
 		require.EqualError(t, err, "rpc error: code = NotFound desc = "+
 			"dao: object not found")
@@ -738,7 +742,7 @@ func TestListUsers(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		createUser, err := userCli.CreateUser(ctx,
-			&api.CreateUserRequest{User: user})
+			api.CreateUserRequest_builder{User: user}.Build())
 		t.Logf("createUser, err: %+v, %v", createUser, err)
 		require.NoError(t, err)
 
@@ -781,16 +785,16 @@ func TestListUsers(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminKeyGRPCConn)
 		listUsers, err := userCli.ListUsers(ctx,
-			&api.ListUsersRequest{PageSize: 2})
+			api.ListUsersRequest_builder{PageSize: 2}.Build())
 		t.Logf("listUsers, err: %+v, %v", listUsers, err)
 		require.NoError(t, err)
 		require.Len(t, listUsers.GetUsers(), 2)
 		require.NotEmpty(t, listUsers.GetNextPageToken())
 		require.GreaterOrEqual(t, listUsers.GetTotalSize(), int32(3))
 
-		nextUsers, err := userCli.ListUsers(ctx, &api.ListUsersRequest{
+		nextUsers, err := userCli.ListUsers(ctx, api.ListUsersRequest_builder{
 			PageSize: 2, PageToken: listUsers.GetNextPageToken(),
-		})
+		}.Build())
 		t.Logf("nextUsers, err: %+v, %v", nextUsers, err)
 		require.NoError(t, err)
 		require.NotEmpty(t, nextUsers.GetUsers())
@@ -847,7 +851,7 @@ func TestListUsers(t *testing.T) {
 
 		userCli := api.NewUserServiceClient(globalAdminGRPCConn)
 		listUsers, err := userCli.ListUsers(ctx,
-			&api.ListUsersRequest{PageToken: badUUID})
+			api.ListUsersRequest_builder{PageToken: badUUID}.Build())
 		t.Logf("listUsers, err: %+v, %v", listUsers, err)
 		require.Nil(t, listUsers)
 		require.EqualError(t, err, "rpc error: code = InvalidArgument desc = "+
