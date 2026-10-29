@@ -94,7 +94,11 @@ func (s *Session) Login(ctx context.Context, req *api.LoginRequest) (
 		return nil, status.Error(codes.Unauthenticated, errUnauth)
 	}
 
-	return &api.LoginResponse{Token: token, ExpiresAt: exp}, nil
+	resp := &api.LoginResponse{}
+	resp.SetToken(token)
+	resp.SetExpiresAt(exp)
+
+	return resp, nil
 }
 
 // CreateKey creates an API key.
@@ -134,7 +138,11 @@ func (s *Session) CreateKey(ctx context.Context, req *api.CreateKeyRequest) (
 		logger.Errorf("CreateKey grpc.SetHeader: %v", err)
 	}
 
-	return &api.CreateKeyResponse{Key: key, Token: token}, nil
+	resp := &api.CreateKeyResponse{}
+	resp.SetKey(key)
+	resp.SetToken(token)
+
+	return resp, nil
 }
 
 // DeleteKey deletes an API key by ID.
@@ -192,21 +200,26 @@ func (s *Session) ListKeys(ctx context.Context, req *api.ListKeysRequest) (
 		return nil, errToStatus(err)
 	}
 
-	resp := &api.ListKeysResponse{Keys: keys, TotalSize: count}
+	resp := &api.ListKeysResponse{}
+	resp.SetKeys(keys)
+	resp.SetTotalSize(count)
 
 	// Populate next page token.
 	if len(keys) == int(req.GetPageSize()+1) {
-		resp.Keys = keys[:len(keys)-1]
+		resp.SetKeys(keys[:len(keys)-1])
 
-		if resp.NextPageToken, err = session.GeneratePageToken(
+		nextPageToken, err := session.GeneratePageToken(
 			keys[len(keys)-2].GetCreatedAt().AsTime(),
-			keys[len(keys)-2].GetId()); err != nil {
+			keys[len(keys)-2].GetId())
+		if err != nil {
 			// GeneratePageToken should not error based on a DB-derived UUID.
 			// Log the error and include the usable empty token.
 			logger := hlog.FromContext(ctx)
 			logger.Errorf("ListKeys session.GeneratePageToken key, err: "+
 				"%+v, %v", keys[len(keys)-2], err)
 		}
+
+		resp.SetNextPageToken(nextPageToken)
 	}
 
 	return resp, nil

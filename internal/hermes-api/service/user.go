@@ -233,10 +233,11 @@ func (u *User) ListUsers(ctx context.Context, req *api.ListUsersRequest) (
 			return nil, errToStatus(err)
 		}
 
-		return &api.ListUsersResponse{
-			Users:     []*api.User{user},
-			TotalSize: 1,
-		}, nil
+		resp := &api.ListUsersResponse{}
+		resp.SetUsers([]*api.User{user})
+		resp.SetTotalSize(1)
+
+		return resp, nil
 	}
 
 	if req.GetPageSize() == 0 {
@@ -255,22 +256,26 @@ func (u *User) ListUsers(ctx context.Context, req *api.ListUsersRequest) (
 		return nil, errToStatus(err)
 	}
 
-	resp := &api.ListUsersResponse{Users: users, TotalSize: count}
+	resp := &api.ListUsersResponse{}
+	resp.SetUsers(users)
+	resp.SetTotalSize(count)
 
 	// Populate next page token.
 	if len(users) == int(req.GetPageSize()+1) {
-		resp.Users = users[:len(users)-1]
+		resp.SetUsers(users[:len(users)-1])
 
-		if resp.NextPageToken, err = session.GeneratePageToken(
+		nextPageToken, err := session.GeneratePageToken(
 			users[len(users)-2].GetCreatedAt().AsTime(),
-			users[len(users)-2].GetId(),
-		); err != nil {
+			users[len(users)-2].GetId())
+		if err != nil {
 			// GeneratePageToken should not error based on a DB-derived UUID.
 			// Log the error and include the usable empty token.
 			logger := hlog.FromContext(ctx)
 			logger.Errorf("ListUsers session.GeneratePageToken user, err: "+
 				"%+v, %v", users[len(users)-2], err)
 		}
+
+		resp.SetNextPageToken(nextPageToken)
 	}
 
 	return resp, nil

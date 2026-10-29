@@ -43,9 +43,9 @@ func TestLogin(t *testing.T) {
 		defer cancel()
 
 		sessSvc := NewSession(userer, nil, nil, pwtKey)
-		loginResp, err := sessSvc.Login(ctx, &api.LoginRequest{
+		loginResp, err := sessSvc.Login(ctx, api.LoginRequest_builder{
 			Email: user.GetEmail(), OrgName: org.GetName(), Password: globalPass,
-		})
+		}.Build())
 		t.Logf("loginResp, err: %+v, %v", loginResp, err)
 		require.NoError(t, err)
 		require.Greater(t, len(loginResp.GetToken()), 90)
@@ -71,9 +71,9 @@ func TestLogin(t *testing.T) {
 		defer cancel()
 
 		sessSvc := NewSession(userer, nil, nil, pwtKey)
-		loginResp, err := sessSvc.Login(ctx, &api.LoginRequest{
+		loginResp, err := sessSvc.Login(ctx, api.LoginRequest_builder{
 			Email: user.GetEmail(), OrgName: org.GetName(), Password: globalPass,
-		})
+		}.Build())
 		t.Logf("loginResp, err: %+v, %v", loginResp, err)
 		require.Nil(t, loginResp)
 		require.Equal(t, status.Error(codes.Unauthenticated, errUnauth), err)
@@ -97,10 +97,10 @@ func TestLogin(t *testing.T) {
 		defer cancel()
 
 		sessSvc := NewSession(userer, nil, nil, pwtKey)
-		loginResp, err := sessSvc.Login(ctx, &api.LoginRequest{
+		loginResp, err := sessSvc.Login(ctx, api.LoginRequest_builder{
 			Email: user.GetEmail(), OrgName: org.GetName(),
 			Password: random.String(10),
-		})
+		}.Build())
 		t.Logf("loginResp, err: %+v, %v", loginResp, err)
 		require.Nil(t, loginResp)
 		require.Equal(t, status.Error(codes.Unauthenticated, errUnauth), err)
@@ -125,9 +125,9 @@ func TestLogin(t *testing.T) {
 		defer cancel()
 
 		sessSvc := NewSession(userer, nil, nil, pwtKey)
-		loginResp, err := sessSvc.Login(ctx, &api.LoginRequest{
+		loginResp, err := sessSvc.Login(ctx, api.LoginRequest_builder{
 			Email: user.GetEmail(), OrgName: org.GetName(), Password: globalPass,
-		})
+		}.Build())
 		t.Logf("loginResp, err: %+v, %v", loginResp, err)
 		require.Nil(t, loginResp)
 		require.Equal(t, status.Error(codes.Unauthenticated, errUnauth), err)
@@ -148,9 +148,9 @@ func TestLogin(t *testing.T) {
 		defer cancel()
 
 		sessSvc := NewSession(userer, nil, nil, nil)
-		loginResp, err := sessSvc.Login(ctx, &api.LoginRequest{
+		loginResp, err := sessSvc.Login(ctx, api.LoginRequest_builder{
 			Email: user.GetEmail(), OrgName: org.GetName(), Password: globalPass,
-		})
+		}.Build())
 		t.Logf("loginResp, err: %+v, %v", loginResp, err)
 		require.Nil(t, loginResp)
 		require.Equal(t, status.Error(codes.Unauthenticated, errUnauth), err)
@@ -180,12 +180,15 @@ func TestCreateKey(t *testing.T) {
 		defer cancel()
 
 		keySvc := NewSession(nil, keyer, nil, pwtKey)
-		createKey, err := keySvc.CreateKey(ctx, &api.CreateKeyRequest{Key: key})
+		createKey, err := keySvc.CreateKey(ctx,
+			api.CreateKeyRequest_builder{Key: key}.Build())
 		t.Logf("key, createKey, err: %+v, %+v, %v", key, createKey, err)
 		require.NoError(t, err)
 
 		// Normalize token.
-		resp := &api.CreateKeyResponse{Key: key, Token: createKey.GetToken()}
+		resp := api.CreateKeyResponse_builder{
+			Key: key, Token: createKey.GetToken(),
+		}.Build()
 
 		require.EqualExportedValues(t, resp, createKey)
 	})
@@ -232,7 +235,8 @@ func TestCreateKey(t *testing.T) {
 		defer cancel()
 
 		keySvc := NewSession(nil, nil, nil, nil)
-		createKey, err := keySvc.CreateKey(ctx, &api.CreateKeyRequest{Key: key})
+		createKey, err := keySvc.CreateKey(ctx,
+			api.CreateKeyRequest_builder{Key: key}.Build())
 		t.Logf("key, createKey, err: %+v, %+v, %v", key, createKey, err)
 		require.Nil(t, createKey)
 		require.Equal(t, status.Error(codes.PermissionDenied, "permission "+
@@ -255,7 +259,8 @@ func TestCreateKey(t *testing.T) {
 		defer cancel()
 
 		keySvc := NewSession(nil, keyer, nil, nil)
-		createKey, err := keySvc.CreateKey(ctx, &api.CreateKeyRequest{Key: key})
+		createKey, err := keySvc.CreateKey(ctx,
+			api.CreateKeyRequest_builder{Key: key}.Build())
 		t.Logf("key, createKey, err: %+v, %+v, %v", key, createKey, err)
 		require.Nil(t, createKey)
 		require.Equal(t, status.Error(codes.InvalidArgument,
@@ -278,7 +283,8 @@ func TestCreateKey(t *testing.T) {
 		defer cancel()
 
 		keySvc := NewSession(nil, keyer, nil, nil)
-		createKey, err := keySvc.CreateKey(ctx, &api.CreateKeyRequest{Key: key})
+		createKey, err := keySvc.CreateKey(ctx,
+			api.CreateKeyRequest_builder{Key: key}.Build())
 		t.Logf("key, createKey, err: %+v, %+v, %v", key, createKey, err)
 		require.Nil(t, createKey)
 		require.Equal(t, status.Error(codes.Unknown,
@@ -306,7 +312,7 @@ func TestDeleteKey(t *testing.T) {
 
 		keySvc := NewSession(nil, keyer, cacher, nil)
 		_, err := keySvc.DeleteKey(ctx,
-			&api.DeleteKeyRequest{Id: uuid.NewV7().String()})
+			api.DeleteKeyRequest_builder{Id: uuid.NewV7().String()}.Build())
 		t.Logf("err: %v", err)
 		require.NoError(t, err)
 	})
@@ -353,7 +359,7 @@ func TestDeleteKey(t *testing.T) {
 
 		keySvc := NewSession(nil, nil, cacher, nil)
 		_, err := keySvc.DeleteKey(ctx,
-			&api.DeleteKeyRequest{Id: uuid.NewV7().String()})
+			api.DeleteKeyRequest_builder{Id: uuid.NewV7().String()}.Build())
 		t.Logf("err: %v", err)
 		require.Equal(t, status.Error(codes.InvalidArgument,
 			"dao: invalid format"), err)
@@ -377,7 +383,7 @@ func TestDeleteKey(t *testing.T) {
 
 		keySvc := NewSession(nil, keyer, cacher, nil)
 		_, err := keySvc.DeleteKey(ctx,
-			&api.DeleteKeyRequest{Id: uuid.NewV7().String()})
+			api.DeleteKeyRequest_builder{Id: uuid.NewV7().String()}.Build())
 		t.Logf("err: %v", err)
 		require.Equal(t, status.Error(codes.NotFound, "dao: object not found"),
 			err)
@@ -412,7 +418,8 @@ func TestListKeys(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, int32(3), listKeys.GetTotalSize())
 		require.EqualExportedValues(t,
-			&api.ListKeysResponse{Keys: keys, TotalSize: 3}, listKeys)
+			api.ListKeysResponse_builder{Keys: keys, TotalSize: 3}.Build(),
+			listKeys)
 	})
 
 	t.Run("List keys by valid org ID with next page", func(t *testing.T) {
@@ -439,13 +446,14 @@ func TestListKeys(t *testing.T) {
 		defer cancel()
 
 		keySvc := NewSession(nil, keyer, nil, nil)
-		listKeys, err := keySvc.ListKeys(ctx, &api.ListKeysRequest{PageSize: 2})
+		listKeys, err := keySvc.ListKeys(ctx,
+			api.ListKeysRequest_builder{PageSize: 2}.Build())
 		t.Logf("listKeys, err: %+v, %v", listKeys, err)
 		require.NoError(t, err)
 		require.Equal(t, int32(3), listKeys.GetTotalSize())
-		require.EqualExportedValues(t, &api.ListKeysResponse{
+		require.EqualExportedValues(t, api.ListKeysResponse_builder{
 			Keys: keys[:2], NextPageToken: next, TotalSize: 3,
-		}, listKeys)
+		}.Build(), listKeys)
 	})
 
 	t.Run("List keys with invalid session", func(t *testing.T) {
@@ -471,7 +479,7 @@ func TestListKeys(t *testing.T) {
 
 		keySvc := NewSession(nil, nil, nil, nil)
 		listKeys, err := keySvc.ListKeys(ctx,
-			&api.ListKeysRequest{PageToken: badUUID})
+			api.ListKeysRequest_builder{PageToken: badUUID}.Build())
 		t.Logf("listKeys, err: %+v, %v", listKeys, err)
 		require.Nil(t, listKeys)
 		require.Equal(t, status.Error(codes.InvalidArgument,
@@ -521,11 +529,13 @@ func TestListKeys(t *testing.T) {
 		defer cancel()
 
 		keySvc := NewSession(nil, keyer, nil, nil)
-		listKeys, err := keySvc.ListKeys(ctx, &api.ListKeysRequest{PageSize: 2})
+		listKeys, err := keySvc.ListKeys(ctx,
+			api.ListKeysRequest_builder{PageSize: 2}.Build())
 		t.Logf("listKeys, err: %+v, %v", listKeys, err)
 		require.NoError(t, err)
 		require.Equal(t, int32(3), listKeys.GetTotalSize())
 		require.EqualExportedValues(t,
-			&api.ListKeysResponse{Keys: keys[:2], TotalSize: 3}, listKeys)
+			api.ListKeysResponse_builder{Keys: keys[:2], TotalSize: 3}.Build(),
+			listKeys)
 	})
 }
